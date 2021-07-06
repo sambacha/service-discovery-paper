@@ -1,0 +1,67 @@
+\documentclass[sigconf]{acmart}
+
+% Remove this for camera-ready
+\settopmatter{printacmref=false} % Removes citation information below abstract
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\settopmatter{printfolios=true}
+
+\usepackage{times}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{array,multirow}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{color, colortbl} 
+\usepackage{balance}
+\usepackage{paralist}
+\usepackage{cleveref}
+%\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{pifont}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{bm}
+\usepackage{enumitem}
+\setlength {\marginparwidth}{2cm}
+\usepackage{todonotes}
+\usepackage{arydshln}
+\usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{authblk}
+\usepackage{caption}
+\usepackage{soul,color}
+\usepackage{subcaption}
+\usepackage{mwe}
+\usepackage{ifthen}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+\input{macros}
+\begin{document}
+
+\title{Service Discovery for Ethereum}
+\author{}
+
+
+\begin{abstract}
+Abstract
+\end{abstract}
+
+\maketitle
+
+\input{sections/introduction}
+
+\input{sections/model}
+
+\input{sections/overview}
+
+\clearpage
+% ========= references =========
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
