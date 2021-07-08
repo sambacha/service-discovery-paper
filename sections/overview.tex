@@ -10,6 +10,11 @@ A request is admitted to the table only if its \emph{accumulated waiting time} i
 
 If the \emph{accumulated waiting time} is lower than the waiting time, the advertiser receives a new ticket, waits for the remaining waiting time (waiting time - accumulated waiting time) and retries the registration. Importantly, the waiting time is re-evaluated every time the advertiser comes back. I.e., a previously returned waiting time is not an obligation for the registrar to admit the request at the specified time. The system guarantees that advertisers that waited long enough will eventually register at the topic table. 
 
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{img/registration}
+    \caption{Registration process within one registrar.}
+    \label{fig:registration}
+\end{figure}
 
 
 
