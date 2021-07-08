@@ -1,15 +1,24 @@
 \section{Overview}
 
 There are 2 main operations, register(topic, self) and lookup(topic)
-Every node acts as a registrant and a registrar
+Every node acts as a advertiser and a registrar
 
 \subsection{Register}
-Every registrar holds a \emph{topic table}, where it stores the incoming ads. Any registrant can send its request to be added to the topic table but can be admitted only if presenting a valid \emph{ticket}. Tickets are immutable objects issued by the registrars. A ticket contains a timestamp indicating when its holder tried to register for the first time and are signed by the registrar. The timestamp allows to calculate registrant's \emph{accumulated waiting time} - the total time the registrant waited for admission. 
+Every registrar holds a \emph{topic table}, where it stores the incoming ads. Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
 
-Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of registrants and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
+A request is admitted to the table only if its \emph{accumulated waiting time} is higher than the returned waiting time. The \emph{accumulated waiting time} represents the total time the advertiser already waited for admission and is registered in \emph{ticket}. Tickets are immutable objects issued and signed by the registrars and includes the time of the initial request sent by the advertiser and the last waiting time returned by the registrar. Using the tickets avoids keeping additional state on registrars, while allows the advertisers to prove their \emph{accumulated waiting time}. 
 
-A request is admitted to the table only if its \emph{accumulated waiting time} is higher than the returned waiting time. If that is not the case, the registrant receives a new ticket, waits for the remaining waiting time (waiting time - accumulated waiting time) and retries the registration. Importantly, the waiting time is re-evaluated every time the registrant comes back. I.e., a previously returned waiting time is not an obligation for the registrar to admit the request at the specified time. 
+If the \emph{accumulated waiting time} is lower than the waiting time, the advertiser receives a new ticket, waits for the remaining waiting time (waiting time - accumulated waiting time) and retries the registration. Importantly, the waiting time is re-evaluated every time the advertiser comes back. I.e., a previously returned waiting time is not an obligation for the registrar to admit the request at the specified time. The system guarantees that advertisers that waited long enough will eventually register at the topic table. 
 
-During the registration process, each registrant tries to place its ads on multiple registrants. 
+
+
+
+
+
+
+
+
+
+During the registration process, each advertiser tries to place its ads on multiple advertisers. 
 
 \subsection{Lookup}
