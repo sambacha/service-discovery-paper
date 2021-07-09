@@ -4,7 +4,7 @@ There are 2 main operations, register(topic, self) and lookup(topic)
 Every node acts as a advertiser and a registrar
 
 \subsection{Register}
-Every registrar holds a \emph{topic table}, where it stores the incoming ads. Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
+Every registrar holds a \emph{topic table}, where it stores the incoming ads (\Cref{fig:registration}). Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
 
 A request is admitted to the table only if its \emph{accumulated waiting time} is higher than the returned waiting time. The \emph{accumulated waiting time} represents the total time the advertiser already waited for admission and is registered in \emph{ticket}. Tickets are immutable objects issued and signed by the registrars and includes the time of the initial request sent by the advertiser and the last waiting time returned by the registrar. Using the tickets avoids keeping additional state on registrars, while allows the advertisers to prove their \emph{accumulated waiting time}. 
 
@@ -19,11 +19,14 @@ If the \emph{accumulated waiting time} is lower than the waiting time, the adver
 
 
 
+During the registration process, each advertiser tries to place its ads on multiple advertisers. It is required for availability as a single registrar can be malicious, attacked or simply leave the network. The advertisements should be placed in an unpredictable way to avoid targeted attack. On the other hand, the relevant registrar should be easy to find for searchers. Finally, we want to minimize the number of placed advertisement due efficiency reasons. 
 
+At the beginning of each registration operation advertisers construct a \emph{ticket table} that will lead the process. The \emph{ticket table} is similar to the routing table. It is divided into buckets and holds peers in each bucket. However, buckets in the \emph{ticket table} indicate the distance from the topic hash the advertisers wants to register. The \emph{ticket table} is initialized with advertisers' peers from the DHT routing tables but organized in a different way. 
 
-
-
-
-During the registration process, each advertiser tries to place its ads on multiple advertisers. 
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{img/ticket_table}
+    \caption{Creation of ticket table from the routing table.}
+    \label{fig:ticket_table}
+\end{figure}
 
 \subsection{Lookup}
