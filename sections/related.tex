@@ -1,4 +1,8 @@
+%!TEX root = ../main.tex
+%=========================================================
+
 \section{Related Work}
+
 "Eclipsing Ethereum Peers with False Friends"~\cite{henningsen2019eclipsing} - 
 
 "Ethereum eclipse attacks"~\cite{wust2016ethereum} - 
@@ -29,5 +33,11 @@
 
 "Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
 
-"Supporting k-nearest service discoveries for large-scale edge computing environments"~\cite{teranishi2018supporting} - 
+"Supporting k-nearest service discoveries for large-scale edge computing environments"~\cite{teranishi2018supporting}
 
+"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. Since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
+
+"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}: besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
+
+"Under the Hood of the Ethereum Gossip Protocol"~\cite{kiffer2021under}: a study of Ethereum gossip protocol that I did not read yet.
+Ethna~\cite{wang2021ethna} seems also similar.

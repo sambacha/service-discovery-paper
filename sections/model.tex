@@ -1,3 +1,6 @@
+%!TEX root = ../main.tex
+%=========================================================
+
 \section{System model}
 
 The topic advertisement subsystem indexes participants by their registered topic identifiers or topic(s), for short. A node providing a certain service, each identified with a topic, is said to 'place an ad' for itself when it registers an ad on another peer to make itself discoverable under that topic. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. Every node participating in the discovery protocol acts as an 'advertisement medium', meaning that it accepts topic ads from other nodes and later returns them to nodes searching for the same topic, keeping an extra topic table (in addition to the Kademlia neighbours table) tracking their neighbors by topic index.
