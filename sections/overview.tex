@@ -6,6 +6,8 @@
 There are 2 main operations, register(topic, self) and lookup(topic)
 Every node acts as a advertiser and a registrar
 
+\sergi{I would merge section 5 and 6 into a single section following the same structure of https://github.com/datahop/p2p-service-discovery/blob/master/doc/specs.md}
+
 \subsection{Register}
 Every registrar holds a \emph{topic table}, where it stores the incoming ads (\Cref{fig:registration}). Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
 
