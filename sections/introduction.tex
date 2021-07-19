@@ -11,9 +11,42 @@ Other protocols can also run on top of DEVp2p, such as
 The Whisper protocol~\cite{} (for decentralized
 applications) and the Swarm protocol~\cite{} (for decentralized file
 storage).
+DEVp2p provides peers connection management and also node discovery services.
 Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
 
-A key part of DEVp2p is the discovery protocol. 
+%DEVp2p  manages
+%connections to other peers which form the overlay on which
+%blocks and transactions are distributed.
+%Go-ethereum client by default has
+%a total of 25 TCP connections to other peers speaking the
+%Ethereum protocol. Of these 25 slots, 17 are reserved for
+%inbound connections (initiated by other peers), whereas the remaining 8 are allocated for outbound connections. 
+%No further restrictions
+%apply to inbound connections; if an inbound slot is available
+%Go-ethereum client simply accepts any connecting peer that supports the
+%Ethereum protocol and operates on the same network (main,
+%testing, etc.). 
+%The 8 outbound slots are therefore especially
+%important, as they are the most difficult ones to get under
+%control for an attacker mounting an eclipse attack.
+%In contrast to DEVp2p, the discv4 node discovery stores
+%information about all node types in the overlay. This includes
+%nodes without support for the Ethereum protocol (which is a
+%perfectly valid case in the design logic of Ethereum’s protocol
+%stack). The discv4 node discovery is inspired by the Kademlia
+%DHT [7]. Information about known overlay nodes is stored in
+%a table separated into so-called k-buckets (or simply buckets,
+%in the following).
+%
+%A key part of DEVp2p is the discovery protocol. 
+%
+%
+%
+%discv4 is a Kademlia-inspired system but doesn't store any files, only node information is relayed. We chose Kademlia primarily because the algorithm is simple and understandable while providing a distributed database that scales with the number of participants. Our system also relies on the routing table to allow enumeration and random traversal of the whole network, i.e. all participants can be found. Most importantly, having a structured network with routing enables thinking about DHT 'address space' and 'regions of address space'. These concepts are used to build the topic-based node index.
+%
+%Kademlia is often criticized as a naive design with obvious weaknesses. We believe that most issues with simple Kademlia can be overcome by careful programming and the benefits of a simple design outweigh the cost and risks of maintaining a more complex system.
+
+
 
 %Why discovery service is key for a p2p network.
 %Devp2p intro
