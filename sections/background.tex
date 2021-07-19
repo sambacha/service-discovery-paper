@@ -10,6 +10,7 @@
 \sergi{We should also add how kademlia is used for discovery (when lookups are performed, lookup buffer use,  pool of connections, random lookups, etc}
 
 \subsection{Ethereum DHT}
+\michal{Borrowed from \href{https://arxiv.org/pdf/1908.10141.pdf}{this paper}}
 Ethereum DHT is based on Kademlia - a UDP-based, peer-to-peer distributed hash table (DHT) that is used to locate data stord in a decentralized way~\cite{maymounkov2002kademlia}. Each node is uniquely identified by its randomly generated node ID. A data item stored in the DHT is found by its key, which is simply a hash of the data itself. Node IDs and data keys share the same representation; in the following we use the term ID for both.
 
 Kademlia leverages this by storing data at nodes whose node ID is “close” to the data’s key. Closeness is defined as the bitwise XOR between two IDs, taken as an integer value, i.e.,$d(x, y) = \textit{log}_2 \lfloor x \oplus y \rfloor$.
