@@ -2,38 +2,14 @@
 %=========================================================
 
 \section{System model}
-
-\etienne{would be useful to name the participants first, before detailing their interactions. Make the link between topics and DApps/smart contracts.}
-
-The topic advertisement subsystem indexes participants by their registered topic identifiers or topic(s), for short. A node providing a certain service, each identified with a topic, is said to 'place an ad' for itself when it registers an ad on another peer to make itself discoverable under that topic. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. Every node participating in the discovery protocol acts as an 'advertisement medium', meaning that it accepts topic ads from other nodes and later returns them to nodes searching for the same topic, keeping an extra topic table (in addition to the Kademlia neighbours table) tracking their neighbors by topic index.
-
+We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However, no two nodes share the same ID. Nodes can play the following roles:
 \begin{itemize}
-    \item A 'topic' is an identifier for a service provided by a node.
-    \item An 'advertiser' is a node providing a service that wants to be discovered.
-    \item An 'ad' (i.e., advertisement) is the registration of an advertiser for a topic on another node.
-    \item A 'registrar' is a node that is acting as the advertisement medium in a service protocol interaction, i.e., a node that is contacted to store an ad belonging to an advertiser.
-    \item A 'searcher' is a node looking for ads for a topic.
+    \item \textbf{Registrar} - a node that accepts registrations made by advertisers and respond to topic queries. When asked for a specific topic, a registrar should respond with advertisers that registered for the topic the registrar is aware of. All the DHT nodes play this role. Importantly, registrar may hold advertisements for multiple topics. 
+    \item \textbf{Advertiser} - nodes that register for a specific topic and want to be discovered by their peers. The advertisers make themselves discoverable by placing advertisements on registrars. Nodes play a topic-specific advertiser role for every topic application it runs.
+    \item \textbf{Searcher} - a node that tries to discover advertisers under a specific topic. Nodes play a topic-specific searcher role for every topic application it runs.
 \end{itemize}
+Multiple advertisers/searchers hosted by the same DHT node will share the same ID and IP address but will differ in topic. 
 
-We assume an Ethereum network nodes all being part of Ethereum DHT. Each node can play any (or both) of the two roles:
+Our system indexes participants by their registered topic identifiers or topic(s), for short. A \emph{topic} is an identifier for a service provided by a node. A node providing a certain service, each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assuem that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
 
-    Registrants - nodes that register for a specific topic and want to be discovered by their peers.
-    \etienne{is it different than advertisers?}
-     The registrants make themselves discoverable by placing advertisements on registrants.
-    Registrars - a node that accepts registrations made by registrants and respond to topic queries. When asked for a specific topic, a registrar should respond with registrants that registered for the topic the registrar is aware of.
-    Query node - a node that tries to discover registrants under a specific topic.
-    \etienne{different than searcher?}
-
-
-\begin{itemize}
-    \item A1 - the network consists of a large amount of nodes (1k-10k)
-    \item A2 - each node can register to multiple topics
-    \item A3 - the popularity of the topics may vary significantly and follows a zipf distribution \etienne{Why specifically a zipf? Rather say a powerlaw distribution, or an unbalanced distribution. Zipf is a specific one.}
-    \item A4 - no single node can be trusted.
-    \item A5 - a single malicious participant can produce multiple fake (Sybil) identities, but will be limited in the number of the IP addresses they control.
-    \item A6 - malicious nodes may be present in the network. The attackers may send any type and amount of messages to any other node, limited only by their the attacker resources (bandwidth, CPU).
-\end{itemize}
-
-\etienne{We should probably have a separate attack model that would detail what the malicious nodes want to achieve and what are our assumptions in preventing them from doing so (e.g. limited number of IP address per attacker).}
-\ramin{Assumption of limited number of IP addresses correct with IPv6? Limited number of nodes from same subnetwork?}
-\ramin{Impact of NAT?}
+We assume the presence of malicious nodes in the DHT. The malicious nodes can freely deviate from the protocol and communicate with any other nodes in the network. The malicious node may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. As creating a node requires maintaining periodic, encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. We also assume that the number of IP addresses under the control of an attacker is limited. However, an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation (\Cref{sec:evaluation}). 
