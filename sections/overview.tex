@@ -9,9 +9,9 @@ In the following, we provide an overview and objectives of \textit{i)} search an
 
 \subsection{Registration and lookup with a registrar}
 
-Every registrar holds a \emph{topic table}, where it stores the incoming ads. Topic table is a limited resource shared by multiple advertisers to store their ads. A major challenge is to prevent misuse of the storage space, \eg advertisers spamming a target registrar with ad registration requests to fill up its topic table.
+Every registrar holds a \emph{topic table}, where it stores the incoming ads. Topic table is a limited resource shared by multiple advertisers to store their ads. A major challenge is to prevent misuse of the storage space, \eg advertisers spamming a target registrar with ad registration requests for random topics to fill up its topic table.
 
-Once placed in a topic table, an ad has a limited lifetime and removed from the table upon expiration of its lifetime. While expiration allows new ads to be continuously introduced into the topic tables, spammers can still continuously place new ads at no cost. A well-known solution to such misuse of resources is to make accesses to resource costly, for instance, by incorporating a Proof-of-Work (PoW) puzzle scheme \hl{[]} and requiring advertisers to present a PoW (\ie solution) before they are allowed to place their ads. However, such schemes unnecessarily consume resources at the advertisers and favor ``rich'' nodes having abundant resources. 
+Once placed in a topic table, an ad has a limited lifetime and removed from the table upon expiration of its lifetime. While expiration allows new ads to be continuously introduced into the topic tables, spammers can still continuously place new ads at no cost. A well-known solution to such misuse is to make consumption of resources costly for the consumers, for instance, by incorporating a Proof-of-Work (PoW) puzzle scheme \hl{[]} and requiring advertisers to present a PoW (\ie solution) before they are allowed to place their ads. However, such schemes unnecessarily consume resources at the advertisers and favor ``rich'' nodes having abundant resources. 
 
 \onur{are there better arguments against PoW schemes? }
 
@@ -76,7 +76,7 @@ It is important to maintain an even load across all peers in the network indepen
 \renewcommand{\tabcolsep}{0.5em}
 \centering
 \scriptsize{
-\begin{tabular} {p{1cm}p{4cm}}
+\begin{tabular} {p{1cm}p{5cm}}
 \toprule
 \textbf{Objective} & \textbf{Description} \\
 \hline
