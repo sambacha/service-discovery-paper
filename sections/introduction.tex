@@ -6,8 +6,8 @@
 Ethereum~\cite{} is a decentralized, open-source blockchain with smart contract functionality, allowing the users to develop various decentralized applications (DApps),  and the most actively used blockchain~\cite{bloomberg} nowadays.
 Following its decentralized design and structure, Ethereum relies on a communication infrastructure provided by a peer-to-peer (P2P) network, where individual and independent nodes, running an Ethereum client software (e.g., Go Ethereum~\cite{go-ethereum}), send and receive messages  containing transactions and blocks to achieve distributed consensus.
 
-The set of network protocols which form the Ethereum peer-to-peer network are called DEVp2p. DEVp2p isn't specific to a particular blockchain, but should serve the needs of any networked application associated with the Ethereum umbrella.
-Other protocols can also run on top of DEVp2p, such as 
+The set of network protocols which form the Ethereum peer-to-peer network are called DEVp2p.  DEVp2p isn't specific to a particular blockchain, but should serve the needs of any networked application associated with the Ethereum umbrella.
+Other protocols can also run on top of DEVp2p,  such as 
 The Whisper protocol~\cite{} (for decentralized
 applications) and the Swarm protocol~\cite{} (for decentralized file
 storage).
@@ -20,32 +20,54 @@ No further restrictions apply to inbound connections; if an inbound slot is avai
 Go-ethereum client simply accepts any connecting peer that supports the
 Ethereum protocol and operates on the same network (main,
 testing, etc.). 
-The outbound slots are therefore selected by the nodes, which need to be done carefully to avoind any attacker could mount an eclipse attack.
+The outbound slots are therefore selected by the nodes, which need to be done carefully to avoid any attacker could mount an eclipse attack.
 In an eclipse attack, an
 adversary monopolizes the connections of a victim, effectively
 filtering the victim’s view of the blockchain.  Eclipse attacks
 enable a variety of follow-up attacks such as double spending
 and stubborn mining~\cite{}.
 
-In order to find and select participants of the P2P network to initiate connections to,  DEVp2p provides a service discovery mechanism. 
-Current version of DEVp2p service discover is discovery version 5 (Discv5).
-The node discovery is inspired by the Kademlia
-DHT~\cite{}. Information about known overlay nodes is stored in
-a table separated into so-called k-buckets (or simply buckets,
-in the following).
-Different from the previous version of the discovery protocol (version 4),  Discv5 allows nodes to associate themselves with a set of tags, i.e., topics, and enable searching of peers that advertise themselves as associated with particular topics.  Topics can be used to identify different things such as an application or a service, a certain functionality of a node, or any other attribute by which the node may wish to belong to a connected service-specific “subnetwork” of the Ethereum network. In this document, we focus on the application of Discv5 for the discovery of service-specific peers.
+In order to find and select participants of the P2P network to initiate connections to,  a node discovery protocol is required by DEVp2p.
+Systems such as MDNS/Bonjour allow finding hosts,  but only in  a local-area network.  DEVp2p discovery protocol requires to work on the Internet and is most useful for applications with a large number of participants spread across the Internet.
+There are other systems using a rendezvous server,  commonly used by desktop applications or cloud services to connect participants to each other. But using rendezvous servers requires trust in the operator and these systems are prone to censorship. 
+For a decentralized network such as the Ethereum network it is not desirable to rely on a single operator.  
+Instead,  it is better to place a small amount of trust in every participant, becoming more resistant to censorship as the size of the network increases and participants of multiple distinct peer-to-peer networks can share the discovery network to further increase its resilience.
+The process of joining the network is the Achilles heel of the node discovery protocol: while any other node may be used as an entry point,  such a node must first be located through some other mechanism.  Approaches such as listing of initial entry points in DNS or discovery of participants in the local network can be used,  but only as a  reasonable secure entry into the network.
 
 
-%Motivation of Discv5
-%Partitioned p2p network for earch service vs single p2p network with service discovery
+Current version of DEVp2p node discovery protocol is discovery version 5 (Discv5).
+Node discovery protocol can be used by any node, for any purpose, at no cost other than running the network protocol and storing a limited number of other nodes' records. Any node can be used as an entry point into the network.
+The system's design is loosely inspired by the Kademlia DHT~\cite{}.
+In Kademlia DHT, information about known overlay nodes is stored in
+a distributed table separated into so-called k-buckets (or simply buckets),  where each bucket stores nodes identifiers within the same distance to the local node id.
+But unlike most DHTs no arbitrary keys and values are stored. Instead, the DHT stores and relays 'node records', which are signed documents providing information about nodes in the network. 
+Node discovery protocol acts as a database of all live nodes in the network and performs three basic functions:
 
-
-It is envisioned that the Discv5 system will be used across many different services at large scale, mainly to form subnetworks consisting of the service peers. The basic objectives of Node Discovery v5 is to provide a facility for nodes to:
 \begin{itemize}
-    \item register 'topic advertisements', i.e., “ads”, at other peers in the Ethereum network
-    \item find other nodes that advertised a particular topic by querying selected peers in the Ethereum network.
+ \item Sampling the set of all live participants: by walking the DHT,  the network can be enumerated.
+ \item Searching for participants providing a certain service: Node Discovery v5 includes a scalable facility for registering 'topic advertisements'.These advertisements can be queried and nodes advertising a topic found.
+ \item Authoritative resolution of node records: if a node's ID is known, the most recent version of its record can be retrieved.
 \end{itemize}
 
-In this paper....
+The concept of topic is a new concept in Discv5 (compared with previous node discovery protocol Discv4).
+Discv5 allows nodes to associate themselves with a set of tags, i.e., topics, and enable searching of peers that advertise themselves as associated with particular topics.  
+Topics can be used to identify different  capabilities, for instance specific application capabilities,  services or certain functionalities of a node. 
+\hl{Topics example missing}
+Topic based peer finding is a promising feature because it allows a potential bandwidth reduction and much faster discovery of nodes
+by  discovering nodes based on the topic required.
+This means that instead of connecting to every node discovered to see if it offers a specific service,  we simply lookup for nodes that are only providing the service and then ask them if they really are still offering the service.
+This will allow avoiding waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities and avoiding handshakes node by node to discover these details and rely only on the node discovery protocol. 
+
+
+%It is envisioned that the Discv5 system will be used across many different services at large scale, mainly to form subnetworks consisting of the service peers.  The basic objectives of Node Discovery v5 is to provide a facility for nodes to i) register 'topic advertisements', i.e., “ads”, at other peers in the Ethereum network and ii) find other nodes that advertised a particular topic by querying selected peers in the Ethereum network.
+
+The goal of this paper is to propose and evaluate a new mechanism for the Discv5 protocol to register and discover for topics,  integrating it in the existing DEVp2p node discovery protocol based on Kademlia DHT.  
+The mechanisms proposed are the following:
+
+\begin{itemize}
+ \item New registering mechanism that register nodes only for the topics that matches nodes capabilities.
+ \item New table structure on top of the existing Kademlia DHT to store node information based on topics advertised.
+ \item New lookup mechanism that discover nodes based on the topics advertised in the P2P network.
+\end{itemize}
     
-    
+The structure of the paper is the following....\hl{TBC}
