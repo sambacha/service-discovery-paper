@@ -9,6 +9,11 @@
 \sergi{From what i remember main difference are num of buckets and use of log distance.  I don't remember any document but Felix will help.}
 \sergi{We should also add how kademlia is used for discovery (when lookups are performed, lookup buffer use,  pool of connections, random lookups, etc}
 
+Ethereum is a blockchain platform for distributed computing and was the first major blockchain to support Turing-complete scripting via smart contracts, which are expressed as opcodes specific to the Ethereum Virtual Machine (EVM) [55]. Ethereum also operates as a cryptocurrency by supporting the transfer of tokens called ether between Ethereum accounts. In addition to its use as a fiat currency, ether is also used to incentivize Ethereum nodes to perform dis- tributed computation. Ether can also be converted to gas, which is used as a fee for executing transactions and smart contracts, and effectively mitigates spam. 
+
+
+Ethereum uses a Distributed Hash Table (DHT) for P2P communication and implementing higher level protocols. Below, we present an overview of the system and its basic operations. 
+
 \subsection{Ethereum DHT}
 \michal{Borrowed from \href{https://arxiv.org/pdf/1908.10141.pdf}{this paper}}
 Ethereum DHT is based on Kademlia - a UDP-based, peer-to-peer distributed hash table (DHT) that is used to locate data stord in a decentralized way~\cite{maymounkov2002kademlia}. Each node is uniquely identified by its randomly generated node ID. A node ID in Ethereum is a marshaled version of node's public key. It is easy to generate many different identities but computationally infeasible to generate a specific one. A data item stored in the DHT is also found by its key, which is simply a hash of the data itself. Node IDs and data keys share the same representation; in the following we use the term ID for both.
@@ -17,11 +22,17 @@ Ethereum DHT stores data at nodes whose node ID is the “closest” to the data
 
 A DHT node stores its known peers in a routing table divided into buckets which partition the known network based on the local node’s ID (\Cref{fig:kademlia}). Every bucket stores up to $k$ neighbors. Bucket $i$ stores nodes whose distance is in $[2i, 2i+1)$, which effectively corresponds to the length of the common prefix between two node IDs. The routing table stores a detailed view of peers close to the node and a less detailed view of parts of the network located further away.
 
-Items in the DHT and nodes on the network are located by \emph{lookups}. A lookup successively queries nodes that are closest to the desired target ID (key or node ID). Intuitively, a peer closer to the target ID maintains a more detailed view of the target part of the network and provides the initial node with additional peers to query. For instance, the green node in \Cref{fig:kademlia} looking data ID in \emph{bucket 1} will ask known peers in \emph{bucket 1} that will provide additional peers closer to the data ID. Storing data follow the same process.  
+%Items in the DHT and nodes on the network are located by \emph{lookups}. A lookup successively queries nodes that are closest to the desired target ID (key or node ID). Intuitively, a peer closer to the target ID maintains a more detailed view of the target part of the network and provides the initial node with additional peers to query. For instance, the green node in \Cref{fig:kademlia} looking data ID in \emph{bucket 1} will ask known peers in \emph{bucket 1} that will provide additional peers closer to the data ID. Storing data follow the same process.  
 
 \begin{figure}
     \includegraphics[width=0.4\textwidth]{img/kademlia}
     \caption{Ethereum DHT routing table.}
     \label{fig:kademlia}
  \end{figure}
+ 
+In order for a newly instantiated DHT node to find peers, it first adds a hard-coded set of bootstrap node IDs to its routing table. Subsequently, when attempting to locate a target node on the network, the node searches its routing table for the $\alpha$ (typically three) peers that are closest to the target node. The node then sends these $\alpha$ nodes a FIND\_NODE message that specifies the target node ID, and each peer responds with the list of k nodes from its own routing table that are closest to the target. The querying node adds any new node information (i.e., node ID, IP Address, UDP/TCP ports) it discovers through this process to its routing table, and then iteratively repeats the process until it converges on the target node.
+ 
+ Ethereum builds higher level protocols on top of the DHT. RLPx provides secure, point-to-point communication secure by assymetric cryptography. Similarly to TLS, RLPx performs a shared secret derivation authenticated by public/private key pairs of the nodes. The protocol ensures authenticity and integrity of exchanged messages. Furthermore, DEVp2p protocol is used for session management on top of secured channels provided by RLPx. 
+ 
+ The Ethereum DHT is shared across multiple applications.  This includes the Ethereum main net, multiple Ethereum testnets (Rinkeby, Ropsten) or alternative cryptocurrencies (Pirl, Musicoin). In 2018, the Ethereum DHT nodes operated a total of 4,076 different applications~\cite{kim2018measuring}. Currently, a node trying to find application specific peers performs a random walk through the DHT, establishes connections to encountered nodes and verifies the supported protocols at the application level. 
 
