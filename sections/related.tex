@@ -3,7 +3,7 @@
 
 \section{Related Work}
 
-In "Eclipsing Ethereum Peers with False Friends"~\cite{henningsen2019eclipsing} - ,  the authors present a 
+In "Eclipsing Ethereum Peers with False Friends"~\cite{henningsen2019eclipsing} - ,  the authors present 
 a false friends attack,  an eclipse attack applicable to Geth version v1.8.20.  The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets. 
 Since there is a limit that at most 2 nodes from the same /24 subnet can be included in the same bucket and at most 10 nodes from the same /24 can be in the whole table,  it requires  2 IPs from distinct /24 subnets to be successful,  and in contrast
 with previous attacks, it can be successfully mounted without
