@@ -14,7 +14,6 @@ applications) and the Swarm protocol~\cite{} (for decentralized file
 storage).
 DEVp2p provides peers connection management and also node discovery services.
 Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
-\michal{The above seems too detailed IMO. We can introduce DEV2p, RLPx etc. in the background. I'd only say that Ethereum DHT can be used by other services (not necessarily blockchain related) and give some examples.}
 
 DEVp2p manages the connections to other peers which form the overlay P2P network.
 For instance,  Go-ethereum client by default establish a total of 50  connections to other Ethereum nodes.  Of these 50 slots,  two thirds are reserved for inbound connections (initiated by other peers),  while the remaining third are allocated for outbound connections. 
@@ -28,7 +27,6 @@ adversary monopolizes the connections of a victim, effectively
 filtering the victim’s view of the blockchain.  Eclipse attacks
 enable a variety of follow-up attacks such as double spending
 and stubborn mining~\cite{}.
-\michal{ditto}
 
 In order to find and select participants of the P2P network to initiate connections to,  a node discovery protocol is required by DEVp2p.
 Systems such as MDNS/Bonjour allow finding hosts,  but only in  a local-area network.  DEVp2p discovery protocol requires to work on the Internet and to be useful for applications with a large number of participants spread across the Internet.
@@ -63,9 +61,6 @@ Topic based peer finding is a promising feature because it allows a potential ba
 by  discovering nodes based on the topic required.
 This means that instead of connecting to every node discovered to see if it offers a specific service,  we simply lookup for nodes that are only providing the service and then ask them if they really are still offering the service.
 This will avoid a waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities,  avoiding handshakes node by node to discover these details and relying only on the node discovery protocol. 
-
-This will allow avoiding waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities and avoiding handshakes node by node to discover these details and rely only on the node discovery protocol. 
-\michal{I'd write the intro on a higher level. E.g., 1) Ethereum is the largest network/blockchain 2) It is fully decentralized and decentralization is great 3) Ethereum allows hosting multiple services other than Ethereum blockchain) and uses Ethereum DHT as a communication/management platform 4) A crucial part of that is to enable nodes working with the same application to find each other 5) this is challenging because of decentralization/security/malicious can join etc. 6) State of the Art doesn't work (briefly - we have better analysis in related work) 7) We propose our brand new shiny protocol that is efficiency and secure 8) Our contributions + structure}
 
 
 %It is envisioned that the Discv5 system will be used across many different services at large scale, mainly to form subnetworks consisting of the service peers.  The basic objectives of Node Discovery v5 is to provide a facility for nodes to i) register 'topic advertisements', i.e., “ads”, at other peers in the Ethereum network and ii) find other nodes that advertised a particular topic by querying selected peers in the Ethereum network.
