@@ -1,14 +1,45 @@
+%!TEX root = ../main.tex
+%=========================================================
+
 \section{Overview}
 
-There are 2 main operations, register(topic, self) and lookup(topic)
-Every node acts as a advertiser and a registrar
+The end-goal of service discovery is for nodes to be discovered under topics which they choose to be associated with. As a decentralised, permissionless system, anyone can freely participate in service discovery system at no cost other than running the protocol and storing a limited number of other nodes' records. This leads to some potential security issues that must be considered when designing the system. Even worse, a single malicious entity can spawn many Sybil identities that individually enter the system. Because such nodes are difficult to identify, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. \michal{It's probably better explained in the thread model}
 
-\subsection{Register}
-Every registrar holds a \emph{topic table}, where it stores the incoming ads. Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
+In the following, we provide an overview and objectives of \textit{i)} search and register operations at a single registrar followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. A comprehensive list all the design objectives of the system, which we refer to in the text below, can be found in \Cref{tab:objectives}.
 
-A request is admitted to the table only if its \emph{accumulated waiting time} is higher than the returned waiting time. The \emph{accumulated waiting time} represents the total time the advertiser already waited for admission and is registered in \emph{ticket}. Tickets are immutable objects issued and signed by the registrars and includes the time of the initial request sent by the advertiser and the last waiting time returned by the registrar. Using the tickets avoids keeping additional state on registrars, while allows the advertisers to prove their \emph{accumulated waiting time}. 
+\subsection{Registration and lookup with a registrar}
 
-If the \emph{accumulated waiting time} is lower than the waiting time, the advertiser receives a new ticket, waits for the remaining waiting time (waiting time - accumulated waiting time) and retries the registration. Importantly, the waiting time is re-evaluated every time the advertiser comes back. I.e., a previously returned waiting time is not an obligation for the registrar to admit the request at the specified time. The system guarantees that advertisers that waited long enough will eventually register at the topic table. 
+Every registrar holds a \emph{topic table}, where it stores the incoming ads. Topic table is a limited resource shared by multiple advertisers to store their ads. A major challenge is to prevent misuse of the storage space, \eg advertisers spamming a target registrar with ad registration requests for random topics to fill up its topic table.
+
+Once placed in a topic table, an ad has a limited lifetime and removed from the table upon expiration of its lifetime. While expiration allows new ads to be continuously introduced into the topic tables, spammers can still continuously place new ads at no cost. A well-known solution to such misuse is to make consumption of resources costly for the consumers, for instance, by incorporating a Proof-of-Work (PoW) puzzle scheme \hl{[]} and requiring advertisers to present a PoW (\ie solution) before they are allowed to place their ads. However, such schemes unnecessarily consume resources at the advertisers and favor ``rich'' nodes having abundant resources. 
+
+\onur{are there better arguments against PoW schemes? \michal{Creates an "arms race", doesn't really solve the problem (there are papers showing that PoW blockchains are centralized with a lot of miners in China), can't run it on contraint devices}}
+
+%At the same time, it is desirable for the ad registration process to complete in a timely manner and have as little overhead (in terms of both messaging and computation) as possible for both the registrars and advertisers. 
+
+Instead, we introduce a lightweight, \textit{waiting-time-based admission mechanism} whereby registrars enforce a waiting time on the advertisers before their ads are admitted to the topic table. Imposing this waiting time prevents misuse of the topic table, because any topic must be important enough to outweigh the cost of waiting. 
+
+In addition to misuse of topic table, securing topic tables from being dominantly occupied by the ads from malicious nodes (and their Sybils) is another important objective (G9). Our admission mechanism tackles this challenges through diversification of advertisers that simultaneously place ads: advertisers that contribute poorly to the diversity (in terms of their IP addresses and IDs) of the advertisers that currently have an ad in the topic table are forced to wait longer (\Cref{fig:registration}).
+
+Also, the waiting time mechanism must prevent the storage space from overflowing while aiming for \textit{a max-min fair allocation} across different topics (G0). The latter is necessary to avoid starving (unpopular) topics. Finally, the waiting time mechanism must ensure that no advertiser is indefinitely denied from registering its ad (G1). In order to achieve these objectives, we use a \textit{waiting time function} to generate advertiser-specific waiting times in response to registration requests. This function takes several parameters into consideration such as the advertiser's IP address, node ID, its chosen topic, and the occupancy of the table. 
+\michal{It's seems a bit redundant to the paragraph before.}
+\michal{It might be a good idea to signal already here that the waiting times is based on occupancy (cope with load) and diversity (cope with attacks + max-min fairness.}
+
+In order to achieve a lightweight mechanism to enforce the computed waiting times on the advertisers, we use a \textit{capability-based} mechanism whereby registrars respond to registration requests with \textit{tickets} (tokens) containing waiting times among other things. Once an initial ticket is obtained from a registrar, the advertiser must first wait for the waiting time to elapse before it can follow up and send a subsequent register request to that registrar. 
+\michal{We might explicitely state that we don't create any state at the registrar but provide integrity with signatures. I'm just not sure it's not too technical for the overview.}
+
+In a follow-up request, an advertiser hands the previously-obtained ticket along with a new registration request. In this mechanism, advertisers can be repeatedly handed new tickets with each follow-up request if the waiting time function determines that the advertiser has not waited long enough. As an advertiser repeatedly receives new tickets, the registrar updates the accumulated waiting time of the advertiser in the new ticket. The accumulated waiting time is used in the waiting time function and the advertisers that accumulated longer waiting times have higher chance of placing their ads in their subsequent requests, and this guarantees that each advertiser eventually succeeds in placing its ad (G1). 
+
+The resulting admission mechanism is shown in \Cref{fig:registration}. An advertiser sends a registration request, providing its ID, IP address and a desired topic (eth).\michal{We should make sure that wqe used "eth" before an explained it means Ethereum mainnet. It can probably be in the intro already as one of examples.} Initially, the waiting time function computes and returns a waiting time inside a ticket. Then, the advertiser follows up with a new request once the waiting time has elapsed. In the second time, the waiting time function returns a zero waiting time, which means the advertiser's ad is placed. Finally, the advertiser receives a confirmation of registration as shown in the bottom of \Cref{fig:registration}. 
+
+% avoid golden tickets
+There are several intricacies in the design of the waiting time mechanism. For instance, an advertiser should not be able to use a ticket indefinitely and also should not be able to re-use a ticket to register more than one ad. For this reason, tickets are only valid within a ``registration window'' which begins after the ticket's waiting time expires and ends after a short time interval of few seconds as shown in Figure ~\Cref{fig:ticket_validity}. During this interval, the registrar allows only one registration by the ticket. 
+
+Another important design detail is the amount of state required to enforce waiting times. We design tickets to be immutable objects that can be authenticated by the registrars. This allows registrars to avoid per-advertiser state when enforcing the waiting times---the state of a registration process is stored in a ticket, including the accumulated waiting time spent by the advertiser so far. This way the burden of keeping the registration state and acting on the waiting times is on the advertisers. 
+\michal{ok, so you actually mention state at the registrar, but later on :) Maybe bring together? Not yet sure about that. }
+
+One final, but important detail in the waiting time mechanism design is to avoid advertisers periodically initiating registration requests at the same registrar in the hopes that they receive a ticket with a better waiting time than the previous ones (or ideally have their ad admitted immediately). Our design ensures that searchers do not obtain better waiting times by spamming requests at a registrar and we achieve this with very little amount of state. Also, advertisers attempting to re-register an ad on a registrar that already has that ad live in its table are rejected. We discuss the details of the waiting time in Section \Cref{sec:waitingTime}.
+\michal{Might be too detailed for the overview.}
 
 \begin{figure}
     \includegraphics[width=0.5\textwidth]{img/registration}
@@ -16,14 +47,94 @@ If the \emph{accumulated waiting time} is lower than the waiting time, the adver
     \label{fig:registration}
 \end{figure}
 
+On the other hand, the search operations do not require a ticket. Once a registrar receives a lookup request for a topic from a searcher, it immediately returns a random subset of the advertisers that currently have a live ad under that topic. 
+
+\subsection{Distributed search and registration}
+
+The process for search and registration with a single registrar is described above. In order to increase the chance of being discovered and be discovered fast, advertisers are incentivised to distribute their ads and maintain live (\ie unexpired) ads on multiple registrars at anytime. 
+
+Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes. Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the ``right'' set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes. While the discovery should be efficient for even the most unpopular topics (G6), the overhead of registration must ideally be equally distributed among the registrars (G3). 
+
+The remaining issues for advertisers are i) on which nodes to place ads and ii) how many ads to place. For the latter issue, advertisers can dynamically adjust the number of ads they place depending on the feedback they receive in terms of discovery (\ie new connection request) by peers. The former question of where to place ads is more complex. Below are three naive approaches for the selection of nodes for registering ads and searching the peers for a topic:
+\begin{enumerate} 
+\item ``Walk'' the DHT, exhaustively finding all neighbors in each bucket starting with the closest bucket. Obviously, such an approach would be unscalable as it would lead to excessive overhead on the network in terms of number of messages and would require huge storage space to register ads.
+\item Selecting a random subset of registrars by, for instance, picking a random Node ID from each bucket distance and finding the closest node to that ID.
+This approach would be lightweight, but the downside is the potential inefficiency of search operations; that is, it could potentially take a lot of time and search messages for advertisers to find peers at registrars, especially for less popular services with small sets of peers.
+\footnote{On the other hand, when the number of nodes advertising a topic is at least a certain percentage of the whole discovery network (rough estimate: at least 1\%), ads may simply be placed on random nodes because searching for the topic on randomly selected nodes can locate the ads quickly enough.}
+\item Using node(s) closest to the topic hash (i.e., mapping the topic name to the node ID space of DHT). This is an approach used by vanilla DHT implementations of Kademlia, but it leads to poor fairness in terms of balance of load across registrars, because registrars whose IDs are close to the hash of a popular topic ID receive a lot of search and registration traffic, while the rest of the nodes receive very little traffic. This approach also has poor security as the attackers only need to target few nodes to prevent the discovery of the topics.
+\end{enumerate}
+
+Our approach is for advertisers and searchers to perform parallel lookups and registrations at all the buckets. Also, within each bucket, the searchers (advertisers) simultaneously perform lookups (registrations) on a configurable number of peers. The logarithmic bucket distances are relative to the topic hash which means that the farthest bucket contains the nodes closest to the topic hash.  
+
+Because the number of nodes roughly reduce in half with each bucket distance from the source, it is more likely to find peers for unpopular topics in the buckets closest to the hash of those topics. For popular topics, lookups are more likely to succeed in the buckets farther from the topic hash. At the same time, it is harder for the Kademlia routing protocol to discover those nodes closest to the topic hash because peers typically have better knowledge of the closest parts of the DHT. 
+
+It is important to maintain an even load across all peers in the network independent of the bucket distances (G3). The waiting time function achieves load-balancing by throttling the registrations. 
+
+\onur{how do we achieve balanced load for lookups and registrations}
+\michal{We might want to try squeezing the overview to 1 page - it's 2 pages now.}
+\begin{table*} 
+%\vspace{-0.15in}
+\caption{Objectives of topic-based service discovery.}
+%\vspace{-0.1in}
+\label{tab:objectives}
+\renewcommand{\arraystretch}{1.5}
+\renewcommand{\tabcolsep}{0.5em}
+\centering
+\scriptsize{
+\begin{tabular} {p{1cm}p{5cm}}
+\toprule
+\textbf{Objective} & \textbf{Description} \\
+\hline
+G0 & Max-min fair allocation of topic table across topics \\
+\hline
+G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
+\hline
+G2 & All advertisers within each topic should have a similar probability of being discovered. \\
+\hline
+G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
+\hline
+G4 & The registration operations should be efficient in terms of time. \\
+\hline
+G5 & The registration operations should be efficient in terms of messaging and computational overhead. \\
+\hline 
+G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count). \\
+\hline
+G7 & The number of registrations should be sufficient for an efficient discovery. \\
+\hline
+G8 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
+\hline 
+G9 & The protocol should be resistant to attacks by malicious nodes. \\
+\hline
+\end{tabular}
+}
+\vspace{-0.2in}
+\end{table*}
+
+
+\iffalse
+\subsection{Register}
+Every registrar holds a \emph{topic table}, where it stores the incoming ads (\Cref{fig:registration}). Advertisers can send their requests to be added to the topic table on a registrar. Upon reception of a registration request, registrars compare it against ads already present in the table and calculates a request-specific \emph{waiting time}. The waiting time is determined by the diversity score of the incoming request and the occupancy of the topic table. \etienne{the diversity score was not introduced yet. Maybe follow a more top-down presentation with the overview first and the details after?} The more the request differs from ads in the table, the lower waiting time it receives. It allows to maintain diverse content of the topic table, protects against hijacking the table by a small number of advertisers and ensures fairness towards less popular topics in the system. As the topic table gets filled, the returned waiting times increase as well. It spreads the load equally across registrars (loaded registrars issue longer waiting times and slow down the incoming traffic) and limits the total ad number in the table (bounding the registrar memory usage). 
+
+A request is admitted to the table only if its \emph{accumulated waiting time} is higher than the returned waiting time. The \emph{accumulated waiting time} represents the total time the advertiser already waited for admission and is registered in \emph{ticket}. Tickets are immutable objects issued and signed by the registrars and includes the time of the initial request sent by the advertiser and the last waiting time returned by the registrar. Using the tickets avoids keeping additional state on registrars, while allows the advertisers to prove their \emph{accumulated waiting time}. 
+
+If the \emph{accumulated waiting time} is lower than the waiting time, the advertiser receives a new ticket, waits for the remaining waiting time (waiting time - accumulated waiting time) and retries the registration. Importantly, the waiting time is re-evaluated every time the advertiser comes back. I.e., a previously returned waiting time is not an obligation for the registrar to admit the request at the specified time. The system guarantees that advertisers that waited long enough will eventually register at the topic table. 
 
 
 
 
 
+During the registration process, each advertiser tries to place its ads on multiple advertisers. It is required for availability as a single registrar can be malicious, attacked or simply leave the network. The advertisements should be placed in an unpredictable way to avoid targeted attack. On the other hand, the relevant registrar should be easy to find for searchers. Finally, we want to minimize the number of placed advertisement due efficiency reasons. 
 
+At the beginning of each registration operation advertisers construct a \emph{ticket table} that will lead the process. The \emph{ticket table} is similar to the routing table. It is divided into buckets and holds peers in each bucket. However, buckets in the \emph{ticket table} indicate the distance from the topic hash the advertisers wants to register. The \emph{ticket table} is initialized with advertisers' peers from the DHT routing tables but organized in a different way (\Cref{fig:ticket_table}). The advertisers then tries to registers at a fixed number of registrars per bucket in the \emph{ticket table}. If a bucket holds more than the required number of registrars, a random subset is selected by the advertiser. The registration operation, places topic advertisements only on a small subsets of nodes (low overhead), includes randomness when choosing the registrars (attack resistance) and goes towards a specific point in the network indicated by the topic hash (efficient lookup).
 
+Initially, advertisers might not know any nodes in buckets close to the topic hash\footnote{Especially if the topic hash is "far away" from the advertiser's ID}. When responding to registration requests, registrars also include a fixed amount of the closest peers to the topic hash the registrars know. The advertiser uses this information to progressively fill its ticket table. The closer the advertiser gets with the registration process, the more detailed information it receives. Similarly, to the basic DHT routing process, the registration operation eventually leads to the registrar that is the closest one to the topic hash in the entire network. 
 
-During the registration process, each advertiser tries to place its ads on multiple advertisers. 
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{img/ticket_table}
+    \caption{Creation of ticket table from the routing table.}
+    \label{fig:ticket_table}
+ \end{figure}
 
 \subsection{Lookup}
+The lookup operation closely mirrors the registration operation. The searcher starts by creating a \emph{search table}, organized in the same way as the \emph{ticket table} and determined by the topic hash. The searcher then starts the search from the furthest buckets in the search table and progressively moving towards buckets closer to the topic hash. A fixed number of random registrars is contacted for each bucket. Similarly to the registration operation, queried registrars respond with a list of the closest peers to the topic hash the registrars know of, allowing to progressively populate the search table. The search process stops when enough peers were found or when the closest registrar to the topic hash is reached. This approach allow searcher of popular topics to stop the process after a few queries without going all the way towards the topic hash and improves the load balance in the system. On the other hand, searchers of less popular topics are guaranteed to eventually discover all peer subscribed to their topic. 
+\fi

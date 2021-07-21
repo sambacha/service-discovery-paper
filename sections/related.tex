@@ -1,4 +1,8 @@
+%!TEX root = ../main.tex
+%=========================================================
+
 \section{Related Work}
+
 "Eclipsing Ethereum Peers with False Friends"~\cite{henningsen2019eclipsing} - 
 
 "Ethereum eclipse attacks"~\cite{wust2016ethereum} - 
@@ -21,7 +25,7 @@
 
 "A Sybil-proof one-hop DHT"~\cite{lesniewski2008sybil}
 
-"Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient}
+"Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient} – This paper proposes a statistical approach to detect a particular type of Sybil attack in vanilla Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space. If sufficient number of (i.e., typically 10 or more) Sybil peers are successfully placed closest to a target ID, then the Sybils could attract all or most of the search and registration requests for that ID because of their proximity to that target and launch attacks such as returning bogus search results. On the other hand, the normal behaviour of honest peers is to generate their IDs uniformly at random. Based on measurements on a DHT with only honest peers, the authors find that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. Once divergence is detected, the IDs that contribute the most to the divergence are considered to be Sybils and are therefore omitted from the search results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
 
 "Sloppy hashing and self-organizing clusters"~\cite{freedman2003sloppy}
 
@@ -29,5 +33,13 @@
 
 "Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
 
-"Supporting k-nearest service discoveries for large-scale edge computing environments"~\cite{teranishi2018supporting} - 
+"Supporting k-nearest service discoveries for large-scale edge computing environments"~\cite{teranishi2018supporting}
 
+"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. Since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
+
+"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}: besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
+
+"Under the Hood of the Ethereum Gossip Protocol"~\cite{kiffer2021under}: a study of Ethereum gossip protocol that I did not read yet.
+Ethna~\cite{wang2021ethna} seems also similar.
+
+TERA~\cite{baldoni2007tera}: A topic-based pub/sub system based on gossip protocols and self organization. Each group of nodes registered for the same topic form a random graph in which peer sampling allows contacting random nodes and use a gossip-based dissemination protocol. A similarity to our work is that nodes advertise their dissemination group with a frequency that depends on the relative size of that group compared to other groups. This relies on gossip-based size estimation protocols. Peers in large groups advertise less often. Registrars keeps the $k$ most recent ads received. The goal is that all groups are equally represented and likely to be found through a random walk. In contrast with our work, TERA requires that all nodes be trusted for not advertising themselves too often.

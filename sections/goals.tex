@@ -1,3 +1,21 @@
+%!TEX root = ../main.tex
+%=========================================================
+
 \section{Design Goals}\label{sec:goals}
 
 The topic table is shared across multiple advertisers and stores topics with varying popularity (which is determined by how many nodes register the topic) among the participants of Discv5. It is important that the high popularity of a particular topic should not prevent peers from registering less popular topics. This is achieved using the waiting time function discussed below.
+
+
+
+Under the assumption listed above, we target to achieve the following goals:
+\begin{itemize}
+    \item G1 - all the registrants (regardless of the topic they register for) should be able to place their advertisements in the network. Aka no registrants can be globally denied registrations.
+    \item G2 - all the registrants within each topic should have a similar probability of being discovered by their peers.
+    \item G3 - the load (in terms of sent and received messages) should be equally distributed across all the nodes regardless of their ID and location in the network
+    \item G4 - the registration operation should be efficient in terms of time (fast) for all the registrants
+    \item G5 - the registration operation should be efficient in terms of overhead (low amount of sent/received messages) for all the registrants
+    \item G6 - the lookup operation should be efficient in terms of time (fast) and messages sent (hop count) for all the query nodes
+    \item G7 - the number of registrations should be sufficient for an efficient discovery of nodes despite the popularity of the topic
+    \item G8 - the protocol should be resistant to network dynamic (nodes joining leaving)
+    \item G9 - the protocol should be resistant to sybil attacks launched by malicious nodes
+\end{itemize}
