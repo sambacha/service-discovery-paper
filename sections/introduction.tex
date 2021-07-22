@@ -3,7 +3,10 @@
 
 \section{Introduction}
 
-Ethereum~\cite{} is a decentralized, open-source blockchain with smart contract functionality, allowing users to develop various decentralized applications (DApps).
+Ethereum~\cite{} is a decentralized, open-source blockchain for distributed computing, allowing users to develop various decentralized applications (DApps).  Ethereum  was the first major blockchain to support Turing-complete scripting via smart contracts, Ethereum also operates as a cryptocurrency by supporting the transfer of tokens called ether between Ethereum accounts.
+In addition to its use as a fiat currency,  ether is also used to incentivize Ethereum nodes to perform distributed computation. 
+Ether can also be converted to gas, which is used as a fee for executing transactions and smart contracts, and effectively mitigates spam. 
+
 Ethereum is the most actively used blockchain~\cite{bloomberg} nowadays.
 Following its decentralized design and structure, Ethereum relies on a communication infrastructure provided by a peer-to-peer (P2P) network, where individual and independent nodes, running an Ethereum client software (e.g., Go Ethereum~\cite{go-ethereum}), send and receive messages  containing transactions and blocks to achieve distributed consensus,  without relying on any central node or a trusted third party.
 
@@ -13,33 +16,33 @@ The Whisper protocol~\cite{} (for decentralized
 applications) and the Swarm protocol~\cite{} (for decentralized file
 storage).
 DEVp2p provides peers connection management and also node discovery services.
-Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
-\michal{The above seems too detailed IMO. We can introduce DEV2p, RLPx etc. in the background. I'd only say that Ethereum DHT can be used by other services (not necessarily blockchain related) and give some examples.}
+%Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
+%\michal{The above seems too detailed IMO. We can introduce DEV2p, RLPx etc. in the background. I'd only say that Ethereum DHT can be used by other services (not necessarily blockchain related) and give some examples.}
 
-DEVp2p manages the connections to other peers which form the overlay P2P network.
-For instance,  Go-ethereum client by default establish a total of 50  connections to other Ethereum nodes.  Of these 50 slots,  two thirds are reserved for inbound connections (initiated by other peers),  while the remaining third are allocated for outbound connections. 
-No further restrictions apply to inbound connections; if an inbound slot is available
-Go-ethereum client simply accepts any connecting peer that supports the
-Ethereum protocol and operates on the same network (main,
-testing, etc.). 
-The outbound slots are therefore selected by the nodes, which need to be done carefully to avoid any attacker could mount an eclipse attack.
-In an eclipse attack, an
-adversary monopolizes the connections of a victim, effectively
-filtering the victim’s view of the blockchain.  Eclipse attacks
-enable a variety of follow-up attacks such as double spending
-and stubborn mining~\cite{}.
-\michal{ditto}
-
+DEVp2p is the responsible of managing the connections to other peers which form the overlay P2P network.
+%For instance,  Go-ethereum client by default establish a total of 50  connections to other Ethereum nodes.  Of these 50 slots,  two thirds are reserved for inbound connections (initiated by other peers),  while the remaining third are allocated for outbound connections. 
+%No further restrictions apply to inbound connections; if an inbound slot is available
+%Go-ethereum client simply accepts any connecting peer that supports the
+%Ethereum protocol and operates on the same network (main,
+%testing, etc.). 
+%The outbound slots are therefore selected by the nodes, which need to be done carefully to avoid any attacker could mount an eclipse attack.
+%In an eclipse attack, an
+%adversary monopolizes the connections of a victim, effectively
+%filtering the victim’s view of the blockchain.  Eclipse attacks
+%enable a variety of follow-up attacks such as double spending
+%and stubborn mining~\cite{}.
+%\michal{ditto}
 In order to find and select participants of the P2P network to initiate connections to,  a node discovery protocol is required by DEVp2p.
-Systems such as MDNS/Bonjour allow finding hosts,  but only in  a local-area network.  DEVp2p discovery protocol requires to work on the Internet and to be useful for applications with a large number of participants spread across the Internet.
-There are other systems that uses a rendezvous server for network discovery,  such as desktop applications or cloud services. 
+Systems such as MDNS/Bonjour allow finding hosts,  but only in  a local-area network.  
+However, DEVp2p discovery protocol requires to work on the Internet and to be useful for applications with a large number of participants spread across the Internet.
+There are systems that uses a rendezvous server for network discovery over the Internet,  such as desktop applications or cloud services. 
 But using rendezvous servers requires trust in the operator and these systems are prone to censorship. 
 For a decentralized network,  such as the Ethereum network,  it is not desirable to rely on a single operator.  
 Instead,  it is better to place a small amount of trust in every participant, becoming more resistant to censorship as the size of the network increases and participants of multiple networks can share the discovery network to further increase its resilience.
-The process of joining the network is the Achilles heel of the node discovery protocol: while any other node may be used as an entry point,  such a node must first be located through some other mechanism.  
-Approaches such as listing of initial entry points in DNS or discovery of participants in the local network can be used,  but only as a reasonable secure entry into the network.
+%The process of joining the network is the Achilles heel of the node discovery protocol: while any other node may be used as an entry point,  such a node must first be located through some other mechanism.  
+%Approaches such as listing of initial entry points in DNS or discovery of participants in the local network can be used,  but only as a reasonable secure entry into the network.
 
-Current version of DEVp2p node discovery protocol is discovery version 5 (Discv5).
+Current version of DEVp2p distributed node discovery protocol is discovery version 5 (Discv5).
 Node discovery protocol can be used by any node on the network  at no cost other than running the network protocol and storing a limited number of other nodes' records. 
 Any node can be used as an entry point into the network.
 Discv5 system's design is loosely inspired by the Kademlia DHT~\cite{}.
@@ -48,7 +51,6 @@ a distributed table separated into so-called k-buckets (or simply buckets),  whe
 But unlike most DHTs no arbitrary keys and values are stored. 
 Instead, the DHT stores and relays 'node records', which are signed documents providing information about nodes in the network. 
 Node discovery protocol acts as a database of all live nodes in the network and performs three basic functions:
-
 \begin{itemize}
  \item Sampling the set of all live participants: by walking the DHT,  the network can be enumerated.
  \item Searching for participants providing a certain service: Node Discovery v5 includes a scalable facility for registering 'topic advertisements'.These advertisements can be queried and nodes advertising a topic found.
