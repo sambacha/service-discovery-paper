@@ -3,7 +3,7 @@
 
 \section{Overview}
 
-The end-goal of service discovery is for nodes to be \textit{securely discovered} under topics which they choose to be associated with. Because malicious activities are difficult to identify in a decentralised system, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. In the following, we provide an overview of the design and the objectives of \textit{i)} search and register operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. The design objectives of the system is listed in \Cref{tab:objectives}.
+The end-goal of service discovery is for nodes to be \textit{securely discovered} under topics which they choose to be associated with. Because malicious activities are difficult to identify in a decentralised setting, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. In the following, we provide an overview of the design and the objectives of \textit{i)} search and register operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. \Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below.
 
 %As a decentralised, permissionless system, anyone can freely participate in service discovery system at no cost other than running the protocol and storing a limited number of other nodes' records. This leads to some potential security issues that must be considered when designing the system. Even worse, a single malicious entity can spawn many Sybil identities that individually enter the system. Because such nodes are difficult to identify, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. \michal{It's probably better explained in the thread model}
 
@@ -19,7 +19,7 @@ Once stored in a topic table, an ad has a limited lifetime and removed from the 
 
 Instead, we introduce a lightweight, \textit{waiting-time-based admission mechanism} whereby registrars enforce a waiting time on the advertisers before their ads are admitted to the topic table. Imposing this waiting time prevents misuse of the topic table, because any topic must be important enough to outweigh the cost of waiting. 
 
-In addition to misuse of topic table, securing topic tables from being dominantly occupied by the ads from malicious nodes (and their Sybils) is another important objective (G9). Our admission mechanism tackles this challenges through diversification of advertisers that simultaneously place ads: advertisers that contribute poorly to the diversity (in terms of their IP addresses and IDs) of the advertisers that currently have an ad in the topic table are forced to wait longer. Also, the waiting time mechanism must prevent the storage space from overflowing while aiming for \textit{a max-min fair allocation} across different topics (G0). The latter is necessary to avoid starving (unpopular) topics. %Finally, the waiting time mechanism must ensure that no advertiser is indefinitely denied from registering its ad (G1). 
+In addition to misuse of topic table, securing topic tables from being dominantly occupied by the ads from malicious nodes (and their Sybils) is another important objective (G8). Our admission mechanism tackles this challenges through diversification of advertisers that simultaneously place ads: advertisers that contribute poorly to the diversity (in terms of their IP addresses and IDs) of the advertisers that currently have an ad in the topic table are forced to wait longer. Also, the waiting time mechanism must prevent the storage space from overflowing while aiming for \textit{a max-min fair allocation} across different topics (G1). The latter is necessary to avoid starving (unpopular) topics. %Finally, the waiting time mechanism must ensure that no advertiser is indefinitely denied from registering its ad (G1). 
 
 %\michal{It's seems a bit redundant to the paragraph before.}
 %\michal{It might be a good idea to signal already here that the waiting times is based on occupancy (cope with load) and diversity (cope with attacks + max-min fairness.}
@@ -30,7 +30,7 @@ Central to the admission mechanism is a \textit{waiting time function} that gene
 
 Once an initial ticket is obtained from the first ticket request, an advertiser must present its ticket in all the follow-up requests. Only if the new waiting time is zero, the registration is successful (\ie advertiser's ad is immediately stored in the topic table), in which case the registrar sends a confirmation of registration back to the advertiser; otherwise, the advertise receives an updated ticket with a new waiting time. The registration process is shown in Figure~\Cref{fig:registration} where an advertiser sends a registration request, providing its ID and a desired topic (eth). Based on considerations such as the diversity of the advertiser with respect to the advertisers who currently have a ``live'' (\ie unexpired) ad and occupancy of the registrar's topic table, the registrar computes a waiting time and returns a ticket. Then, the advertiser follows up with a new request immediately after the waiting time elapses, and this time the registrar accepts the registration and place the advertiser's ad in the topic table as shown in Figure~\Cref{fig:registration}.
 
-There are several intricacies in the design of the waiting time mechanism. For instance, the mechanism should not allow indefinite use or re-use of a ticket. Also, the advertisers must be discouraged from constantly spamming registrars with initial registration requests (without a ticket) in the hopes that they get a better waiting time (and then select the ticket with the minimum waiting time for a follow-up request). We discuss these details in Section~\Cref{sec:waitingTime}. 
+There are several intricacies in the design of the waiting time mechanism. For instance, the mechanism should not allow indefinite use or re-use of a ticket. Also, the mechanism should disincentivise advertisers from constantly spamming registrars with initial registration requests (without a ticket) in the hopes that they get a better waiting time (G5). We discuss these and other details in Section~\Cref{sec:waitingTime}. 
 
 %Each time an advertiser comes back and receives a new waiting time, the registrar updates the accumulated waiting time of the advertiser as part of the  
 %Otherwise, instead of a new  ticket with a positive waiting time.  follow-up request may result with a new, non-zero waiting time In this mechanism, advertisers can be repeatedly handed new tickets with each follow-up request if the waiting time function determines that the advertiser has not waited long enough. As an advertiser repeatedly receives new tickets, the registrar updates the accumulated waiting time of the advertiser in the new ticket. The accumulated waiting time is used in the waiting time function and the advertisers that accumulated longer waiting times have higher chance of placing their ads in their subsequent requests, and this guarantees that each advertiser eventually succeeds in placing its ad (G1). 
@@ -90,10 +90,10 @@ It is important to maintain an even load across all peers in the network indepen
 \toprule
 \textbf{Objective} & \textbf{Description} \\
 \hline
-G0 & Max-min fair allocation of topic table across topics \\
+G1 & Max-min fair allocation of topic table across topics \\
 \hline
-G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
-\hline
+%G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
+%\hline
 G2 & All advertisers within each topic should have a similar probability of being discovered. \\
 \hline
 G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
@@ -104,11 +104,11 @@ G5 & The registration operations should be efficient in terms of messaging and c
 \hline 
 G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count). \\
 \hline
-G7 & The number of registrations should be sufficient for an efficient discovery. \\
-\hline
-G8 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
+%G7 & The number of registrations should be sufficient for an efficient discovery. \\
+%\hline
+G7 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
 \hline 
-G9 & The protocol should be resistant to attacks by malicious nodes. \\
+G8 & The protocol should be resistant to attacks by malicious nodes. \\
 \hline
 \end{tabular}
 }
