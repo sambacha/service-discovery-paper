@@ -46,32 +46,38 @@ Current version of DEVp2p distributed node discovery protocol is discovery versi
 Node discovery protocol can be used by any node on the network  at no cost other than running the network protocol and storing a limited number of other nodes' records. 
 Any node can be used as an entry point into the network.
 Discv5 system's design is loosely inspired by the Kademlia DHT~\cite{}.
-In Kademlia DHT,  information about known overlay nodes is stored in
-a distributed table separated into so-called k-buckets (or simply buckets),  where each bucket stores nodes identifiers within the same distance to the local node id.
-But unlike most DHTs no arbitrary keys and values are stored. 
-Instead, the DHT stores and relays 'node records', which are signed documents providing information about nodes in the network. 
-Node discovery protocol acts as a database of all live nodes in the network and performs three basic functions:
-\begin{itemize}
- \item Sampling the set of all live participants: by walking the DHT,  the network can be enumerated.
- \item Searching for participants providing a certain service: Node Discovery v5 includes a scalable facility for registering 'topic advertisements'.These advertisements can be queried and nodes advertising a topic found.
- \item Authoritative resolution of node records: if a node's ID is known, the most recent version of its record can be retrieved.
-\end{itemize}
+%In Kademlia DHT,  information about known overlay nodes is stored in
+%a distributed table separated into so-called k-buckets (or simply buckets),  where each bucket stores nodes identifiers within the same distance to the local node id.
+%But unlike most DHTs no arbitrary keys and values are stored. 
+%Instead, the DHT stores and relays 'node records', which are signed documents providing information about nodes in the network. 
+Discv5 acts as a database of all live nodes in the network %and performs three basic functions:
+and,  by walking the DHT,  all nodes of the network can be discovered and enumerated.
 
-The concept of topic is a new concept in Discv5 (compared with previous node discovery protocol -Discv4-).
-Discv5 allows nodes to associate themselves with a set of tags, i.e., topics, and enable searching of peers that advertise themselves as associated with particular topics.  
+%\begin{itemize}
+% \item Sampling the set of all live participants: by walking the DHT,  the network can be enumerated.
+% \item Searching for participants providing a certain service: Discv5 includes a scalable facility for registering 'topic advertisements'. These advertisements can be queried and nodes advertising a topic found.
+% \item Authoritative resolution of node records: if a node's ID is known, the most recent version of its record can be retrieved.
+%\end{itemize}
+
+The concept of topic is a new concept in Discv5 (compared with previous node discovery protocol -Discv4-),  
+Discv5 will allow nodes to associate themselves with a set of tags, i.e., topics, and enable searching of peers that advertise themselves as associated with particular topics.  
 Topics can be used to identify different  capabilities, for instance specific application capabilities,  services or certain functionalities of a node. 
 \hl{Topics example missing}
 Topic based peer finding is a promising feature because it allows a potential bandwidth reduction and much faster discovery of nodes
 by  discovering nodes based on the topic required.
-This means that instead of connecting to every node discovered to see if it offers a specific service,  we simply lookup for nodes that are only providing the service and then ask them if they really are still offering the service.
+This means that instead of connecting to every node discovered to see if it offers a specific service,  a node can simply lookup for nodes that are only providing the service and then ask them if they really are still offering the service.
 This will avoid a waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities,  avoiding handshakes node by node to discover these details and relying only on the node discovery protocol. 
-This will avoid a waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities, avoiding handshakes node by node to discover these details and relying only on the node discovery protocol.
+
+However,   Discv5 still lacks of mechanisms to register and discover nodes for specific topics.
+Providing new mechanisms for registering and discovering for specific topics in Discv5 is challenging because of the decentralized structure of the network and its vulnerability to Sybil attacks~\cite{} (any node joining the network can be a malicious node) adds complexity to any proposed solution that has to work for any kind of service despite its popularity.
+
 \michal{I'd write the intro on a higher level. E.g., 1) Ethereum is the largest network/blockchain 2) It is fully decentralized and decentralization is great 3) Ethereum allows hosting multiple services other than Ethereum blockchain) and uses Ethereum DHT as a communication/management platform 4) A crucial part of that is to enable nodes working with the same application to find each other 5) this is challenging because of decentralization/security/malicious can join etc. 6) State of the Art doesn't work (briefly - we have better analysis in related work) 7) We propose our brand new shiny protocol that is efficiency and secure 8) Our contributions + structure}
 
 
 %It is envisioned that the Discv5 system will be used across many different services at large scale, mainly to form subnetworks consisting of the service peers.  The basic objectives of Node Discovery v5 is to provide a facility for nodes to i) register 'topic advertisements', i.e., “ads”, at other peers in the Ethereum network and ii) find other nodes that advertised a particular topic by querying selected peers in the Ethereum network.
 
 The goal of this paper is to propose and evaluate a new mechanism for the Discv5 protocol for registering and discovery nodes in the network for a certain topic,  integrating it in the existing DEVp2p node discovery protocol based on Kademlia DHT.  
+
 The mechanisms proposed are the following:
 
 \begin{itemize}
