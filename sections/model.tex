@@ -2,7 +2,7 @@
 %=========================================================
 
 \section{System model}
-We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes can not share the same ID.  
+We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes cannot share the same ID.  
 
 Our system indexes participants by their registered topic identifiers or topic(s), for short. 
 A \emph{topic} is an identifier for a service provided by a node. 
@@ -35,7 +35,7 @@ filtering the victim’s view of the blockchain.
 Eclipse attacks
 enable a variety of follow-up attacks such as double spending
 and stubborn mining~\cite{stubborn}.
-Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  \sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section}
+Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  \sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
 The malicious node may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
 As creating a node requires maintaining periodic, encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. 
 We also assume that the number of IP addresses under the control of an attacker is limited. 
