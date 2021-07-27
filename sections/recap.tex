@@ -1,0 +1,126 @@
+\section{Goals recap}
+
+\sergi{this is just for internal use to make sure we cover everything. Not to be included in the paper}
+
+\subsection{G1 - all the registrants  should be able to place their advertisements in the network.}
+
+\subsubsection{Mechanism developed:} 
+
+Proposed registering mechanism + waiting time function that 
+
+\subsubsection{Evaluation: }
+
+
+- Registrations per topic graph (compared with nodes registering per topic).  
+
+- Registrations per node
+
+- topic table graphs (python)
+
+\subsection{G2 -  all the registrants within each topic should have a similar probability of being discovered}
+
+\subsubsection{Mechanism developed:} 
+
+In the proposed registration mechanisms all nodes within a topic have the same probability of placing advertisements in other nodes,  although can be biased depending on the ip limitation (e.g. nodes from same /24 subnet) and bucket structure.
+
+In the same way,  nodes are equally discovered. 
+May be that nodes that place registrations in closest distance buckets are more discovered, although all have same chances to get in. 
+Also search start from furthest buckets,  so maybe no really affecting. 
+ (check this)
+ ( existing graph may be not accurate enough)
+
+\subsubsection{Evaluation: }
+
+Registrant distribution graph. \sergi{I would redo this graph to make it more accurate}/
+
+\subsection{G3 - the load should be equally distributed across all the nodes}
+
+\subsubsection{Mechanism developed:} 
+
+The bucket structure of the DHT could lead to more traffic and therefore discoveries for certain nodes in the network.  However, waiting time function makes it more difficult to register on those nodes and therefore limiting traffic received.
+However, since nodes on closest buckets are discovered by everyone when joining the network,  this provides some deviation on the  distributed load.  
+
+\subsubsection{Evaluation: }
+
+Load graph. 
+We should evaluate also based on the lifetime of nodes
+and with different turbulence rates to see how it 
+affects closest bucket nodes.
+
+\subsection{G4 - the registration operation should be efficient in terms of time}
+
+\subsubsection{Mechanism developed:} 
+
+Time to registration if strictly depends on the popularity of the topic. 
+Registrations with no previous registrations for a specific nodes have priority and therefore are very fast.
+
+\subsubsection{Evaluation: }
+
+Time to registration graph
+
+\subsection{G5 - the registration operation should be efficient in terms of overhead}
+
+\subsubsection{Mechanism developed:} 
+
+The number of messages required to place registrations is bounded
+
+\subsubsection{Evaluation: }
+
+Overhead graph
+
+\subsection{G6 - the lookup operation should be efficient in terms }
+
+\subsubsection{Mechanism developed:} 
+
+Hopcount and time necessary to discover nodes is bounded thanks to buckets structure for the discovery.
+
+\subsubsection{Evaluation: }
+
+Lookup hopcount graph
+Lookup time ???? 
+
+\subsection{G7 - all topics should be able to be discovered}
+
+\subsubsection{Mechanism developed:} 
+
+Registration and discovery mechanism ensure any node can place registrations and be discovered regardless of the popularity of the topic. 
+Even for a single node topic, it should be able to be discovered in the network 
+
+\subsubsection{Evaluation: }
+
+Lookup hopcount and registrant discovery 
+for different popularity topics
+
+\subsection{G8 - the protocol should be resistant to network dynamic (nodes joining leaving)}
+
+\subsubsection{Mechanism developed:} 
+
+Registrations are dynamic and expiring after certain time. 
+New nodes joining the network are able to place registrations in the network and, as old registrations expire,  new nodes are able to place theirs advertisements in equal conditions.
+
+\subsubsection{Evaluation: }
+
+Nodes registration graphs comparing with turbulence.
+
+\subsection{G9 - the protocol should be resistant to sybil attacks launched by malicious nodes}
+
+\subsubsection{Mechanism developed:} 
+
+Waiting time function is designed to limit the number of sybils can place registrations.
+
+\subsubsection{Evaluation: }
+
+All attacks evaluation
+
+%\begin{itemize}
+%    \item 
+%    
+%    \item G2 - all the registrants within each topic should have a similar probability of being discovered by their peers.
+%    \item G3 - the load (in terms of sent and received messages) should be equally distributed across all the nodes regardless of their ID and location in the network
+%    \item G4 - the registration operation should be efficient in terms of time (fast) for all the registrants
+%    \item G5 - the registration operation should be efficient in terms of overhead (low amount of sent/received messages) for all the registrants
+%    \item G6 - the lookup operation should be efficient in terms of time (fast) and messages sent (hop count) for all the query nodes
+%    \item G7 - the number of registrations should be sufficient for an efficient discovery of nodes despite the popularity of the topic
+%    \item G8 - the protocol should be resistant to network dynamic (nodes joining leaving)
+%    \item G9 - the protocol should be resistant to sybil attacks launched by malicious nodes
+%\end{itemize}
