@@ -19,6 +19,9 @@ All nodes in the network play the searcher role when trying to discover nodes in
 
 Multiple advertisers/searchers hosted by the same DHT node will share the same ID and IP address but will differ in topic. 
 
+
+Our system indexes participants by their registered topic identifiers or topic(s), for short. A \emph{topic} is an identifier for a service provided by a node. A node providing a certain service, each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
+
 A node providing a certain service,  each identified with a topic,  is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
 An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
 We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
@@ -38,4 +41,5 @@ As creating a node requires maintaining periodic, encrypted communication with i
 We also assume that the number of IP addresses under the control of an attacker is limited. 
 However, an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
+
 
