@@ -35,7 +35,11 @@ filtering the victim’s view of the blockchain.
 Eclipse attacks
 enable a variety of follow-up attacks such as double spending
 and stubborn mining~\cite{stubborn}.
-Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  \sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
+Regardless of the number of the attacker, we assume nodes are able to discover valid nodes at the DHT level and are not fully eclipsed by having only malicious nodes on their routing tables.
+%Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  
+%
+%\sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
+
 The malicious node may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
 As creating a node requires maintaining periodic, encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. 
 We also assume that the number of IP addresses under the control of an attacker is limited. 

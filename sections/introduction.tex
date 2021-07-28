@@ -68,15 +68,17 @@ by  discovering nodes based on the topic required.
 This means that instead of connecting to every node discovered to see if it offers a specific service,  a node can simply lookup for nodes that are only providing the service and then ask them if they really are still offering the service.
 This will avoid a waste of time and resources by leaving apart those nodes that do not declare the service in its capabilities,  avoiding handshakes node by node to discover these details and relying only on the node discovery protocol. 
 
-However,   Discv5 still lacks of mechanisms to register and discover nodes for specific topics.
+However,  Discv5 still lacks of mechanisms to register and discover nodes for specific topics.
 Providing new mechanisms for registering and discovering for specific topics in Discv5 is challenging because of the decentralized structure of the network and its vulnerability to Sybil attacks~\cite{} (any node joining the network can be a malicious node) adds complexity to any proposed solution that has to work for any kind of service despite its popularity.
 
-\michal{I'd write the intro on a higher level. E.g., 1) Ethereum is the largest network/blockchain 2) It is fully decentralized and decentralization is great 3) Ethereum allows hosting multiple services other than Ethereum blockchain) and uses Ethereum DHT as a communication/management platform 4) A crucial part of that is to enable nodes working with the same application to find each other 5) this is challenging because of decentralization/security/malicious can join etc. 6) State of the Art doesn't work (briefly - we have better analysis in related work) 7) We propose our brand new shiny protocol that is efficiency and secure 8) Our contributions + structure}
+%\michal{I'd write the intro on a higher level. E.g., 1) Ethereum is the largest network/blockchain 2) It is fully decentralized and decentralization is great 3) Ethereum allows hosting multiple services other than Ethereum blockchain) and uses Ethereum DHT as a communication/management platform 4) A crucial part of that is to enable nodes working with the same application to find each other 5) this is challenging because of decentralization/security/malicious can join etc. 6) State of the Art doesn't work (briefly - we have better analysis in related work) 7) We propose our brand new shiny protocol that is efficiency and secure 8) Our contributions + structure}
 
 
 %It is envisioned that the Discv5 system will be used across many different services at large scale, mainly to form subnetworks consisting of the service peers.  The basic objectives of Node Discovery v5 is to provide a facility for nodes to i) register 'topic advertisements', i.e., “ads”, at other peers in the Ethereum network and ii) find other nodes that advertised a particular topic by querying selected peers in the Ethereum network.
 
 The goal of this paper is to propose and evaluate a new mechanism for the Discv5 protocol for registering and discovery nodes in the network for a certain topic,  integrating it in the existing DEVp2p node discovery protocol based on Kademlia DHT.  
+The new mechanism is capable of registering and discovering for services in the Ethereum P2P network efficiently for any service regardless of the popularity of the service, using a bounded number of hops and resistant to Sybil attacks.
+\hl{Any missing nice feature of the proposal}.
 
 The mechanisms proposed are the following:
 
