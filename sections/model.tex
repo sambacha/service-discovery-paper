@@ -2,6 +2,9 @@
 %=========================================================
 
 \section{System model}
+
+\michal{Say we build on top of the DHT. What do we need from the DHT?}
+\michal{Those are speerate layers.}
 We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes cannot share the same ID.  
 
 Our system indexes participants by their registered topic identifiers or topic(s), for short. 
