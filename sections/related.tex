@@ -3,6 +3,55 @@
 
 \section{Related Work}
 
+There exists several network discovery protocols for local area networks,  such as  Simple Service Discovery Protocol (SSDP)~\hl{missing ref},  basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref},  or DNS-based service discovery,  to access to services that other devices provide,  such as printers,  webcams,  HTTPS servers, and other mobile devices.  
+However for service discovery in Internet-wide environments,
+is usually used centralized setups to provide good latency and performance.
+UDDI~\hl{missing ref} has been
+recognized as the most popular discovery mechanism for
+Web services
+
+But when focusing on decentralized architectures,  service discovery has been addressed from different perspectives. 
+Most of the solutions use Distributed Hash Table (DHT) based protocols using key-based routing to discover other peers. 
+CAN, Chord,  Pastry or Kademlia,  are examples of DHT protocols where all the nodes self-organize themselves into overlay networks. 
+DHT-based solutions offer fault-tolerant,  scalable and efficient ways of finding nodes in large-scale networks.
+However,  directly applying DHT for service discovery  present some drawbacks.
+The main one is the difficulty in guaranteeing the availability of published service descriptions.
+Usually,  DHT-based systems often distribute descriptions of functionally equivalent services to the same successor node, 
+as they have the same or similar hashing values. 
+If such a node fails, a service consumer will not be able to discover any of these services. 
+There are existing approaches that solve the issue. 
+For instance,  Chord4S~\cite{chord4s} enhances Chord protocol by distributing service descriptions to different successor nodes. 
+In case one node fails, a service consumer is still able to find functionally equivalent services that are stored at other successor nodes.
+
+Another solution for service discovery on peer-to-peer overlay networks could be the use of topic-based pub/sub systems. 
+These exists some solutions,  such as~\cite{scribe,poldercast,banno2015},  that uses DHT-based systems to multicast data to subscribers using 
+Similar concept could be use to announce nodes that offer a certain service.
+However,  they rely on the use of rendezvous points for publishing the data,  which adds a single point of failure to the network.
+Moreover,  continuous multicast of data to nodes subscribed for a service adds overhead to the network.
+Also, TERA~\cite{baldoni2007tera} uses topic-based pub/sub system
+but using gossip protocols and self organization.  TERA provides a good balance between bandwidth consumption and performance guarantees. 
+However,  all these solutions have not been designed with Sybil-resistance in mind and it requires that all nodes be trusted.
+
+%"Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
+
+
+"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. Since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
+
+"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}: besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
+
+%"Under the Hood of the Ethereum Gossip Protocol"~\cite{kiffer2021under}: a study of Ethereum gossip protocol that I did not read yet.
+
+%Ethna~\cite{wang2021ethna} seems also similar.
+
+
+
+
+%\subsection{Eclipse attacks in Eth/p2p}
+
+%Approaches to leverage security in DHT-based networks.
+
+"S-Kademlia"~\cite{pecori2016s}
+
 In "Eclipsing Ethereum Peers with False Friends"~\cite{henningsen2019eclipsing} - ,  the authors present 
 a false friends attack,  an eclipse attack applicable to Geth version v1.8.20.  The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets. 
 Since there is a limit that at most 2 nodes from the same /24 subnet can be included in the same bucket and at most 10 nodes from the same /24 can be in the whole table,  it requires  2 IPs from distinct /24 subnets to be successful,  and in contrast
@@ -31,19 +80,6 @@ of selection an attacker-node and iii) throttle the inbound connection attempts 
 
 "Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient} – This paper proposes a statistical approach to detect a particular type of Sybil attack in vanilla Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space. If sufficient number of (i.e., typically 10 or more) Sybil peers are successfully placed closest to a target ID, then the Sybils could attract all or most of the search and registration requests for that ID because of their proximity to that target and launch attacks such as returning bogus search results. On the other hand, the normal behaviour of honest peers is to generate their IDs uniformly at random. Based on measurements on a DHT with only honest peers, the authors find that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. Once divergence is detected, the IDs that contribute the most to the divergence are considered to be Sybils and are therefore omitted from the search results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
 
-"Sloppy hashing and self-organizing clusters"~\cite{freedman2003sloppy}
 
-"S-Kademlia"~\cite{pecori2016s}
-
-"Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
-
-"Supporting k-nearest service discoveries for large-scale edge computing environments"~\cite{teranishi2018supporting}
-
-"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. Since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
-
-"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}: besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
-
-"Under the Hood of the Ethereum Gossip Protocol"~\cite{kiffer2021under}: a study of Ethereum gossip protocol that I did not read yet.
-Ethna~\cite{wang2021ethna} seems also similar.
-
-TERA~\cite{baldoni2007tera}: A topic-based pub/sub system based on gossip protocols and self organization. Each group of nodes registered for the same topic form a random graph in which peer sampling allows contacting random nodes and use a gossip-based dissemination protocol. A similarity to our work is that nodes advertise their dissemination group with a frequency that depends on the relative size of that group compared to other groups. This relies on gossip-based size estimation protocols. Peers in large groups advertise less often. Registrars keeps the $k$ most recent ads received. The goal is that all groups are equally represented and likely to be found through a random walk. In contrast with our work, TERA requires that all nodes be trusted for not advertising themselves too often.
+GossipSub: Attack-Resilient Message Propagation in
+the Filecoin and ETH2.0 Networks
