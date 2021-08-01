@@ -76,9 +76,9 @@ Lessons learned from literature:
 \begin{itemize}
 \item Assume that the underlying network layer does not provide any security properties to the overlay layer.
 \item Importance of difficulty on generating random ids.
-\item Nodes may not be capable of generating any id. should be linked to ip,port or public key.
-\item  Use of  parallel lookups over multiple disjoint paths to avoid querying only adversarial nodes.
-\item Importance of limiting IPs per bucket to require more resources to launch a sybil attack 
+\item Nodes should not be capable of generating any id and duplicate ids should not be possible.  Ids should be linked to ip,  port or public key.
+\item  Use of  parallel lookups over multiple disjoint paths to avoid querying only  adversarial nodes paths.
+\item Importance of limiting IPs per bucket to require more resources to launch a sybil attack.
 \item Avoid querying only nodes close to topic id / node id because adversarial nodes can strategically place nodes close to those ids.
 \end{itemize}
 
