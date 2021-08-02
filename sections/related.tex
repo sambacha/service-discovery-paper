@@ -59,11 +59,13 @@ Besides the service discovery feature in Ethereum itself, some applications buil
 In the area of avoiding Sybil and derived eclipsing attacks in peer-to-peer networks several solutions and state-of-the-art can be found in the literature.
 In~\cite{danezis2005sybil},  different strategies are devised to make DHTs resilient to malicious nodes trying to poison lookups,  by routing queries in a way that minimizes trust bottlenecks,  to minimize the amount of poisoned information that honest nodes receive from adversarial nodes.
 In a similar way,  S/Kademlia~\cite{skad} propose new mechanisms to get resilience against common attacks by using parallel lookups over multiple disjoint paths,  limiting free nodeld generation with crypto puzzles and introducing a reliable sibling broadcast.
+
 In ~\cite{cholez2010efficient},  the authors propose  a statistical approach to detect a particular type of Sybil attack in  Kademlia DHT,  where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space.
 The authors found that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results.  However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
-In~\cite{henningsen2019eclipsing},  the authors present  a false friends attack for the Ethereum network.  
+
+In~\cite{marcus2018low}~and~\cite{henningsen2019eclipsing},  the authors present low-resource eclipsing attacks for the Ethereum P2P network.  
 The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets, requiring only  2 IPs from distinct /24 subnets to be successful.
-As a result of this paper, Geth version v1.9.0 implemented new countermeasures,  such as  increasing number of connections, considering all nodes of the table during lookups,  or throttling the inbound connection attempt,  to reduce the chance of selecting an attacker-node .
+As a result of this paper, Geth v1.8 and v1.9 implemented new countermeasures,  such as  increasing number of connections, considering all nodes of the table during lookups,  or throttling the inbound connection attempt,  to reduce the chance of selecting an attacker-node .
 
 %"Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient} – This paper proposes a statistical approach to detect a particular type of Sybil attack in vanilla Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space. If sufficient number of (i.e., typically 10 or more) Sybil peers are successfully placed closest to a target ID, then the Sybils could attract all or most of the search and registration requests for that ID because of their proximity to that target and launch attacks such as returning bogus search results. On the other hand, the normal behaviour of honest peers is to generate their IDs uniformly at random. Based on measurements on a DHT with only honest peers, the authors find that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. Once divergence is detected, the IDs that contribute the most to the divergence are considered to be Sybils and are therefore omitted from the search results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
 
@@ -72,7 +74,7 @@ As a result of this paper, Geth version v1.9.0 implemented new countermeasures, 
 %"S-Kademlia"~\cite{pecori2016s}
 
 
-Lessons learned from literature:
+Security lessons learned from literature:
 \begin{itemize}
 \item Assume that the underlying network layer does not provide any security properties to the overlay layer.
 \item Importance of difficulty on generating random ids.
@@ -89,24 +91,29 @@ Lessons learned from literature:
 %In response to the attack presented in the paper,  Geth version v1.9.0 implemented new countermeasures,  such as i) increasing number of connections from 25 to 50 ii) considering all nodes of the table during lookups, instead of only the bucket heads,  to reduce the chance
 %of selection an attacker-node and iii) throttle the inbound connection attempts to limit the consecutive inbound connection attempts from the same IP to 30 seconds.
 
-"Low-Resource Eclipse Attacks on Ethereum's Peer-to-Peer Network."~\cite{marcus2018low} - 
+%"Low-Resource Eclipse Attacks on Ethereum's Peer-to-Peer Network."~\cite{marcus2018low} - 
 
 %"Sybil-resistant DHT routing"~\cite{danezis2005sybil}
 
-"Whanau: A sybil-proof distributed hash table"~\cite{lesniewski2010whanau} - 
+"A Sybil-proof one-hop DHT"~\cite{lesniewski2008sybil}
 
 "Sybilinfer: Detecting sybil nodes using social networks."~\cite{danezis2009sybilinfer}
+SybilInfer is an algorithm aimed at detecting Sybil attacks in social networks using e Bayesian inference approach.  It  labels which nodes are honest and which are
+dishonest with a degree of certainty
+
+"Whanau: A sybil-proof distributed hash table"~\cite{lesniewski2010whanau} - 
+
+
+"Persea: a sybil-resistant social dht"~\cite{al2013persea} - 
+
 
 "Design and evaluation of Persea, a Sybil-resistant DHT"~\cite{al2014design} - 
 
 "Defending the sybil attack in p2p networks: Taxonomy, challenges, and a proposal for self-registration"~\cite{dinger2006defending}
 
-"Persea: a sybil-resistant social dht"~\cite{al2013persea} - 
 
 "Quantitative analysis of the sybil attack and effective sybil resistance in peer-to-peer systems"~\cite{jetter2010quantitative}
 
-"A Sybil-proof one-hop DHT"~\cite{lesniewski2008sybil}
-
 
 GossipSub: Attack-Resilient Message Propagation in
-the Filecoin and ETH2.0 Networks
+the Filecoin and ETH2.0 Networks~\cite{gossipsub}
