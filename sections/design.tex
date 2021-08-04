@@ -71,16 +71,28 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 
 
 \subsection{Waiting Time}
-Waiting time function is used to calculate the waiting time reported to registering advertising nodes to regulate and control the ticket registration. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. The function should also protect against all kinds of attacks, where a malicious actor tries to exhaust resources of the registrar. At the same time, no hard limits on the advertiser IPs/IDs/registered topic should be imposed, allowing the table to be used in various environments.
+Waiting time function is used to calculate the total time advertisers have to wait before being admitted to the topic table. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. It also protects against attacks, where a malicious actor tries to dominate the topic table and exhaust resources of the registrar. 
 
-The waiting for a specific request follows the formula below (we assume that the ads contain advertiser IP, ID and topic):
+Each request is given a waiting time based on the IP address of the registrar, the ID of the registrar, the topic of the request and the current content of the topic table. The waiting time function is divided into two parts: \emph{diversity score} and \emph{occupancy score}. The final result is a product of both scores: $w =  \textit{occupancy score} \times \textit{similarity score} $. 
 
+The \emph{occupancy score} is based uniquely on the number of the ads already in the table. Its role is to progressively increase the waiting time as the topic table fills up and limit the memory used by the registrar.
 
 \begin{equation}
-    w=((\frac{1}{10^9}) + (\frac{d(IP)}{d})^{P_{IP}}+(\frac{d(ID)}{d})^{P_{ID}} (\frac{d(topic)}{d})^{P_{topic}}) \frac{ba}{(1-\frac{n}{d})^{P_{occupancy}}}
+    \textit{occupancy score} = \frac{ba}{(1-\frac{d}{n})^{P_{occupancy}}}
 \end{equation}
+where $a$ is the \emph{ad lifetime} (the amount of time each ad spend in the topic table), $d$ is the number of ads in the table, $n$ is the capacity of the table. $b$ and $P_{occupacy}$ are protocol parameters. When the number of ads in the table is low ($d \ll n$ ), the \emph{occupancy score} goes to $ba$. As the topic table fills up, the score will be amplified by the divisor of the equation. The higher values of $P_{occupancy}$, the faster the increase. With the current occupancy $d$ close to the capacity of the table $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests. 
 
-All the modifiers from the first part of the equation increase with increasing number of the same items that are already in the table, i.e., reduction in diversity. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotes diversity in the table and protects against Sybil attacks so that an attacker who is in control of a limited pool of IP addresses won't be able to dominate the table with many ads. The low exponent for the topics is motivated by the topics in the network that are likely to follow a skewed (e.g., a zipf-like) distribution. In contrast, honest nodes' IPs/IDs should follow a uniform distribution.
+The role of the \emph{similarity score} is to determine how similar is the incoming request to the ads already in the topic table in terms of the IP address, the ID and the topic. Requests significantly different from the current content of the table receive lower similarity score resulting in lower overall waiting time. Such an approach promotes fairness across topics (it is easier for less popular topics to get into the table) and protects against attempts to fill the topic table by a small number of advertisers (as identified by their IP addresses and IDs). The similarity score is defined as a sum of similarity score for IP, ID and the topic of the request: $\textit{similarity score} = \textit{similarity score(IP)} + \textit{similarity score(ID)} + \textit{similarity score(topic)}$. 
+
+The similarity score for ID and topics is the same given by the formula below:
+\begin{equation}
+    \textit{similarity score(topic)}= (\frac{d(topic)}{d})^{P_{topic}} 
+\end{equation}
+where $d(topic)$ is the number of ads for the specified topic already in the table, $d$ is the total number of ads in the table and $P_{topic}$ is a protocol parameter. The score goes to $1$ as the specified topic dominates the table $d(topic)  \approx  d$. Lower values of parameter $P_{topic}$ cause the similarity score to converge to $1$ faster. 
+
+A simple similarity score used for IDs and topics cannot be applied for IP addresses. An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}. Previous work \hl{[ref]} often limits the number of IP addresses coming from the same (\eg /24 IPv4) network. However, it is impossible to reliably set those limits without knowledge about the network size, NAT configuration of honest nodes. Instead, we propose an approach that directly captures the similarity level across different IPs and translates it into a numerical score. 
+
+We introduce a binary \emph{IP Tree} as shown on \Cref{fig:ip_tree} that stores IP addresses currently in the topic table. Each node stores a counter, while the edges represent consecutive $0$s or $1$s in a binary representation of IP addresses. For simplicity, we present the \emph{IP tree} for IPv4 addresses but its adaptation for IPv6 is straightforward. 
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/ip_tree}
@@ -88,10 +100,17 @@ All the modifiers from the first part of the equation increase with increasing n
     \label{fig:ip_tree}
 \end{figure}
 
-The latter part of the formula is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the ad distribution process.
+Apart from its root, the tree consists of 32 levels (33 levels in total) representing bits in the binary representation of IPv4 IP addresses. The root level is depicted as level $0$, the level of its successor as level $1$ and so on. The counter of every tree node is initially set to $0$. When adding an IP to the tree, the address is first converted to its binary representation and follows a path in the tree corresponding to consecutive bits. Counters of all the visited nodes are increased by $1$. As a result, the root counter stores the number of all the IP addresses in the topic table, its $0$ successor stores the number of the IP addresses starting with $0$, its $1$ successor stores the number of the IP addresses starting with $1$ and so on. Removing an IP from the tree follows the analogical procedure but decreases all the counters on the path. 
+
+Adding an address to the tree generates a score. The score is a sum of counter values of visited nodes raised to the power of the node level. 
+\michal{Probably need an equation here but not sure how to write it down. Maybe @Ramin could help?} The counter values are taken \emph{before} the increment caused by adding the address\footnote{The first added address will thus always have a score of $0$}. Finally, the similarity score for an IP is defined by:
+\begin{equation}
+    \textit{similarity score(IP}) = \frac{\textit{score(IP)}}{-(\textit{rootCounter})(1 - 2^{33})}
+\end{equation}
+The divisor of the equation represents the maximum possible score. That is, a score obtained if all the IP addresses in the tree would be the same as the one being added. Similarly to ID and topic score, the IP similarity score range from $0$ to $1$ but returns high values for different addresses sharing the same prefix (the longer the shared prefix, the higher the score).
+
 
 \subsubsection{Lower Bound}
-
 With the formula above, user are incentivized to keep checking the waiting time as frequently as possible hoping for a better one. An advertiser may get a better waiting time at t2 if an contribuing to the waiting time received at t1 (t1 < t2) expires before t2. One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (O(n)) and unfeasible in practice.
 
 We thus enforce a lower bound on the waiting time. I.e., we make sure that a searcher's waiting time received at t2 is not smaller than the waiting time at t1 by more than w(t1) - w(t2) < t2 - t1. To achieve that we split the above formula into topic/IP/ID distinctive parts:
@@ -117,3 +136,8 @@ For the lookup process, we perform ALPHA=3 parallel lookups to three different n
 Similarly to 'ticket table', 'search table' needs to be initialised and refreshed to fill up all the per-distance k-buckets. Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash. Since there are some distances that tend to be empty in the id space, sending periodic lookups for the topic hash my create and additional overhead that can create too much traffic in the network. To avoid that, initially, 'search table' k-buckets are filled performing local DHT routing table lookups to all distances to the 'topic hash'. In addition to that, every time an advertiser sends a ticket request and when performing topic search at a registrar, the registrar replies with the closest nodes to 'the topic hash' that it knows, helping to fill up the k-buckets of ticket tables without advertisers sending additional (Kademlia FINDNODE) lookups.
 
 There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. The refresh time used is refresh\_time=10 seconds. When empty slots during the refresh process, optionally, lookups are performed to the topic hash in case is empty. Also, the last node in the bucket is pinged to check it is still alive. In case it is not, it is removed from the table.
+
+
+%All the modifiers from the first part of the equation increase with increasing number of the same items that are already in the table, i.e., reduction in diversity. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotes diversity in the table and protects against Sybil attacks so that an attacker who is in control of a limited pool of IP addresses won't be able to dominate the table with many ads. The low exponent for the topics is motivated by the topics in the network that are likely to follow a skewed (e.g., a zipf-like) distribution. In contrast, honest nodes' IPs/IDs should follow a uniform distribution.
+
+%The latter part of the formula is determined based on a multiple of ad-lifetime and the current utilisation (i.e., occupancy divided by capacity) of the table. When the utilisation becomes closer to 1.0, the base time becomes very large due to a very small denominator. Before the waiting time becomes infinite (when utilisation becomes 1), the waiting time becomes extremely high, in which case the advertisers give up as explained in the ad distribution process.
