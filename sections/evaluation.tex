@@ -52,9 +52,15 @@ Lookup table bucket size & 16 \\%& 0.8225 & 0.9897\\
 \hline
 Lookup table buckets & 17 \\%& 0.8225 & 0.9897\\
 \hline
-Registration lifetime & 5 minutes \\%& 0.8225 & 0.9897\\
+Registration lifetime & 15 minutes \\%& 0.8225 & 0.9897\\
 \hline
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
+\hline
+Number of topics & 5 \\%& 0.8225 & 0.9897\\
+hline
+Ticket table size & X \\
+\hline
+Turbulence & X \\%& 0.8225 & 0.9897\\
 \hline
 \bottomrule
 \end{tabular}
@@ -100,8 +106,22 @@ Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \subsubsection{Performance Results}
 
 
-\paragraph{\bf{Ticket registrations}:}
+%\paragraph{Ticket registrations:
 
+In Figure~\ref{fig:regs} we observe the average active registrations in the system per topic. 
+We can observe nodes for all topics are able to place a substantial amount of registrations, even the less popular topics. 
+As number of nodes increase in the network, we can observe the differences between registrations per topic are reduced. 
+Actually, it can be observed the most popular topic (t1) is able to place less registrations than t2. 
+This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.
+
+In Figure~\ref{fig:util} we observe the average utilisation of the ticket table for all nodes.
+We can observe since t1 places less registrations the occupancy for t1 in the tables is less than t2. We can also observe the
+overall utilisation does not reach 50\%. 
+This is caused by the fact that the waiting time increase does not allow tables to reach the limit. 
+
+
+
+\sergi{TODO: change Log scale for fig \ref{fig:regs}}
 \begin{figure}[!h]
 \centering
 \subfigure[{Active registrations}]{
@@ -114,7 +134,7 @@ Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \label{fig:util}
 }
  \caption{Ticket registrations} 
-\label{fig:traffic}
+\label{fig:registrations}
 \vspace{-0.15in}
 \end{figure}   
 
@@ -127,8 +147,18 @@ Number of topics & 5 \\%& 0.8225 & 0.9897\\
 %\vspace{-0.15in}
 %\end{figure}
 
-\paragraph{\bf{Network load}:}
-
+%\paragraph{\bf{Network load}:}
+\sergi{TODO: change Log scale for fig \ref{fig:messages}}
+In Figure~\ref{fig:messages}~and~\ref{fig:msg_distr} we can observe the traffic load generated in the network.
+In Figure~\ref{fig:messages} we observe most of the messages are ticket requests/replies, and the subsequent registration request/replies
+after receiving a ticket from a node. 
+This is caused by the fact that nodes are constantly registering dynamically. 
+In Figure~\ref{fig:msg_distr} the messages received distribution. 
+We can observe some nodes receive much more messages.
+This is caused by the bucket ndoe distributiong, where nodes with identifiers close to topic hash ids receive more initial tickets requests because there are less.
+However, we can see the number of messages received does not exceed X times the average value of the messages received. 
+Moreover, we can also observe with the increase of nodes in the network, the load that these nodes receive does not increase in the same way. 
+Therefore, the system is able to scale without danger of overloading some of the nodes of the network.
 
 \begin{figure}[!h]
 \centering
@@ -146,7 +176,7 @@ Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \vspace{-0.15in}
 \end{figure}   
 
-\paragraph{\bf{Discovery performance}:}
+%\paragraph{\bf{Discovery performance}:}
 
 \begin{figure}[!h]
 \centering
