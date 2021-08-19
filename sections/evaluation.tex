@@ -24,7 +24,7 @@ In the third one we include an evaluation using the most used Ethereum client so
 
 For the network performance evaluation we extended the existing 
 large-scale peer-to-peer network simulatior PeerSim~\cite{p2p09-peersim}.
-We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it.
+We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. Our network simulator is available here\footnote{https://github.com/datahop/p2p-service-discovery}
 
 In Table~\ref{tab:param} we show the parameters used in the simulation. 
 
@@ -57,10 +57,14 @@ Registration lifetime & 15 minutes \\%& 0.8225 & 0.9897\\
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \hline
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
-hline
-Ticket table size & X \\
 \hline
-Turbulence & X \\%& 0.8225 & 0.9897\\
+Zipf dist exp & \hl{X} \\%& 0.8225 & 0.9897\\
+\hline
+Ticket table size & \hl{X} \\
+\hline
+Turbulence & \hl{X} \\%& 0.8225 & 0.9897\\
+\hline
+Num of connections & \hl{X} \\%& 0.8225 & 0.9897\\
 \hline
 \bottomrule
 \end{tabular}
@@ -70,6 +74,21 @@ Turbulence & X \\%& 0.8225 & 0.9897\\
 \vspace{-0.05in}
 \end{table}
 
+We performed 4 hours long simulations with different number of nodes from 500 to 10000.
+In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).
+There is turbulence in the simulation, new nodes are added to the network and existing nodes are removed at a rate of \hl{X}.
+Nodes are modeled similarly to an ethereum client. 
+When a node joins the network it starts advertising for the participating topics.
+Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
+for a specific topic to start connections with discovered nodes.
+When an initial lookup is done, the discovered nodes are stored in a buffer per topic.
+Nodes start attempting connections with the discovered nodes from the buffer until all connections 
+are full.
+In case the connection is possible (the targeted node has an available slot in the pool of connections and the node is still up), it is added 
+to the local list of connections.
+Nodes are removed from the discovered nodes buffer for each attempt of connection.
+When a node goes down, a connection attempt is maded with a new nodes from the buffer to occupy all available connection slots.
+When the discovered nodes for a certain topic is empty, a new topic lookup is performed.
 
 
 %\begin{table}[!hbt]
@@ -114,10 +133,11 @@ As number of nodes increase in the network, we can observe the differences betwe
 Actually, it can be observed the most popular topic (t1) is able to place less registrations than t2. 
 This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.
 
-In Figure~\ref{fig:util} we observe the average utilisation of the ticket table for all nodes.
-We can observe since t1 places less registrations the occupancy for t1 in the tables is less than t2. We can also observe the
-overall utilisation does not reach 50\%. 
-This is caused by the fact that the waiting time increase does not allow tables to reach the limit. 
+In Figure~\ref{fig:time_reg} we observe the average time necessary for a node to place a registration.
+We can observe for topic t1 it reaches the limit of advertising lifetime. Once the calculated waiting time exceeds this threshold
+nodes decide to cancel the registration process with the targeted node and try a new registration in another node.
+\sergi{I think we should include failed/uncomplete registrations in the plot}
+
 
 
 
@@ -129,9 +149,9 @@ This is caused by the fact that the waiting time increase does not allow tables 
 \label{fig:regs}
 } 
 \hspace{-0.25cm}
-\subfigure[{Storage utilization}]{
-\includegraphics[width=0.225\textwidth]{img/eval/storage_utilisation.png}
-\label{fig:util}
+\subfigure[{Time to register}]{
+\includegraphics[width=0.225\textwidth]{img/eval/avg_time_register.png}
+\label{fig:time_reg}
 }
  \caption{Ticket registrations} 
 \label{fig:registrations}
@@ -156,7 +176,7 @@ This is caused by the fact that nodes are constantly registering dynamically.
 In Figure~\ref{fig:msg_distr} the messages received distribution. 
 We can observe some nodes receive much more messages.
 This is caused by the bucket ndoe distributiong, where nodes with identifiers close to topic hash ids receive more initial tickets requests because there are less.
-However, we can see the number of messages received does not exceed X times the average value of the messages received. 
+However, we can see the number of messages received does not exceed \hl{X} times the average value of the messages received. 
 Moreover, we can also observe with the increase of nodes in the network, the load that these nodes receive does not increase in the same way. 
 Therefore, the system is able to scale without danger of overloading some of the nodes of the network.
 
@@ -178,6 +198,21 @@ Therefore, the system is able to scale without danger of overloading some of the
 
 %\paragraph{\bf{Discovery performance}:}
 
+\sergi{TODO: modify figures with bigger fonts}
+
+In Figure~\ref{fig:reg_disc}~and~\ref{fig:timedisc} we can observe how nodes are discovered within the network.
+In Figure~\ref{fig:reg_disc} we observe the percentage of the nodes in the network that are discovered and how often are discovered.
+Each node in the network is represented by a circle, and the size of the cirle represents the relative frequency of discoveries compared with other nodes in the network.
+We can observe that for all topics the percentage of nodes discovered in the network is very close to 100\%. This means almost all nodes in the network are able to be discovered by other nodes. The number of dicovered nodes is not 100\% because of the existence of turbulence (there are some nodes just joined the network and there has not been enough time yet to be discovered). In case there are a low number of nodes for a specific topic (e.g. t5 with 500 nodes network) the 100\% is reached.
+We can also observe Figure~\ref{fig:reg_disc} that the discovery distribution is bounded to \hl{X} times between the most discovered and the least discovered.
+We observe the dots size are very regular and despite being not completely equal the differences are not substantial. 
+In Figure~\ref{fig:timedisc} we observe the time between a registration is completed and the first time the registration
+is returned in a lookup.
+By observing this we can see how difficult is for a node to be discovered once is able to place a registration. 
+We see the average time is between 20 and 10 seconds in most of the cases, except for the least popular topic t5 which is around 50\% higher. 
+We also observe the deviation is bounded at around 60 seconds, with equivalent different for t5.
+
+
 \begin{figure}[!h]
 \centering
 \subfigure[{Registrant discovery distribution}]{
@@ -189,18 +224,23 @@ Therefore, the system is able to scale without danger of overloading some of the
 \includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.png} %\hspace{-1.5em}%
 \label{fig:timedisc}
 }
- \caption{Discovery} 
+ \caption{Discovery performance} 
 \label{fig:discovery}
 \vspace{-0.15in}
 \end{figure}   
 
-\paragraph{\bf{Lookup performance}:}
+
+In Figure~\ref{fig:hopcount} we observe the hops necessary to traverse during a lookup to discover N distinct nodes for a topic.
+In the simulation we set N to 50.
+We observe the hopcount keeps quite stable between 20 and 40, even for the least popular topics where is more difficult to find registrations.
+
+%TODO add lookup description including mechanisms to avoid sybils.
 
 \begin{figure}[h!]
 \centering
 %\epsfig{file=imgs/eval/scen5.pdf, width=0.45\textwidth}
 \includegraphics[width=0.35\textwidth]{img/eval/lookup_hopcount.png}
-\caption{Lookup hopcount}
+\caption{Lookup performance}
 \label{fig:hopcount}
 \vspace{-0.15in}
 \end{figure}
@@ -208,21 +248,21 @@ Therefore, the system is able to scale without danger of overloading some of the
 \subsubsection{Sybil Attacks}
 
 
-\begin{figure}[!h]
-\centering
-\subfigure[{Time to register}]{
-\includegraphics[width=0.225\textwidth]{img/eval/registrant_distribution.png} 
-\label{fig:reg_disc}
-} 
-\hspace{-0.25cm}
-\subfigure[{Lookup hopcount}]{
-\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.png} %\hspace{-1.5em}%
-\label{fig:timedisc}
-}
- \caption{Discovery} 
-\label{fig:discovery}
-\vspace{-0.15in}
-\end{figure}   
+%\begin{figure}[!h]
+%\centering
+%\subfigure[{Time to register}]{
+%\includegraphics[width=0.225\textwidth]{img/eval/registrant_distribution.png} 
+%\label{fig:reg_disc}
+%} 
+%\hspace{-0.25cm}
+%\subfigure[{Lookup hopcount}]{
+%\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.png} %\hspace{-1.5em}%
+%\label{fig:timedisc}
+%}
+% \caption{Discovery} 
+%\label{fig:discovery}
+%\vspace{-0.15in}
+%\end{figure}   
 
 
 \paragraph{\bf{Topic Eclipse Attack:}}
