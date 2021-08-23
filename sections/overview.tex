@@ -4,7 +4,47 @@
 \section{Overview}
 \label{sec:overview}
 
-The end-goal of service discovery is for nodes to be \textit{securely discovered} under topics which they choose to be associated with. Because malicious nodes are difficult to identify in a decentralised setting, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. In the following, we provide an overview of the design and the objectives of \textit{i)} search and register operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. \Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below.
+The end-goal of service discovery is for nodes to be \textit{securely discovered} under topics which they choose to be associated with. Because malicious nodes are difficult to identify in a decentralised setting, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. In the following, we provide an overview of the design and the objectives of \textit{i)} search and register operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. 
+\Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below.
+
+
+\begin{table} 
+%\vspace{-0.15in}
+\caption{Objectives of topic-based service discovery.}
+%\vspace{-0.1in}
+\label{tab:objectives}
+\renewcommand{\arraystretch}{1.5}
+\renewcommand{\tabcolsep}{0.5em}
+\centering
+\scriptsize{
+\begin{tabular} {p{1cm}p{5cm}}
+\toprule
+\textbf{Objective} & \textbf{Description} \\
+\hline
+G1 & Max-min fair allocation of topic table across topics \\
+\hline
+%G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
+%\hline
+G2 & All advertisers within each topic should have a similar probability of being discovered. \\
+\hline
+G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
+\hline
+G4 & The registration operations should be efficient in terms of time. \\
+\hline
+G5 & The registration operations should be efficient in terms of messaging, computational, amd state maintenance overhead. \\
+\hline 
+G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count) for all the topics independent of their popularity. \\
+\hline
+%G7 & The number of registrations should be sufficient for an efficient discovery. \\ Onur: I don't think we need this
+%\hline
+G7 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
+\hline 
+G8 & The protocol should be resistant to attacks by malicious nodes or their Sybils. \\
+\hline
+\end{tabular}
+}
+\vspace{-0.2in}
+\end{table}
 
 %As a decentralised, permissionless system, anyone can freely participate in service discovery system at no cost other than running the protocol and storing a limited number of other nodes' records. This leads to some potential security issues that must be considered when designing the system. Even worse, a single malicious entity can spawn many Sybil identities that individually enter the system. Because such nodes are difficult to identify, our overarching design principle is to diversify the sources of information in all the operations, specifically in registration and search. This means selection of peers with sufficient variety (in terms of their network- and application-level identifiers) during registrations and collection of search results. \michal{It's probably better explained in the thread model}
 
@@ -18,16 +58,18 @@ Once stored in a topic table, an ad has a limited lifetime and removed from the 
 
 %At the same time, it is desirable for the ad registration process to complete in a timely manner and have as little overhead (in terms of both messaging and computation) as possible for both the registrars and advertisers. 
 
-Instead of a PoW scheme, we propose a lightweight, \textit{waiting-time-based admission mechanism} whereby registrars enforce a waiting time on the advertisers before their ads are admitted to the topic table. Imposing this waiting time prevents misuse of the topic table, because any topic must be important enough to outweigh the cost of waiting for the advertisers, and registrars can control the rate of ad placement. 
+\sergi{I haven't seen the concept of ticket introduced before. I think maybe its better to desribe it previous section instead design section.}
 
-In addition to misuse of topic table, securing topic tables from being dominantly occupied by the ads from malicious nodes (and their Sybils) is another important objective (G8). Our admission mechanism tackles this challenges through diversification of advertisers that simultaneously place ads: advertisers that contribute poorly to the diversity (in terms of their IP addresses and IDs) of the advertisers that currently have an ad in the topic table are forced to wait longer. Also, the waiting time mechanism must prevent the storage space from overflowing while aiming for \textit{a max-min fair allocation} across different topics (G1). The latter is necessary to avoid starving (unpopular) topics. %Finally, the waiting time mechanism must ensure that no advertiser is indefinitely denied from registering its ad (G1). 
+Instead of a PoW scheme, in order to limit and control the insertion of ads in the ticket table providing fair and secure allocation, we propose a lightweight \textit{waiting-time-based admission mechanism} whereby registrars enforce a waiting time on the advertisers before their ads are admitted to the topic table. Imposing this waiting time prevents misuse of the topic table, because any topic must be important enough to outweigh the cost of waiting for the advertisers, and registrars can control the rate of ad placement. 
+
+In addition to misuse of topic table, securing topic tables from being dominantly occupied by the ads from malicious nodes (and their Sybils) is another important objective (G8 in \cref{tab:objectives}). Our admission mechanism tackles this challenges through diversification of advertisers that simultaneously place ads: advertisers that contribute poorly to the diversity (in terms of their IP addresses and IDs) of the advertisers that currently have an ad in the topic table are forced to wait longer. Also, the waiting time mechanism must prevent the storage space from overflowing while aiming for \textit{a max-min fair allocation} across different topics (G1 in \cref{tab:objectives}). The latter is necessary to avoid starving (unpopular) topics. %Finally, the waiting time mechanism must ensure that no advertiser is indefinitely denied from registering its ad (G1). 
 
 %\michal{It's seems a bit redundant to the paragraph before.}
 %\michal{It might be a good idea to signal already here that the waiting times is based on occupancy (cope with load) and diversity (cope with attacks + max-min fairness.}
 
 Central to our admission mechanism is a \textit{waiting time function} that generates advertiser-specific, non-negative waiting time values. Registrars compute and return a waiting time in response to a registration request, and an advertiser receiving a waiting time must wait for the duration of the waiting time before sending a follow-up registration request to try registering with the same registrar again. For this scheme to work, registrars must be able to verify that advertisers comply with the waiting times and not serve those who try to cheat by following up early. 
 
-Being able to check whether advertisers comply with the waiting times with as little overhead as possible is necessary to realise a lightweight registration process (G5).  
+Being able to check whether advertisers comply with the waiting times with as little overhead as possible is necessary to realise a lightweight registration process (G5 in \cref{tab:objectives}).  
 An obvious but high-overhead solution is for registrars to maintain state for each on-going registration. % which would make registrars vulnerable to state exhaustion attacks. 
 Instead, we use a lightweight, \textit{token-based} mechanism whereby registrars respond to registration requests with secured, immutable tokens, \ie \textit{tickets}, containing advertiser-specific registration state including the latest computed waiting time for the advertiser. This way the burden of keeping the registration state and keeping track of when to follow up with new requests falls on the advertisers. On the other hand, the registrars' task is to simply authenticate each ticket, check if the requests comply with the waiting times, and use the state information within the tickets to compute a new waiting time.  
 
@@ -35,7 +77,7 @@ Instead, we use a lightweight, \textit{token-based} mechanism whereby registrars
 
 %\michal{We might explicitely state that we don't create any state at the registrar but provide integrity with signatures. I'm just not sure it's not too technical for the overview.}
 
-Once an initial ticket is obtained from the first ticket request, an advertiser must present its ticket in all the follow-up requests. Only if the new waiting time is zero, the registration is successful (\ie advertiser's ad is immediately stored in the topic table), in which case the registrar sends a confirmation of registration back to the advertiser; otherwise, the advertiser receives an updated ticket with a new waiting time. The resulting registration process is shown in Figure~\Cref{fig:registration}, where an advertiser sends a registration request, providing its ID and a desired topic (eth). Based on considerations such as the diversity of the advertiser with respect to the advertisers who currently have a ``live'' (\ie unexpired) ad and occupancy of the registrar's topic table, the registrar computes a waiting time and returns a ticket. Then, the advertiser follows up with a new request immediately after the waiting time elapses, and this time the registrar accepts the registration and places the advertiser's ad in the topic table as shown in Figure~\Cref{fig:registration}.
+Once an initial ticket is obtained from the first ticket request, an advertiser must present its ticket in all the follow-up requests. Only if the new waiting time is zero, the registration is successful (\ie advertiser's ad is immediately stored in the topic table), in which case the registrar sends a confirmation of registration back to the advertiser; otherwise, the advertiser receives an updated ticket with a new waiting time. The resulting registration process is shown in~\Cref{fig:registration}, where an advertiser sends a registration request, providing its ID and a desired topic (eth). Based on considerations such as the diversity of the advertiser with respect to the advertisers who currently have a ``live'' (\ie unexpired) ad and occupancy of the registrar's topic table, the registrar computes a waiting time and returns a ticket. Then, the advertiser follows up with a new request immediately after the waiting time elapses, and this time the registrar accepts the registration and places the advertiser's ad in the topic table as shown in~\Cref{fig:registration}.
 
 There are several intricacies in the design of the waiting time mechanism. For instance, the mechanism should not allow indefinite use or re-use of a ticket. Also, the mechanism should disincentivise advertisers from constantly spamming registrars with initial registration requests (without a ticket) in the hopes that they get a better waiting time, which is necessary to limit the messaging overhead of registrations (G5). We discuss these and other details in Section~\Cref{sec:waitingTime}. 
 
@@ -85,44 +127,6 @@ Our approach is for advertisers and searchers to perform parallel lookups and re
 %It is important to maintain an even load across all peers in the network independent of the bucket distances (G3). The waiting time function achieves load-balancing by throttling the registrations. 
 
 %\michal{We might want to try squeezing the overview to 1 page - it's 2 pages now.}
-
-\begin{table} 
-%\vspace{-0.15in}
-\caption{Objectives of topic-based service discovery.}
-%\vspace{-0.1in}
-\label{tab:objectives}
-\renewcommand{\arraystretch}{1.5}
-\renewcommand{\tabcolsep}{0.5em}
-\centering
-\scriptsize{
-\begin{tabular} {p{1cm}p{5cm}}
-\toprule
-\textbf{Objective} & \textbf{Description} \\
-\hline
-G1 & Max-min fair allocation of topic table across topics \\
-\hline
-%G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
-%\hline
-G2 & All advertisers within each topic should have a similar probability of being discovered. \\
-\hline
-G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
-\hline
-G4 & The registration operations should be efficient in terms of time. \\
-\hline
-G5 & The registration operations should be efficient in terms of messaging, computational, amd state maintenance overhead. \\
-\hline 
-G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count) for all the topics independent of their popularity. \\
-\hline
-%G7 & The number of registrations should be sufficient for an efficient discovery. \\ Onur: I don't think we need this
-%\hline
-G7 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
-\hline 
-G8 & The protocol should be resistant to attacks by malicious nodes or their Sybils. \\
-\hline
-\end{tabular}
-}
-\vspace{-0.2in}
-\end{table}
 
 
 \iffalse
