@@ -72,6 +72,7 @@ There is also a refresh bucket process, similar to the Kademlia DHT table, where
 
 
 \subsection{Waiting Time}
+\label{sec:waitingTime}
 Waiting time function is used to calculate the total time advertisers have to wait before being admitted to the topic table. The function directly shapes the structure of the topic table, determines its diversity and performs flow control. It also protects against attacks, where a malicious actor tries to dominate the topic table and exhaust resources of the registrar. 
 
 Each request is given a waiting time based on the IP address of the registrar, the ID of the registrar, the topic of the request and the current content of the topic table. The waiting time function is divided into two parts: \emph{diversity score} and \emph{occupancy score}. The final result is a product of both scores: $w =  \textit{occupancy score} \times \textit{similarity score} $. 
