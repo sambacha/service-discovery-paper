@@ -13,12 +13,12 @@ In the third one we include an evaluation using the most used Ethereum client so
 
 \subsection{Ticket table occupancy evaluation}
 
-- Ticket table occupancy  and waiting time evaluation
+\sergi{Ticket table occupancy  and waiting time evaluation TBC}
 
 \subsection{Network simulator evaluation}
 
 \sergi{TODO: modify figures with bigger fonts}
-\sergi{TODO: registrant distribution is not very readable. probably should be redesign}
+\sergi{TODO: registrant distribution is not very readable. probably should be redesigned}
 \sergi{TODO: Lookup performance should be compared with something. Discv4? }
 
 %\subsubsection{Evaluation Setup}
@@ -77,7 +77,7 @@ Num of connections & \hl{X} \\%& 0.8225 & 0.9897\\
 
 We performed 4 hours long simulations with different number of nodes from 500 to 10000.
 In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).
-There is turbulence in the simulation, new nodes are added to the network and existing nodes are removed at a rate of \hl{X}.
+There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of \hl{X}.
 Nodes are modeled similarly to an ethereum client. 
 When a node joins the network it starts advertising for the participating topics.
 Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
@@ -249,6 +249,13 @@ We observe the hopcount keeps quite stable between 20 and 40, even for the least
 \subsubsection{Sybil Attacks}
 
 
+In the following we show the results of the performance evaluation of the discovery service under different sybil attacks.  The attacks that we evaluated in this section are of two types and are previously described in \hl{ref}. These attacks are eclipsing  and Denial-of-service (DoS) attacks.
+Eclipsing attacks goal is to generate multiple fake identities within a topic to be able to eclipse existing nodes in the network.
+Eclipsing a node imply all outbound and inbound connections are established to only sybil/fake nodes controlled by an attacker.
+This allows the attacker to control the view of the network of the eclipsed node. and can be used to co-opt a victim's mining power and use it to attack the blockchain's consensus algorithm.
+DoS attacks instead is an attack meant to hamper the good performance or even to shut down the network, making it inaccessible to its intended users.  
+In our case,  the goal of DoS attacks is to difficult or to block the discovery of nodes in the network and is specially important for topic with low popularity where finding all node in the network is very important.
+
 %\begin{figure}[!h]
 %\centering
 %\subfigure[{Time to register}]{
@@ -320,6 +327,6 @@ We observe the hopcount keeps quite stable between 20 and 40, even for the least
 %
 %- hopcount 
 
-\subsection{Testbed evaluation}
-
-"Geth"~\cite{go-ethereum} performance evaluation: \hl{TBC}.
+%\subsection{Testbed evaluation}
+%
+%"Geth"~\cite{go-ethereum} performance evaluation: \hl{TBC}.
