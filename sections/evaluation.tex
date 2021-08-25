@@ -9,11 +9,11 @@ We present the performance evalution in three different subsections.
 In the first one we evaluate the performance of our novel waiting function by measuring the ticket table occupancy
 according with our design goals and parameters.
 The second one is a thorough performance evaluation under different scenarios, including Sybil attacks, of the whole network discovery solution using a peer-to-peer network simulator.
-In the third one we include an evaluation using the most used Ethereum client software, Geth~\cite{go-ethereum}, in a testbed scenario.
+%In the third one we include an evaluation using the most used Ethereum client software, Geth~\cite{go-ethereum}, in a testbed scenario.
 
 \subsection{Ticket table occupancy evaluation}
 
-\sergi{Ticket table occupancy  and waiting time evaluation TBC}
+\sergi{Ticket table occupancy and waiting time evaluation TBC}
 
 \subsection{Network simulator evaluation}
 
@@ -248,11 +248,10 @@ We observe the hopcount keeps quite stable between 20 and 40, even for the least
 
 \subsubsection{Sybil Attacks}
 
-
 In the following we show the results of the performance evaluation of the discovery service under different sybil attacks.  The attacks that we evaluated in this section are of two types and are previously described in \hl{ref}. These attacks are eclipsing  and Denial-of-service (DoS) attacks.
 Eclipsing attacks goal is to generate multiple fake identities within a topic to be able to eclipse existing nodes in the network.
 Eclipsing a node imply all outbound and inbound connections are established to only sybil/fake nodes controlled by an attacker.
-This allows the attacker to control the view of the network of the eclipsed node. and can be used to co-opt a victim's mining power and use it to attack the blockchain's consensus algorithm.
+This allows the attacker to control the view of the network of the eclipsed node and can be used to co-opt a victim's mining power and use it to attack the blockchain's consensus algorithm.
 DoS attacks instead is an attack meant to hamper the good performance or even to shut down the network, making it inaccessible to its intended users.  
 In our case,  the goal of DoS attacks is to difficult or to block the discovery of nodes in the network and is specially important for topic with low popularity where finding all node in the network is very important.
 
@@ -272,9 +271,9 @@ In our case,  the goal of DoS attacks is to difficult or to block the discovery 
 %\vspace{-0.15in}
 %\end{figure}   
 
-
-\paragraph{\bf{Topic Eclipse Attack:}}
-
+In the implemented topic eclipsing attacks,  malicious nodes are sybil nodes that cooperate in order to eclipse other valid nodes.
+Malicious and valid nodes have the same amount of bandwidth resources and malicious nodes respond to topic lookup requests and find messages with only other malicious nodes.
+Malicious nodes also act as evil 'registrants' trying to place as much as registrations as possible by using bigger ticket size,  with malicious registrars attack, where evil registrars replies with only malicious nodes when receiving a topic query.
 %- malicious registrations
 %
 %- eclipsed nodes
@@ -283,42 +282,62 @@ In our case,  the goal of DoS attacks is to difficult or to block the discovery 
 %
 %- hopcount 
 
-\paragraph{\bf{Denial of Service Attack: random topic attack and dos attack}}
+We implemented and evaluated two kind of DoS attacks.  
+The first attack consists in a spamming attack where a big number of sybil identities generated try to register for non-existing random topics.
+By registering for non-existing topics,  evil nodes try to harm valid topics registrations, overflowing topic tables.
+The second DoS attack consists on generating sybil identities that keep on standby when receiving valid nodes ticket requests or return very long waiting times. 
+This way an attacker can try to backlog valid nodes ticket registrations.
+
+%\paragraph{\bf{Denial of Service Attack:}}
 
 
+\begin{figure}[!h]
+\centering
+\subfigure[{Active registrations eclipse attack t1 attack}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_t1.png} 
+\label{fig:reg_eclipse_t1}
+} 
+\hspace{-0.16cm}
+\subfigure[{Active registrations eclipse attack t5 attack}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_t1.png} %\hspace{-1.5em}%
+\label{fig:reg_eclipse_t5}
+}
+ \caption{Active registrations under topic eclipsing attack} 
+\label{fig:discovery_dos}
+\vspace{-0.15in}
+\end{figure}   
 
-%\begin{figure}[!h]
-%\centering
-%\subfigure[{Time to register for Non-response DoS Attack}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/avg_time_register_dos.png} 
-%\label{fig:reg_disc_dos}
-%} 
-%\hspace{-0.16cm}
-%\subfigure[{Lookup hopcount for Non-response  DoS Attack}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery_dos.png} %\hspace{-1.5em}%
-%\label{fig:timedisc_dos}
-%}
-% \caption{Registration and Discovery performance for the Non-response DoS Attack} 
-%\label{fig:discovery_dos}
-%\vspace{-0.15in}
-%\end{figure}   
-%
-%
-%\begin{figure}[!h]
-%\centering
-%\subfigure[{Time to register for the random topic  DoS Attack}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/avg_time_register_randomtopic.png} 
-%\label{fig:reg_disc}
-%} 
-%\hspace{-0.16cm}
-%\subfigure[{Lookup hopcount for the random topic  DoS Attack}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/lookup_hopcount_randomtopic.png} %\hspace{-1.5em}%
-%\label{fig:timedisc}
-%}
-% \caption{Registration and Discovery performance for the random topic  DoS Attack} 
-%\label{fig:discovery}
-%\vspace{-0.15in}
-%\end{figure}   
+\begin{figure}[!h]
+\centering
+\subfigure[{Time between registration and first discovery t1 attack}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_t1.png} 
+\label{fig:reg_eclipse_t1}
+} 
+\hspace{-0.16cm}
+\subfigure[{Time between registration and first discovery t5 attack}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_t5.png} %\hspace{-1.5em}%
+\label{fig:reg_eclipse_t5}
+}
+ \caption{Time between registration and first discovery under topic eclipsing attack} 
+\label{fig:discovery_dos}
+\vspace{-0.15in}
+\end{figure}   
+
+\begin{figure}[!h]
+\centering
+\subfigure[{Lookup hopcount eclipse attack t1}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/lookup_hopcount_t1.png} 
+\label{fig:lookup_eclipse_t1}
+} 
+\hspace{-0.16cm}
+\subfigure[{Lookup hopcount eclipse attack t5}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/lookup_hopcount_t5.png} %\hspace{-1.5em}%
+\label{fig:lookup_eclipse_t5}
+}
+ \caption{Lookup hopcount under topic eclipsing attack} 
+\label{fig:discovery_dos}
+\vspace{-0.15in}
+\end{figure}   
 
 
 %- active registrations
