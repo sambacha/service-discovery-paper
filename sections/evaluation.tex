@@ -255,32 +255,10 @@ This allows the attacker to control the view of the network of the eclipsed node
 DoS attacks instead is an attack meant to hamper the good performance or even to shut down the network, making it inaccessible to its intended users.  
 In our case,  the goal of DoS attacks is to difficult or to block the discovery of nodes in the network and is specially important for topic with low popularity where finding all node in the network is very important.
 
-%\begin{figure}[!h]
-%\centering
-%\subfigure[{Time to register}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/registrant_distribution.png} 
-%\label{fig:reg_disc}
-%} 
-%\hspace{-0.25cm}
-%\subfigure[{Lookup hopcount}]{
-%\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.png} %\hspace{-1.5em}%
-%\label{fig:timedisc}
-%}
-% \caption{Discovery} 
-%\label{fig:discovery}
-%\vspace{-0.15in}
-%\end{figure}   
 
 In the implemented topic eclipsing attacks,  malicious nodes are sybil nodes that cooperate in order to eclipse other valid nodes.
 Malicious and valid nodes have the same amount of bandwidth resources and malicious nodes respond to topic lookup requests and find messages with only other malicious nodes.
 Malicious nodes also act as evil 'registrants' trying to place as much as registrations as possible by using bigger ticket size,  with malicious registrars attack, where evil registrars replies with only malicious nodes when receiving a topic query.
-%- malicious registrations
-%
-%- eclipsed nodes
-%
-%- time to register / time to discovery
-%
-%- hopcount 
 
 We implemented and evaluated two kind of DoS attacks.  
 The first attack consists in a spamming attack where a big number of sybil identities generated try to register for non-existing random topics.
@@ -288,40 +266,56 @@ By registering for non-existing topics,  evil nodes try to harm valid topics reg
 The second DoS attack consists on generating sybil identities that keep on standby when receiving valid nodes ticket requests or return very long waiting times. 
 This way an attacker can try to backlog valid nodes ticket registrations.
 
-%\paragraph{\bf{Denial of Service Attack:}}
 
+In Figures~\ref{fig:reg_eclipse},~\ref{fig:discoverytime_eclipse}~and~\ref{fig:lookup_eclipse} we show performance results under a
+topic eclipsing attack.
+We compare results for topic eclipsing attacks targeted to the most popular topic (t1) and attacks targeted to the least popular topic (t5). 
+In the simulation there are 2000 nodes, all of them participating in t1 and only 218 participating in t5. 
+In the simulations there are an additional 20\% (400 in total) malicious nodes that target the specific topic and the number of resources used in the attack (IP addresses) vary from 1 address to 50.
 
 \begin{figure}[!h]
 \centering
 \subfigure[{Active registrations eclipse attack t1 attack}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_t1.png} 
+\includegraphics[width=0.22\textwidth]{img/eval/attack/registration_origin_t1.png} 
 \label{fig:reg_eclipse_t1}
 } 
-\hspace{-0.16cm}
+\hspace{-0.15cm}
 \subfigure[{Active registrations eclipse attack t5 attack}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_t1.png} %\hspace{-1.5em}%
+\includegraphics[width=0.22\textwidth]{img/eval/attack/registration_origin_t5.png} %\hspace{-1.5em}%
 \label{fig:reg_eclipse_t5}
 }
  \caption{Active registrations under topic eclipsing attack} 
-\label{fig:discovery_dos}
+\label{fig:reg_eclipse}
 \vspace{-0.15in}
 \end{figure}   
+
+In Figure~\ref{fig:reg_eclipse_t1} we observe the active registrations in the simulation per topic, for an eclipsing attack targeted to the most popular topic (t1), including active registrations of malicious nodes.
+We can observe than even though the number of malicious nodes is equivalent to 20\%, the number of active registrations is lower than that. 
+As expected, as the number of IP addresses used in the attack increaseas, the number of active registrations of malicious nodes also increase, since different malicious nodes with complete different IPs can not be diffierentiated from valid nodes.
+For topic 5, the most vulnerable topic for being the least popular, we can observe a similar pattern of active registrations. 
+However, we observe that despite malicious nodes being more (400 nodes) than valid nodes (218 nodes), active registrations of malicious nodes is kept lower than 30\% in all cases. Similarly to t1, the active registrations increase with the higher number of IPs used in the attack, since there is no way to a totally distributed attack without reusing IP addresses.
+
 
 \begin{figure}[!h]
 \centering
 \subfigure[{Time between registration and first discovery t1 attack}]{
 \includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_t1.png} 
-\label{fig:reg_eclipse_t1}
+\label{fig:discoverytime_eclipse_t1}
 } 
 \hspace{-0.16cm}
 \subfigure[{Time between registration and first discovery t5 attack}]{
 \includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_t5.png} %\hspace{-1.5em}%
-\label{fig:reg_eclipse_t5}
+\label{fig:discoverytime_eclipse_t5}
 }
  \caption{Time between registration and first discovery under topic eclipsing attack} 
-\label{fig:discovery_dos}
+\label{fig:discoverytime_eclipse}
 \vspace{-0.15in}
 \end{figure}   
+\sergi{TODO: use same yaxis}
+
+In Figure~\ref{fig:discoverytime_eclipse} we observe the average time between a node registers for a topic succesfully, and this node is discovered for the first time from the placed registration.
+We can observe that when a topic is under attack the time required for first time discovery increases substantially.
+\sergi{Not sure why discovery time is higher when using less ips in the attack, do we discard malicious nodes in the measurement?}
 
 \begin{figure}[!h]
 \centering
@@ -335,16 +329,57 @@ This way an attacker can try to backlog valid nodes ticket registrations.
 \label{fig:lookup_eclipse_t5}
 }
  \caption{Lookup hopcount under topic eclipsing attack} 
-\label{fig:discovery_dos}
+\label{fig:lookup_eclipse}
 \vspace{-0.15in}
 \end{figure}   
 
+In Figure~\ref{fig:lookup_eclipse} we observe the lookup hopcount in the simulation per topic, for an eclipsing attack targeted to the most popular topic (t1) and the least popular topic (t5).
+\sergi{why lookup hopcount is worse for t5 with 1 ip than with 50 IPs. are malicious nodes taken into account?}
 
-%- active registrations
-%
-%- time to register / time to discovery
-%
-%- hopcount 
+\begin{figure*}[!h]
+\centering
+\subfigure[{Lookup hopcount eclipse attack t1}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_dos.png} 
+\label{fig:active_regs_dos}
+} 
+\hspace{-0.16cm}
+\subfigure[{Lookup hopcount eclipse attack t5}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/avg_time_register_dos.png} %\hspace{-1.5em}%
+\label{fig:time_register_dos}
+}
+\label{fig:discovery_dos}
+\hspace{-0.15in}
+\subfigure[{Lookup hopcount eclipse attack t5}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_dos.png} %\hspace{-1.5em}%
+\label{fig:time_discovery_dos}
+}
+\label{fig:registrations_dos}
+\caption{Registrations performance under dos attack} 
+\vspace{-0.15in}
+\end{figure*}   
+
+\begin{figure*}[!h]
+\centering
+\subfigure[{Lookup hopcount eclipse attack t1}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_spam.png} 
+\label{fig:active_regs_spam}
+} 
+\hspace{-0.16cm}
+\subfigure[{Lookup hopcount eclipse attack t5}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/avg_time_register_spam.png} %\hspace{-1.5em}%
+\label{fig:time_register_spam}
+}
+\hspace{-0.15in}
+\subfigure[{Lookup hopcount eclipse attack t5}]{
+\includegraphics[width=0.225\textwidth]{img/eval/attack/lookup_hopcount_spam.png} %\hspace{-1.5em}%
+\label{fig:lookup_hopcount_spam}
+}
+\label{fig:registrations_spam}
+\caption{Registrations performance under dos attack} 
+\vspace{-0.15in}
+\end{figure*}   
+
+
 
 %\subsection{Testbed evaluation}
 %
