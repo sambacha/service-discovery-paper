@@ -59,13 +59,13 @@ Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \hline
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \hline
-Zipf dist exp & \hl{X} \\%& 0.8225 & 0.9897\\
+Zipf dist exp & 0.7 \\%& 0.8225 & 0.9897\\
 \hline
-Ticket table size & \hl{X} \\
+Ticket table capacity & 500 \\
 \hline
-Turbulence & \hl{X} \\%& 0.8225 & 0.9897\\
+Turbulence event & Every 144 seconds per 1000 nodes. \\%& 0.8225 & 0.9897\\
 \hline
-Num of connections & \hl{X} \\%& 0.8225 & 0.9897\\
+Num of connections & 50 \\%& 0.8225 & 0.9897\\
 \hline
 \bottomrule
 \end{tabular}
@@ -77,8 +77,8 @@ Num of connections & \hl{X} \\%& 0.8225 & 0.9897\\
 
 We performed 4 hours long simulations with different number of nodes from 500 to 10000.
 In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).
-There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of \hl{X}.
-Nodes are modeled similarly to an ethereum client. 
+There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.
+Nodes are modeled similarly to an Ethereum client. 
 When a node joins the network it starts advertising for the participating topics.
 Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
 for a specific topic to start connections with discovered nodes.
@@ -255,17 +255,15 @@ This allows the attacker to control the view of the network of the eclipsed node
 DoS attacks instead is an attack meant to hamper the good performance or even to shut down the network, making it inaccessible to its intended users.  
 In our case,  the goal of DoS attacks is to difficult or to block the discovery of nodes in the network and is specially important for topic with low popularity where finding all node in the network is very important.
 
-
 In the implemented topic eclipsing attacks,  malicious nodes are sybil nodes that cooperate in order to eclipse other valid nodes.
 Malicious and valid nodes have the same amount of bandwidth resources and malicious nodes respond to topic lookup requests and find messages with only other malicious nodes.
 Malicious nodes also act as evil 'registrants' trying to place as much as registrations as possible by using bigger ticket size,  with malicious registrars attack, where evil registrars replies with only malicious nodes when receiving a topic query.
 
 We implemented and evaluated two kind of DoS attacks.  
-The first attack consists in a spamming attack where a big number of sybil identities generated try to register for non-existing random topics.
+The first attack consists in a topic spam attack where a big number of sybil identities generated try to register for non-existing random topics.
 By registering for non-existing topics,  evil nodes try to harm valid topics registrations, overflowing topic tables.
-The second DoS attack consists on generating sybil identities that keep on standby when receiving valid nodes ticket requests or return very long waiting times. 
+The second DoS attack consists on generating sybil identities that keep without replying when receiving valid nodes ticket requests or return very long waiting times. 
 This way an attacker can try to backlog valid nodes ticket registrations.
-
 
 In Figures~\ref{fig:reg_eclipse},~\ref{fig:discoverytime_eclipse}~and~\ref{fig:lookup_eclipse} we show performance results under a
 topic eclipsing attack.
@@ -333,52 +331,71 @@ We can observe that when a topic is under attack the time required for first tim
 \vspace{-0.15in}
 \end{figure}   
 
-In Figure~\ref{fig:lookup_eclipse} we observe the lookup hopcount in the simulation per topic, for an eclipsing attack targeted to the most popular topic (t1) and the least popular topic (t5).
+In Figure~\ref{fig:lookup_eclipse} we observe the lookup hopcount in the simulation per topic,  for an eclipsing attack targeted to the most popular topic (t1) and the least popular topic (t5).
 \sergi{why lookup hopcount is worse for t5 with 1 ip than with 50 IPs. are malicious nodes taken into account?}
+
+In Figure~\ref{fig:perf_spam} we observe the performance of the topic discovery system under  the topic spam attack.
+In Figure~\ref{fig:active_regs_spam} we observe the average active registrations per topic increasing the number of Ip addresses used by sybil identities performing the attack.  
+We observe that the number of registrations are  poorly affected by attackers. 
+Only t1 seems to be affected.
+\sergi{Why do registrations increase with more sybil ips for t1??}
+In Figure~\ref{fig:time_register_spam} we observe the average time required for registering for a topic,  increasing the number of Ip addresses used by sybil identities performing the attack.  
+We observe again it seems there is no substantial impact of the attack to the time required to register for each topic
+In Figure~\ref{fig:time_discovery_spam} we observe the average time between and advertiser place a registration in a registrar and another node discovers it through the registrar,  increasing the number of Ip addresses used by sybil identities performing the attack.  
+We observe again it seems there is no substantial impact of the attack, concluding the system is resistant to topic spam attacks.
+
+\sergi{add spam storage used?}
+\begin{figure*}[!h]
+\centering
+\subfigure[{Active registrations under topic spam attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/registration_origin_spam.png} 
+\label{fig:active_regs_spam}
+} 
+\hspace{-0.16cm}
+\subfigure[{Time to register under topic spam attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/avg_time_register_spam.png} %\hspace{-1.5em}%
+\label{fig:time_register_spam}
+}
+\hspace{-0.15in}
+\subfigure[{Time to first discovery topic spam attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/lookup_hopcount_spam.png} %\hspace{-1.5em}%
+\label{fig:time_discovery_spam}
+}
+\label{fig:perf_spam}
+\caption{Performance evaluation topic spam attack} 
+\vspace{-0.15in}
+\end{figure*}   
+
+In Figure~\ref{fig:perf_dos} we observe the performance of the topic discovery system under the dos attack where registrars do not respond to advertisers trying to block active registrations.
+In Figure~\ref{fig:active_regs_dos} we observe the average active registrations per topic increasing the number of sybil identites from 5\% to 20\% of the nodes in the network.
+We observe that the number of registrations are affected by attackers, being more affected very popular topics,  but less affected low popularity topics.  However in none of the cases malicious nodes are able to block the active registrations and the reduction of the performance is lower than the number of sybils used.
+In Figure~\ref{fig:time_register_dos} we observe the average time required for registering for a topic,  increasing the number of sybil identites from 5\% to 20\% of the nodes in the network.
+We observe in this case it seems there is no substantial impact of the attack to the time required to register for each topic
+In Figure~\ref{fig:time_discovery_dos} we observe the average time between and advertiser place a registration in a registrar and another node discovers it through the registrar,  increasing the number sybils again.
+We also observe there is no substantial impact of the attack, concluding the system is resistant to DoS attacks.
+\sergi{add spam storage used}
 
 \begin{figure*}[!h]
 \centering
-\subfigure[{Lookup hopcount eclipse attack t1}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_dos.png} 
+\subfigure[{Active registrations under DoS attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/registration_origin_dos.png} 
 \label{fig:active_regs_dos}
 } 
 \hspace{-0.16cm}
-\subfigure[{Lookup hopcount eclipse attack t5}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/avg_time_register_dos.png} %\hspace{-1.5em}%
+\subfigure[{Time to register under DoS attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/avg_time_register_dos.png} %\hspace{-1.5em}%
 \label{fig:time_register_dos}
 }
 \label{fig:discovery_dos}
 \hspace{-0.15in}
-\subfigure[{Lookup hopcount eclipse attack t5}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/min_time_discovery_dos.png} %\hspace{-1.5em}%
+\subfigure[{Time to first discovery under DoS attack}]{
+\includegraphics[width=0.275\textwidth]{img/eval/attack/min_time_discovery_dos.png} %\hspace{-1.5em}%
 \label{fig:time_discovery_dos}
 }
-\label{fig:registrations_dos}
-\caption{Registrations performance under dos attack} 
+\label{fig:perf_dos}
+\caption{Performance evaluation no-response DoS attack} 
 \vspace{-0.15in}
 \end{figure*}   
-
-\begin{figure*}[!h]
-\centering
-\subfigure[{Lookup hopcount eclipse attack t1}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/registration_origin_spam.png} 
-\label{fig:active_regs_spam}
-} 
-\hspace{-0.16cm}
-\subfigure[{Lookup hopcount eclipse attack t5}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/avg_time_register_spam.png} %\hspace{-1.5em}%
-\label{fig:time_register_spam}
-}
-\hspace{-0.15in}
-\subfigure[{Lookup hopcount eclipse attack t5}]{
-\includegraphics[width=0.225\textwidth]{img/eval/attack/lookup_hopcount_spam.png} %\hspace{-1.5em}%
-\label{fig:lookup_hopcount_spam}
-}
-\label{fig:registrations_spam}
-\caption{Registrations performance under dos attack} 
-\vspace{-0.15in}
-\end{figure*}   
-
 
 
 %\subsection{Testbed evaluation}
