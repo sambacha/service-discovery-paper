@@ -4,7 +4,13 @@
 \section{Design}
 \label{sec:design}
 
-\subsection{Topic Table}
+In the following, we provide an overview of the design and the objectives of \textit{i)} register operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. Finally, we discuss the process of search and establishing sub-protocol connections. 
+
+\subsection{Topic registration with a single registrar}
+
+Central to the registration process is the topic table. Below, we provide a description of the topic table, followed by the registration process with a single registrar. 
+
+\subsubsection{Topic Table}
 
 Registrars store advertisers ads locally in a data structure called \emph{topic table}, 
 indexed by advertisement topic. 
@@ -28,7 +34,7 @@ The topic table is shared across multiple advertisers and stores topics with var
 It is important that the high popularity of a particular topic should not prevent peers from registering less popular topics. 
 This is achieved using the waiting time function that will determine the time an advertiser will have to wait to place an ad after a ticket request,  and is detailed in Section~\ref{sec:waitingTime}.
 
-\subsection{Topic Registration}
+\subsubsection{Registration Procedure}
 
 In order to place an ad on a registrar's topic table, the advertiser must present a valid 'ticket' to the registrar. Tickets are immutable objects issued by the registrars. An advertiser willing to register an ad at a registrar must first obtain a ticket from that registrar by sending a 'ticket request' (TICKETREQUEST) message to the registrar. In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'topic registration request' (i.e., REGTOPIC) message.
 
@@ -48,11 +54,10 @@ Tickets are immutable objects storing arbitrary information determined by the is
     \item The advertiser attempting to use the ticket is the one which originally requested it.
     \item A ticket is valid for a single topic only.
     \item A ticket can only be used within the 'registration window' (explained below).
-    \item A ticket can not be used more than once. \michal{Can we enforce it? I can use the same ticket twice within the validity period, right?}
+    \item A ticket can not be used more than once. \michal{Can we enforce it? I can use the same ticket twice within the validity period, right?\onur{It seems possible for an advertiser to essentially duplicate an existing ticket by using it twice during the validity period. The duplicate ticket gets a new waiting time, accumulates a high cum. waiting time so that the advertiser can re-register its ad with significant advantage over other contenders. I think an easy fix is for registrars to drop/ignore tickets for which there is an active registration. }}
 \end{itemize}
 
-Tickets cannot be used beyond their lifetime. If an advertiser does not come back after the waiting time, all cumulative waiting time is lost and the advertiser must start over (\Cref{fig:ticket_validity}). When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default 10 seconds is used. The ticket becomes invalid after the registration window has passed. This mechanism prevent from malicious advertisers who could get ticket, wait for a long time generating high cumulative waiting time and launching a coordinated attack to take over the topic table.
-    
+Tickets cannot be used beyond their lifetime. If an advertiser does not come back after the waiting time, all cumulative waiting time is lost and the advertiser must start over (\Cref{fig:ticket_validity}). When the ticket is issued, the node keeping it must wait until the registration window opens. The length of the registration window is implementation dependent, but by default 10 seconds is used. The ticket becomes invalid after the registration window has passed. This mechanism prevents malicious advertisers from obtaining a ticket, then just wait for a long time until a large cumulative waiting time is accumulated, and finally launch a coordinated attack to take over the topic table with their ads.
     
 \begin{figure}
     \includegraphics[width=0.5\textwidth]{img/ticket-validity}
@@ -60,7 +65,7 @@ Tickets cannot be used beyond their lifetime. If an advertiser does not come bac
     \label{fig:ticket_validity}
 \end{figure}
 
-\subsubsection{Ticket Table}
+\subsection{Distributing ads across registrars}
 
 The above description explains the storage and placement of ads on a single registrar, but the advertisers need to distribute ads redundantly on multiple nodes in order to speed up its discovery and to be discovered by more searchers at once. 
 The main goal of distributing advertisements to be found within the network. An important issue is how advertisers distribute their ads among registrar nodes. 
@@ -78,14 +83,15 @@ Every node stored in the ticket table is a potential registrar. The advertiser a
 
 In our approach, advertisers start a limited number of parallel registrations in each ticket table bucket distance. More specifically, an advertiser follows the below steps to distribute its ads for a specific topic:
 \begin{enumerate}
-    \item The advertiser selects a set of K registrar nodes from each bucket distance of the ticket table structure, where the number of bucket distances (B) is a configurable parameter of the ticket table.
+        \item The advertiser (\hl{randomly?}) selects a set of K registrar nodes from each bucket distance of the ticket table structure, where the number of bucket distances (B) is a configurable parameter of the ticket table.
     \item A TICKETREQUEST message is initially sent to each of the selected registrar nodes in the previous step.
     \item Registrar node replies with a TICKETRESPONSE. This message includes the TICKET which contains a waiting time and a ticket issue time.
     \item The advertiser replies after the waiting time expires with a REGTOPIC request containing the previously received TICKET attached to it.
-    \item A registration is successful when the waiting time calculated at the registrar is smaller than the cumulative waiting time, which means that the advertiser has waited long enough.The registrar sends a \item REGCONFIRMATION response to the advertiser. In general, the topic table occupancy is guaranteed to always remain below the topic table capacity by the waiting time calculated: the waiting time function returns increasingly large values as the topic table space runs out; the waiting time becomes infinite in case there is no space.
-    \item The registrar replies with a REGRESPONSE message containing a new TICKET (containing a new waiting time) in case the registration is not succesful.
+    \item A registration is successful when the waiting time calculated at the registrar is smaller than the cumulative waiting time, which means that the advertiser has waited long enough.
+    \item The registrar sends a REGCONFIRMATION response to the advertiser of the successful registration. In general, the topic table occupancy is guaranteed to always remain below the topic table capacity by the waiting time calculated: the waiting time function returns increasingly large values as the topic table space runs out; the waiting time becomes infinite in case there is no space.
+    \item The registrar replies with a REGRESPONSE message containing a new TICKET (containing a new waiting time) in case the registration is not successful.
     \item A registrar gives up and stops the registration process with a registrar (say R) upon either T unsuccessful registration attempts (i.e., after being issued T tickets in REGRESPONSE messages from the registrar without a REGCONFIRMATION) or receipt of a ticket with a waiting time larger than LARGEWAIT. In that case, the advertiser selects a new node located in the same bucket as R, and initiates a TICKETREQUEST (step 2).
-    \item Similarly, expiration of a previously placed ad (i.e., after the passage of ad-lifetime upon receiving a REGCONFIRMATION message) also triggers TICKETREQUEST to a new node that is in the same bucket as R.
+    \item Similarly, expiration of a previously placed ad (i.e., after the passage of ad-lifetime upon receiving a REGCONFIRMATION message) also triggers TICKETREQUEST to a new (\hl{why not the same node?}) node that is in the same bucket as R.
 \end{enumerate}
 
 The objective of the ad placement process described above is to establish and maintain K active (i.e., unexpired) registrations in each bucket distance. This objective is achieved by the advertisers setting a timer with a duration of ad-lifetime immediately upon the receipt of a REGCONFIRMATION from a node in a bucket b, and once the timer expires (after ad-lifetime passes) the advertiser starts a fresh registration with a node that is also located in bucket b. The ticket table is used to store the tickets obtained for each on-going registrations and to keep track of the expiration times of active registrations.
@@ -108,7 +114,7 @@ In case no nodes have been found for the bucket distance,  a Kademlia lookup is 
 Also, all nodes in the checked bucket are pinged to check they are still alive. 
 In case they are not, tickets for those dead nodes are removed from the ticket table and registrations to new nodes are initiated.
 
-\subsection{Topic Lookup}
+\subsection{Topic Search}
 
 The purpose of placing ads is to be discovered by other nodes interested in the same topic.  
 Searcher nodes maintain a separate table that they use to keep track of on-going searches called the \emph{search table}. 
@@ -119,6 +125,8 @@ For each topic the client wants to start discovering nodes, a new \emph{search t
 The bucket size \texttt{k}  of the search table should be relatively large in order to make the search efficient. 
 By default we use\texttt{k=16},  similarly to the local routing table (Kademlia DHT).
 Tickets are not required for search and nodes can not be added multiple times in the same k-bucket.
+
+\subsubsection{Search Procedure}
 
 To find ads,  the searcher simply queries the nodes in the search table for ads. 
 During lookup process \texttt{ALPHA} parallel lookups are performed to three different nodes. 
@@ -139,7 +147,10 @@ In order to find new results,  bucket entries are replaced when the node fails t
 There is also a refresh process,  equivalent to the \emph{ticket table} refresh process, where random buckets are selected and all nodes in the buckets are checked for liveness.
 In case the bucket is empty a Kademlia lookup is performed towards the topic hash.
 
+\subsubsection{Updating connections}
 
+Using the search results, a searcher updates its subprotocol-specific connections. 
+\onur{need to explain this process since security depends on that.}
 
 %All the modifiers from the first part of the equation increase with increasing number of the same items that are already in the table, i.e., reduction in diversity. Thus it's getting increasingly difficult to register ads for the same IP/ID/topic. For instance, ads for less popular topic will receive lower waiting times than popular ones. Note that the table does not prevent anyone from registering, but rather makes it slower for already popular items. Such a mechanism promotes diversity in the table and protects against Sybil attacks so that an attacker who is in control of a limited pool of IP addresses won't be able to dominate the table with many ads. The low exponent for the topics is motivated by the topics in the network that are likely to follow a skewed (e.g., a zipf-like) distribution. In contrast, honest nodes' IPs/IDs should follow a uniform distribution.
 
