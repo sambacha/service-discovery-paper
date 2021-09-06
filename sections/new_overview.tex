@@ -1,0 +1,62 @@
+\section{Overview}
+\label{sec:overview}
+
+\begin{table} 
+%\vspace{-0.15in}
+\caption{Objectives of topic-based service discovery.}
+%\vspace{-0.1in}
+\label{tab:objectives}
+\renewcommand{\arraystretch}{1.5}
+\renewcommand{\tabcolsep}{0.5em}
+\centering
+\scriptsize{
+\begin{tabular} {p{1cm}p{5cm}}
+\toprule
+\textbf{Objective} & \textbf{Description} \\
+\hline
+G1 & Max-min fair allocation of topic table across topics \\
+\hline
+%G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
+%\hline
+G2 & All advertisers within each topic should have a similar probability of being discovered. \\
+\hline
+G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
+\hline
+G4 & The registration operations should be efficient in terms of time. \\
+\hline
+G5 & The registration operations should be efficient in terms of messaging, computational, and state maintenance overhead. \\
+\hline 
+G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count) for all the topics independent of their popularity. \\
+\hline
+%G7 & The number of registrations should be sufficient for an efficient discovery. \\ Onur: I don't think we need this
+%\hline
+G7 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
+\hline 
+G8 & The protocol should be resistant to attacks by malicious nodes or their Sybils. \\
+\hline
+\end{tabular}
+}
+\vspace{-0.2in}
+\end{table}
+
+
+The end-goal of service discovery is to enable nodes to be discovered under topics which they choose to be associated with in a secure, robust and efficient manner. \Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below. We define two main questions which need to be answered before achieving our goals:
+\begin{enumerate}
+    \item Where should specific ads be placed in the network?
+    \item How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?
+\end{enumerate}
+
+\para{Where should specific ads be placed in the network?} We envision a large number of topics in the system. However, it is difficult to predict the actual number. The number of topics in the system might also change over time. 
+
+The Ethereum DHT offers the default \emph{put} and \emph{get} operations that store data on a single node who's ID is the closest to the hash of the data. The procedures uniformly distribute the topics across the network and make efficient use of the existing routing in the DHT table (\textbf{+G4, +G5}). Unfortunately, such an approach results in unequal load across registrar if the popularity of the topics vary significantly. Advertisers storing popular topics would receive a large portions of the request (\textbf{-G3}). Furthermore, when a topic-specific registrar leaves the network, the registration process must re-start from scratch causing disturbance in the network (\textbf{-G7}). It is also fairly easy for an attacker to generate Sybil nodes with IDs close to the topic hash and take control over the entire topic-specific traffic (\textbf{-G8}). Multiple work  proposed to enhance regular \emph{put} and \emph{get} operations by simultaneously using multiple hash functions [\hl{REF}] or increasing the number of nodes storing values for each key[\hl{REF}]. Unfortunately, such approaches only slightly increase the amount of resources a malicious player needs to launch a successful attack against a topic. 
+
+Alternatively, advertisers could place their ads on random advertisers across the entire network. This approach is much more difficult to attack as a malicious player would need to take control over the entire network to control a single topic (\textbf{+G8}). Furthermore, random placement is resistance to network dynamics, as registrations are stored on multiple registrars (\textbf{+G7}). It also achieves good load balance across registrars regardless of the topic popularity distribution (\textbf{+G3}). On the other hand, random placement makes it difficult for searchers to find placed placed ads, especially for unpopular topic. Either, the advertisers place a large number of ads to simplify the search, or searchers need to consult multiple registrars before finding a relevant ad and simplify the registration. Both approaches require significant amounts of time ((\textbf{-G3}) and additional traffic (\textbf{-G4}). 
+
+\sysname implements an alternative approach that combines advantages of both the regular DHT \emph{put}, \emph{get} operations and the random placements. When an advertiser wants to place an ad for a topic, it first hashes the topic and creates a topic-specific \textbf{Topic Table} (\Cref{fig:ticket_table}. The topic table is similar to the DHT routing table but pre-populated with peers from the routing table but organized in buckets in a different way. It creates buckets based on the distance from the topic hash instead of relying on the distance from the node ID (as the DHT routing table does). To advertiser starts by a topic table bucket that is the furthest away from the topic hash (\ie \emph{bucket 1} on \Cref{fig:ticket_table}) and randomly chooses a fixed amount of peers from this bucket where the advertiser will attempt to register. It will then move to the next bucket (\ie \emph{bucket 1} on \Cref{fig:ticket_table}) and repeats the operation gradually moving towards the topic hash. 
+
+
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{img/ticket_table}
+    \caption{Creation of ticket table from the routing table.}
+    \label{fig:ticket_table}
+ \end{figure}
