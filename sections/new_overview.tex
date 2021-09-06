@@ -58,9 +58,13 @@ Combining topic-oriented bucket organization together with intra-bucket random a
 
 
 \begin{figure}
-    \includegraphics[width=0.5\textwidth]{img/ticket_table}
+    \includegraphics[width=0.45\textwidth]{img/ticket_table}
     \caption{Creation of ticket table from the routing table.}
     \label{fig:ticket_table}
  \end{figure}
  
- \para{How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?}
+ \para{How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?} We assume the registrars will store ads in a fixed size \textbf{topic table}. The ad distribution procedure from above attempts to spread the load equally across nodes in the network. However, malicious nodes may decide to ignore the protocol trying to overload one or multiple registrars with their traffic. Furthermore, honest advertisers registering for large number of topics may exhaust limited resources of the registrars. 
+ 
+ \sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism}. When an advertisers sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). The registrar also issues a \textbf{ticket} to the advertiser. The ticket specifies the time of the initial request, the calculated waiting time and is digitally signed by the registrar. The advertiser includes the ticket in its following registration requests and will be admitted only if the waiting is lower than the time the advertiser already waited for (as indicated by the initial request time). 
+ 
+ The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the topic table?) and space left in the topic table. The more different the request is (in terms of the IP/ID of the registrar and the topic) from the current content of the topic table, the lower the calculated waiting time. At the same time, the calculated waiting time increases as the topic table fill in. The diversity score simplifies the admission for unpopular topic, as receive lower waiting times and are more likely to be admitted (\textbf{+G1, +G2}). Furthermore, high diversity of the topic table makes \sysname resistant to network dynamics (\textbf{+G7}). The proposed admission mechanism also prevents Sybil attacks performed by an attacker with a limited amount of resources (\textbf{+G8}). For instance, consecutive registration attempts from a single IP address will receive increasing waiting time eventually blocking further registration attempts made by the attacker. Including the current topic table size in the waiting time improves the load distribution. Registrars located close to the hashes popular topics will quickly will their topic table and return higher waiting times to the advertiser limiting the incoming traffic (\textbf{+G3}). 
