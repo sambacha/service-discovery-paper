@@ -4,11 +4,13 @@
 \section{System model}
 \label{sec:model}
 
-\michal{Say we build on top of the DHT. What do we need from the DHT?}
-\michal{Those are speerate layers.}
+%\michal{Say we build on top of the DHT. What do we need from the DHT?}
+%\michal{Those are speerate layers.}
 We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes cannot share the same ID.  
 
-Our system indexes participants by their registered topic identifiers or topic(s), for short. 
+Our system is built on top of existing Ethereum DHT used in Discv4, \ie nodes use Ethereum DHT to bootstrap and initially discover nodes to fill Discv5 tables,  however its operation is independent from current Ethereum DHT and could be implemented without it.
+
+The system indexes participants by their registered topic identifiers or topic(s), for short. 
 A \emph{topic} is an identifier for a service provided by a node. 
 All nodes play the following roles in the network:
 
@@ -21,14 +23,19 @@ Registrar may hold advertisements for multiple topics.
 All nodes in the network play the searcher role when trying to discover nodes in the network for every topic application it runs.
 \end{itemize}
 
-Multiple advertisers/searchers hosted by the same DHT node will share the same ID and IP address but will differ in topic. 
+%Multiple advertisers/searchers hosted by the same DHT node will share the same ID and IP address but will differ in topic. 
+A DHT node can participate in advertising and searching for multiple topics and they will use the same ID and IP for all topics.
 
-
-Our system indexes participants by their registered topic identifiers or topic(s), for short. A \emph{topic} is an identifier for a service provided by a node. A node providing a certain service, each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
-
-A node providing a certain service,  each identified with a topic,  is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
-An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
+%Our system indexes participants by their registered topic identifiers or topic(s), for short. 
+%A \emph{topic} is an identifier for a service provided by a node.
+A node providing a certain service,  each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
+An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. 
+Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
 We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
+
+%A node providing a certain service,  each identified with a topic,  is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
+%An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
+%We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
 
 We assume the presence of adversarial or malicious nodes in the DHT. 
 Malicious nodes are nodes that do not strictly follow the protocol to communicate with any other nodes in the network,  trying to get some benefit or have the control of the network.
@@ -39,17 +46,19 @@ filtering the victim’s view of the blockchain.
 Eclipse attacks
 enable a variety of follow-up attacks such as double spending
 and stubborn mining~\cite{stubborn}.
-Regardless of the number of the attacker, we assume nodes are able to discover valid nodes at the DHT level and are not fully eclipsed by having only malicious nodes on their routing tables.
+Regardless of the presence of the attackers in the network, 
+we assume that nodes are able to discover valid nodes and are not fully eclipsed by having only malicious nodes on their routing tables at the Ethereum DHT level.
 %Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  
 %
 %\sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
 
-The malicious node may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
-As creating a node requires maintaining periodic, encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. 
-We also assume that the number of IP addresses under the control of an attacker is limited. 
-However, an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
+Malicious nodes may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
+As creating a node requires maintaining periodic,  encrypted communication with its peers,  the number of active IDs an attacker can posses at a time is limited. 
+Also,  maintaining nodes require some infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker is limited, as well as the fact 
+%We also assume that the number of IP addresses under the control of an attacker is limited. 
+that an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
 
-\onur{maybe we should indicate somewhere that DHT and discovery are separate layers and are largely independent except initially DHT is used for bootstrapping the discovery.}
+%\onur{maybe we should indicate somewhere that DHT and discovery are separate layers and are largely independent except initially DHT is used for bootstrapping the discovery.}
 
 
