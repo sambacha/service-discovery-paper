@@ -68,7 +68,7 @@ Both approaches require significant amounts of time ((\textbf{-G3}) and addition
 
 \sysname implements an alternative approach that combines advantages of both the regular DHT \emph{put}, \emph{get} operations and the random placements. 
 When an advertiser wants to place an ad for a topic,  it first hashes the topic and creates a topic-specific table we call \textbf{Ticket Table} (\Cref{fig:ticket_table}. 
-The ticket table is similar to the DHT routing table but pre-populated with peers from the routing table but organized in buckets in a different way. 
+The ticket table is similar to the DHT routing table but pre-populated with peers from the routing table but organized in buckets in a different way and used to store the tickets used for the ongoing registrations.
 It creates buckets based on the distance from the topic hash instead of relying on the distance from the node ID (as the DHT routing table does). 
 The advertiser chooses a fixed amount of nodes per bucket and starts the registration process for each of them.
 Registrars store registrations in a table called \textbf{Topic Table},  where registrations are indexed by topic.
