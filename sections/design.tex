@@ -6,7 +6,7 @@
 
 In the following, we provide an overview of the design and the objectives of \textit{i)} registration operations at a single registrar, followed by \textit{ii)} the process of distributing ads and performing search across multiple registrars in the network. Finally, we discuss the process of search and establishing sub-protocol connections. 
 
-\subsection{Topic registration with a single registrar}
+\subsection{Topic registration with a single registrar}\label{sec:registration_single}
 
 Central to the registration process is the topic table. 
 Below, we provide a description of the topic table, followed by the registration process with a single registrar. 
@@ -74,7 +74,7 @@ In addition to the waiting time,  the sequence of tickets issued by a registrar 
     \label{fig:ticket_validity}
 \end{figure}
 
-\subsection{Distributing ads across registrars}
+\subsection{Distributing ads across registrars}\label{sec:registration_multi}
 
 The above description explains the storage and placement of ads on a single registrar, but the advertisers need to distribute ads redundantly on multiple nodes in order to speed up its discovery and to be discovered by more searchers at once. 
 The main goal of distributing advertisements to be found within the network. An important issue is how advertisers distribute their ads among registrar nodes. 
@@ -136,7 +136,7 @@ In case no nodes have been found for the bucket distance,  a Kademlia lookup is 
 Also, all nodes in the checked bucket are pinged to check they are still alive. 
 In case they are not, tickets for those dead nodes are removed from the ticket table and registrations to new nodes are initiated.
 
-\subsection{Topic Search}
+\subsection{Topic Search}\label{sec:lookup}
 
 The purpose of placing ads is to be discovered by other nodes interested in the same topic.  
 Searcher nodes maintain a separate table that they use to keep track of on-going searches called the \emph{search table}. 
