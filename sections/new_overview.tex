@@ -96,7 +96,7 @@ Furthermore, attacking every advertiser holding topic-specific ads is impossible
  \para{How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?} We assume the registrars will store ads in a fixed size \textbf{topic table}. The ad distribution procedure from above attempts to spread the load equally across nodes in the network. 
 However, malicious nodes may decide to ignore the protocol trying to overload one or multiple registrars with their traffic. 
 Furthermore,  honest advertisers registering for large number of topics may exhaust limited resources of the registrars. 
- 
+ \michal{Add more motivation here. Show some examples of Sybil attacking. }
  \sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism}. When an advertisers sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). 
 The advertiser will have to wait a reported waiting time by the registrar and only then the advertiser will be able to place a registration that will be admitted by the registrar.
 %The registrar also issues a \textbf{ticket} to the advertiser. The ticket specifies the time of the initial request, the calculated waiting time and is digitally signed by the registrar. The advertiser includes the ticket in its following registration requests and will be admitted only if the waiting is lower than the time the advertiser already waited for (as indicated by the initial request time). 

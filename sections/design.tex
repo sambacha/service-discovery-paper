@@ -11,8 +11,8 @@ In the following, we provide an overview of the design and the objectives of \te
 Central to the registration process is the topic table. 
 Below, we provide a description of the topic table, followed by the registration process with a single registrar. 
 
+\michal{It might be better to first describe the data structures used (tickets, tables) and then explain the protocol}
 \subsubsection{Topic Table}
-
 Registrars store advertisers ads locally in a data structure called \emph{topic table}, 
 indexed by advertisement topic. 
 Each list of ads for a particular topic in the table  can be considered as a \emph{topic queue} because it functions like a FIFO queue.
@@ -50,7 +50,8 @@ Tickets are immutable objects storing arbitrary information determined by the is
 
 An advertiser willing to register an ad at a registrar must first obtain a ticket from that registrar by sending a 'ticket request' (TICKETREQUEST) message to the registrar. In response to the ticket request, the registrar issues an initial ticket containing a 'waiting time' and sends the ticket to the advertiser in a 'ticket response' message. The advertiser can come back to the registrar (to register an ad) after the waiting time has elapsed and present the ticket in a 'topic registration request' (i.e., REGTOPIC) message.
 
-Any REGTOPIC messages that are not sent durint the registration window determined by the waiting time (indicated in the ticket),   (as seen in Figure \ref{fig:ticket_validity}) are ignored by the registrars.  
+\michal{Change the markdown notation of variables (CAPACITY) to scientific (n)}
+Any REGTOPIC messages that are not sent during the registration window determined by the waiting time (indicated in the ticket),   (as seen in Figure \ref{fig:ticket_validity}) are ignored by the registrars.  
 If the advertiser comes back during the established registration window,  the advertiser can either place the ad (and notify the advertiser of a successful registration) or issue another ticket with a new waiting time in another ticket response message. 
 An advertiser may be given one or more tickets in a sequence before a successful registration,  and this means that overall the advertiser waits for a 'cumulative waiting time' period that is the sum of multiple waiting times issued in each ticket in the sequence before finally registering an ad. 
 Assignment of 'waiting times' is the only way the registrars can control the registrations in order to both:
@@ -77,6 +78,7 @@ In addition to the waiting time,  the sequence of tickets issued by a registrar 
 \subsection{Distributing ads across registrars}\label{sec:registration_multi}
 
 The above description explains the storage and placement of ads on a single registrar, but the advertisers need to distribute ads redundantly on multiple nodes in order to speed up its discovery and to be discovered by more searchers at once. 
+\michal{The paragraph below discusses goals that should already be presented in the overview/model.}
 The main goal of distributing advertisements to be found within the network. An important issue is how advertisers distribute their ads among registrar nodes. 
 Since every node may act as an advertisement medium for any topic,  advertisers and searchers looking for ads must somehow meet at common registrars. 
 Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes. Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.
@@ -97,7 +99,7 @@ Since the table is limited to K values per bucket,  this means there are K on-go
 The number of buckets used in the ticket table is a configurable parameter, but it is recommended to use small number of buckets,  instead of using a bucket per bit of the address space,  to avoid overloading registrars with IDs close to the topic hash. 
 Any node with a distance below the maximum distance minus the number of buckets will be stored in the same bucket.
 In our evaluation we used a ticket table with 10 buckets. 
-
+\michal{We're mixing here single-registrar registration process. It should be covered in the first section.}
 In our approach,  advertisers start a limited number of parallel registrations in each ticket table bucket distance.
  More specifically, an advertiser follows the below steps to distribute its ads for a specific topic:
 \begin{enumerate}
