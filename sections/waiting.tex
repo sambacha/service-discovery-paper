@@ -94,8 +94,14 @@ The formula can be simplified like in equation~\ref{eq:simp}, where ss determine
 \end{equation}
 
 \subsection{Lower Bound}
-With the waiting time formula, every change to the content of the topic table may increase or decrease waiting times of other requests. An advertiser receiving waiting time $w(t_1)$ at time $t_1$, may get a smaller waiting time $w(t_2)$ at time $t_2$ ($t_1 < t_2$) (\eg when an ad for the same topic expires between $t_1$ and $t_2$). As a result, advertisers willing to minimize their waiting time are incentivized to keep checking the waiting time as frequently as possible hoping for a better one.
-One solution to this problem is to take into account all the expiration times when calculating the waiting time. However, such a solution is computationally expensive (\eg $O(n)$) and unfeasible in practice.
+With the waiting time formula, every change in the registrations stored in  the topic table may increase or decrease waiting times of other requests. 
+Therefore,  an advertiser receiving waiting time $w(t_1)$ at time $t_1$, may get a smaller waiting time $w(t_2)$ at time $t_2$ ($t_1 < t_2$) in case the situation of the topic table is very different (\eg when an ad for the same topic expires between $t_1$ and $t_2$). 
+As a result,  advertisers willing to minimize their waiting time can be incentivized to keep checking the waiting time as frequently as possible hoping for a better one.
+However, this can be a problem. 
+Registration ticket requests should be kept to the minimum and an incentive for constantly spamming ticket requests to get a better waiting time can overload a network and can lead to some nodes getting better performance than the rest.
+Thus we designed a mechanism to avoid that any node that is already in possession of a ticket with a determined waiting time,   can get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by issuing new ticket requests.
+One solution to this problem is to take into account all the expiration times when calculating the waiting time. 
+However, such a solution is computationally expensive (\eg $O(n)$) and unfeasable in practice.
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/lower_bound.png}
@@ -104,7 +110,8 @@ One solution to this problem is to take into account all the expiration times wh
 \end{figure}
 
 When asking for a new waiting time before the previously obtained one elapses, an advertisers loses its already accumulated waiting time . It means that asking for a new waiting at time $t_2$ can lower the overall waiting only if the new waiting time is $w(t_2)$ is smaller than $w(t_1)$ by more than $t2 - t1$: $w(t_1) - w(t_2) < t_2 - t_1$.
-To make sure it is not the case, our protocol enforces a lower bound on the waiting time. \Ie we make sure that a advertiser's waiting time received at $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than $t2 - t1$ (\Cref{fig:lower_bound}). However, holding such a bound for every request (\ie every combination of IP/ID/topic) would cause significant memory overhead ($O(|IPs|\times|IDs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create state at the registrar. 
+To make sure it is not the case,  our protocol enforces a lower bound on the waiting time. \Ie we make sure that a advertiser's waiting time received at $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than $t2 - t1$ (\Cref{fig:lower_bound}). 
+However, holding such a bound for every request (\ie every combination of IP/ID/topic) would cause significant memory overhead ($O(|IPs|\times|IDs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create state at the registrar. 
 
 To store the lower bound in a more efficient way, we rewrite the waiting formula as a sum of topic/IP/ID distinctive parts:
 
