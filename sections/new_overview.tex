@@ -87,11 +87,7 @@ At the same time, searchers of low-popularity topics are guaranteed to find ads 
 Furthermore, attacking every advertiser holding topic-specific ads is impossible due to the unpredictable nature of placing ads. 
 
 
-\begin{figure}
-    \includegraphics[width=0.45\textwidth]{img/ticket_table}
-    \caption{Creation of ticket table from the routing table.}
-    \label{fig:ticket_table}
- \end{figure}
+
  
  \para{How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?} We assume the registrars will store ads in a fixed size \textbf{topic table}. The ad distribution procedure from above attempts to spread the load equally across nodes in the network. 
 However, malicious nodes may decide to ignore the protocol trying to overload one or multiple registrars with their traffic. 
@@ -110,3 +106,8 @@ For instance, consecutive registration attempts from a single IP address will re
 The waiting time mechanism also improves the load distribution in the network since it includes to current topic table size in the waiting time calculation.
 %Including the current topic table size in the waiting time also improves the load distribution. 
 Registrars located close to the hashes popular topics will quickly fill their topic table and return higher waiting times to the advertiser limiting the incoming traffic (\textbf{+G3}),  throttling down registrations requests for the nodes that initially receive more registrations requests (that will be nodes with nodes IDs close to topic hash ID).
+
+\michal{Incorporate the below into the text}
+The main goal of distributing advertisements to be found within the network. An important issue is how advertisers distribute their ads among registrar nodes. 
+Since every node may act as an advertisement medium for any topic,  advertisers and searchers looking for ads must somehow meet at common registrars. 
+Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes. Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.
