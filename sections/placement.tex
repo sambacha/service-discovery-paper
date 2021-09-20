@@ -56,9 +56,9 @@ Similarly to the DHT routing, the registration procedure is guaranteed to find t
 
 
 
-In addition to that, every time a node sends a ticket or registration request, the registrar replies with the closest nodes to 'the topic hash' that it knows. 
-This helps filling up k-buckets without sending additional lookups. 
-Also, when performing topic search (sending lookups for specific topics),  closest known nodes to 'the topic hash' are attached by the registrar node in the response.
+%In addition to that, every time a node sends a ticket or registration request, the registrar replies with the closest nodes to 'the topic hash' that it knows. 
+%This helps filling up k-buckets without sending additional lookups. 
+%Also, when performing topic search (sending lookups for specific topics),  closest known nodes to 'the topic hash' are attached by the registrar node in the response.
 
 
 
@@ -69,29 +69,17 @@ The goal is to find $N_\textit{lookup}$ node advertised with a specific topic.
 The searcher starts by creating a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
 \michal{Should we have separate $K$ for registration and lookup? You might argue that if less ads are placed, more lookups are needed and vice-versa.}
 The searchers progressively moves through buckets (starting from the furthest away), randomly chooses $K$ registrars per buckets and sends them lookup requests. 
-\michal{Finished here.}
+Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
+There is a tradeoff between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
+By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) and low amount of ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to more equal load spread. We investigate the impact of both parameters in \Cref{sec:eval}. 
+Once ads are discovered, the searcher initiates topic-specific connections based on resules specified by the application. 
 
 
 
-\texttt{ALPHA} is the parameter that establishes how many lookup messages are sent in parallel, and by default is set to \texttt{3}.
-In case not enough results have been received for the first ALPHA lookups,  additional ALPHA parallel lookups are performed until
-reaching the goal of number of discovered node per topic.
-This is also a configurable parameter names \texttt{LOOKUP\_LIMIT} and by default is set to \texttt{50 nodes}. 
-In case  \texttt{LOOKUP\_LIMIT}  is not reached, the lookup process is stopped after a maximum number of hops. 
-\texttt{MAX\_LOOKUP\_HOPS} is established to set to number of hops limit, and is set to 50 by default.
-Once  \texttt{LOOKUP\_LIMIT} or \texttt{MAX\_LOOKUP\_HOPS} is reached,  all nodes discovered for the queried topic are sent to the client to start establishing connections with the nodes.
-After trying connections with all nodes,  subsequent lookups are performed in case is necessary to discover additional nodes.
 
-We implemented and evaluated a lookup strategy that choose which nodes from which buckets ask first trying to diversify the nodes discovered as much as possible and trying not to overload nodes close the topic hash.
-A random node is picked from a bucket following a round-robin approach. 
-It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
-In order to find new results,  bucket entries are replaced when the node fails to answer or when it answers with an empty list of ads. 
-
-There is also a refresh process,  equivalent to the \emph{ticket table} refresh process, where random buckets are selected and all nodes in the buckets are checked for liveness.
-In case the bucket is empty a Kademlia lookup is performed towards the topic hash.
 
 \subsubsection{Updating connections}
-
+\michal{Didn't touch this subsection. Should it be here?}
 Using the search results, a searcher updates its subprotocol-specific connections. 
 For instance,  each Ethereum client keeps connections towards 50 other nodes,  2/3 of those are for inbound connections (\ie 34 connections) where the client has no control over them, and the rest (about 16 connections) are four the outbound connections initiated towards the discovered nodes using the discovery protocol. 
 When a lookup is done,  the nodes discovered are stored in a buffer. 
@@ -136,3 +124,13 @@ Therefore connections are initiated always trying to keep the maximum diversity 
 %Also, all nodes in the checked bucket are pinged to check they are still alive. 
 %In case they are not, tickets for those dead nodes are removed from the ticket table and registrations to new nodes are initiated.
 
+
+
+
+%We implemented and evaluated a lookup strategy that choose which nodes from which buckets ask first trying to diversify the nodes discovered as much as possible and trying not to overload nodes close the topic hash.
+%A random node is picked from a bucket following a round-robin approach. 
+%It starts picking a random node from the highest distance bucket and follows to the next distance in the bucket list.
+%In order to find new results,  bucket entries are replaced when the node fails to answer or when it answers with an empty list of ads. 
+
+%There is also a refresh process,  equivalent to the \emph{ticket table} refresh process, where random buckets are selected and all nodes in the buckets are checked for liveness.
+%In case the bucket is empty a Kademlia lookup is performed towards the topic hash.
