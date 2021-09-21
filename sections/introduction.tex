@@ -13,26 +13,7 @@ Ethereum~\cite{} is a decentralized, open-source blockchain for distributed comp
 
 Following its decentralized design, Ethereum relies on a Peer-to-Peer (P2P) communication network, where individual nodes, running an Ethereum client software (\eg Go Ethereum~\cite{go-ethereum}), send and receive messages containing transactions and blocks to achieve distributed consensus, without relying on any central node or a trusted third party. The core system and the associated protocols used by the peers to participate in the Ethereum P2P network is included as part of a suite called DEVp2p. This suite includes individual sub-systems and protocols for services such as node discovery, establishing secure or transport-level communication between peers. 
 
-%The set of network protocols which form the Ethereum P2P network are called DEVp2p. % DEVp2p is not specific to a particular blockchain, but should serve the needs of any networked application associated with the Ethereum umbrella. %%% this is copy-paste from eth docs. 
-
-
-%Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
-%\michal{The above seems too detailed IMO. We can introduce DEV2p, RLPx etc. in the background. I'd only say that Ethereum DHT can be used by other services (not necessarily blockchain related) and give some examples.}
-
-%DEVp2p is the responsible of managing the connections to other peers which form the overlay P2P network.
-%For instance,  Go-ethereum client by default establish a total of 50  connections to other Ethereum nodes.  Of these 50 slots,  two thirds are reserved for inbound connections (initiated by other peers),  while the remaining third are allocated for outbound connections. 
-%No further restrictions apply to inbound connections; if an inbound slot is available
-%Go-ethereum client simply accepts any connecting peer that supports the
-%Ethereum protocol and operates on the same network (main,
-%testing, etc.). 
-%The outbound slots are therefore selected by the nodes, which need to be done carefully to avoid any attacker could mount an eclipse attack.
-%In an eclipse attack, an
-%adversary monopolizes the connections of a victim, effectively
-%filtering the victim’s view of the blockchain.  Eclipse attacks
-%enable a variety of follow-up attacks such as double spending
-%and stubborn mining~\cite{}.
-%\michal{ditto}
-
+\michal{It'd be good to say why Ethereum wants to have a common P@P network for many applications.}
 Regardless of whether they use the Ethereum blockchain or not, many decentralised, networked, application services---\eg Swarm (file storage)~\cite{}, iExec (computation offloading)~\cite{}, and so on---can participate in the Ethereum network to take advantage of DEVp2p functionality, most notably its node discovery sub-system. Node discovery enables discovery of peers to form a service-specific sub-network of interest (\eg peers joining the Swarm network) and to maintain connections to live nodes in those sub-networks. By forming these dedicated subnetworks, each service confines the dissemination of its messages (\eg event notifications) to only the interested peers.
 
 Unlike existing discovery protocols that work in a local setting (MDNS/Bonjour) or rely on centralisation and trusted operators (\eg rendezvous servers in pub-sub systems~\cite{}), node discovery in Ethereum must work at large scale (in the global Internet) and in a completely decentralised setting  (\ie a trust-less environment). 
@@ -89,6 +70,27 @@ In an open, decentralised system, where attacks can be neither easily stopped no
 % \item New table structure on top of the existing Kademlia DHT to store node information based on topics advertised.
 % \item New lookup mechanism that discover nodes based on the topics advertised in the P2P network.
 %\end{itemize}
+
+
+%The set of network protocols which form the Ethereum P2P network are called DEVp2p. % DEVp2p is not specific to a particular blockchain, but should serve the needs of any networked application associated with the Ethereum umbrella. %%% this is copy-paste from eth docs. 
+
+
+%Between the DEVp2p network protocols and the app protocol (i.e., Ethereum, Whisper, Swarm, etc), RLPx~\cite{} provides a secure transport layer. 
+%\michal{The above seems too detailed IMO. We can introduce DEV2p, RLPx etc. in the background. I'd only say that Ethereum DHT can be used by other services (not necessarily blockchain related) and give some examples.}
+
+%DEVp2p is the responsible of managing the connections to other peers which form the overlay P2P network.
+%For instance,  Go-ethereum client by default establish a total of 50  connections to other Ethereum nodes.  Of these 50 slots,  two thirds are reserved for inbound connections (initiated by other peers),  while the remaining third are allocated for outbound connections. 
+%No further restrictions apply to inbound connections; if an inbound slot is available
+%Go-ethereum client simply accepts any connecting peer that supports the
+%Ethereum protocol and operates on the same network (main,
+%testing, etc.). 
+%The outbound slots are therefore selected by the nodes, which need to be done carefully to avoid any attacker could mount an eclipse attack.
+%In an eclipse attack, an
+%adversary monopolizes the connections of a victim, effectively
+%filtering the victim’s view of the blockchain.  Eclipse attacks
+%enable a variety of follow-up attacks such as double spending
+%and stubborn mining~\cite{}.
+%\michal{ditto}
 
 We evaluate the system under different system parameters and against state-of-the-art decentralised discovery systems. Our system achieves better load-balancing and requires more resource consumption by the attackers to successfully launch attacks such as eclipsing attacks. We also provide performance evaluation results from both simulations and from real system deployment.  
     

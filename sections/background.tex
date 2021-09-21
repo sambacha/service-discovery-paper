@@ -4,10 +4,10 @@
 \section{Background}
 \label{sec:background}
 
-\michal{Need a good introduction on Kademlia here. Distances/buckets etc. It's required to explain the ticket table, routing etc.}
-\etienne{How different is the Ethereum Kademlia from the original published version? I can assume there have been changes in so many years. Is there a reference document for the Ethereum's Kademlia I can read?}
-\sergi{From what i remember main difference are num of buckets and use of log distance.  I don't remember any document but Felix will help.}
-\sergi{We should also add how kademlia is used for discovery (when lookups are performed, lookup buffer use,  pool of connections, random lookups, etc}
+%\michal{Need a good introduction on Kademlia here. Distances/buckets etc. It's required to explain the ticket table, routing etc.}
+%\etienne{How different is the Ethereum Kademlia from the original published version? I can assume there have been changes in so many years. Is there a reference document for the Ethereum's Kademlia I can read?}
+%\sergi{From what i remember main difference are num of buckets and use of log distance.  I don't remember any document but Felix will help.}
+%\sergi{We should also add how kademlia is used for discovery (when lookups are performed, lookup buffer use,  pool of connections, random lookups, etc}
 
 %Ethereum is a blockchain platform for distributed computing and was the first major blockchain to support Turing-complete scripting via smart contracts, which are expressed as opcodes specific to the Ethereum Virtual Machine (EVM) [55]. Ethereum also operates as a cryptocurrency by supporting the transfer of tokens called ether between Ethereum accounts. In addition to its use as a fiat currency, ether is also used to incentivize Ethereum nodes to perform dis- tributed computation. Ether can also be converted to gas, which is used as a fee for executing transactions and smart contracts, and effectively mitigates spam. 
 %\sergi{Moved to intro.}
@@ -37,9 +37,30 @@ In order for a newly instantiated DHT node to find peers, it first adds a hard-c
  
  The Ethereum DHT is shared across multiple applications.  This includes the Ethereum main net, multiple Ethereum testnets (Rinkeby, Ropsten) or alternative cryptocurrencies (Pirl, Musicoin). In 2018, the Ethereum DHT nodes operated a total of 4,076 different applications~\cite{kim2018measuring}. Currently, a node trying to find application specific peers performs a random walk through the DHT, establishes connections to encountered nodes and verifies the supported protocols at the application level. 
 
-\sergi{I would add here: 
-- Differences between KAd dht and Ethereum DHT
-\michal{We already present the modified version of the DHT. Not sure we need to start from Kadmlia and then present the differences. Might take more space.}
 - Existing Discv4 / Eth client properties
 - Security challenges including sybil attacks and eclipsing
-\michal{I agree, but probably later on in the model.}}
+
+\subsection{Discovering Peers with Discv4}
+
+In the current discovery system, nodes maintain a discovery table whose sole purpose is to maintain a set of known-peers. The structure of the discovery table is identical to a routing table-each node organises known-nodes according to their distance from itself. A node populates its routing table by attempting to locate a random target node ID and store the nodes encountered during the process in its discovery table, \ie a random walk. When the node locates the closest peers to a random target, the walk is complete. 
+
+Once a node starts populating its discovery table with peers, the node starts establishing an individual application-level session (\ie handshake) with each known-peer in the table in order to identify their subprotocol. In case, the node discovers that a peer is part of a target subprotocol, then the node can send a connection request to the peer (see Section~\ref{sec:connections}) after the handshake; otherwise, the handshake session is terminated. The process of looking for peers is suspended when a node establishes a sufficient number of outbound connections.
+
+This brute-force discovery approach involving random walks and handshakes has several drawbacks. First of all, handshakes with peers that are not running a target subprotocol are wasteful and costs unnecessary overhead. More importantly, random walks can take long time to discover peers that are part of unpopular subprotocols (\ie subprotocols for which there are a small number of peers). 
+
+\subsection{Application-level Connections}
+\label{sec:connections}
+
+DEVp2p is responsible for managing the connections to other peers which form the overlay P2P network. For instance,  the Go-ethereum client by default establishes a total of 50  connections to other Ethereum nodes.  Of these 50 slots, around two-thirds (\ie 34) are reserved for inbound connections,  while the remaining 16 are allocated for outbound connections. Inbound connections are initiated by remote peers of a node with a connection request, and the node can decide whether to accept or reject the request. When all the incoming connection slots of a node are full, the node rejects the incoming connection. If a slot is free, a node is free to accept a connection request, although, it is not recommended for simply accepting any request for security reasons as we explain below.
+
+The nodes must carefully select which peers to connect with in order to avoid eclipse attacks. In an eclipse attack, an adversary monopolises all the connections of a victim node with its Sybils, \ie eclipsing the connections, effectively controlling the victim's view of the network. Once it eclipses a victim, an adversary can then feed the victim custom protocol messages as part of a follow-up attack such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
+
+Avoiding eclipsing requires careful selection of peers to fill the 50 slots. The set of connections require protection from Eclipsing attacks where an adversary uses a set of Sybil nodes to monopolize the connections of a victim, isolating from the rest of the network. Inbound connections are chosen from incoming connection requests from peers. Enforcing IP diversity in the chosen inbound peers is recommended by existing studies~\cite{henningsen2019eclipsing, marcus2018low}. Outbound connections are chosen locally and picking a random subset from a large list of known-nodes is shown to be effective against eclipsing attacks. 
+
+
+%In an eclipse attack, an
+%adversary monopolizes the connections of a victim, effectively
+%filtering the victim’s view of the blockchain.  Eclipse attacks
+%enable a variety of follow-up attacks such as double spending
+%and stubborn mining~\cite{}.
+%\michal{ditto}
