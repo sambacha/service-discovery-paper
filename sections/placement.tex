@@ -68,27 +68,30 @@ To find ads, \sysname uses a process similar to the registration procedure.
 The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
 The searcher starts by creating a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
 \michal{Should we have separate $K$ for registration and lookup? You might argue that if less ads are placed, more lookups are needed and vice-versa.}
+\sergi{we actually use different values of $k$ for registration and search.  we could name it differently}
 The searchers progressively moves through buckets (starting from the furthest away), randomly chooses $K$ registrars per buckets and sends them lookup requests. 
 Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
 There is a tradeoff between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
-By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) and low amount of ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to more equal load spread. We investigate the impact of both parameters in \Cref{sec:eval}. 
-Once ads are discovered, the searcher initiates topic-specific connections based on resules specified by the application. 
+By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) and low amount of ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. We investigate the impact of both parameters in \Cref{sec:eval}. 
 
-
-
-
-
-\subsubsection{Updating connections}
-\michal{Didn't touch this subsection. Should it be here?}
-Using the search results, a searcher updates its subprotocol-specific connections. 
-For instance,  each Ethereum client keeps connections towards 50 other nodes,  2/3 of those are for inbound connections (\ie 34 connections) where the client has no control over them, and the rest (about 16 connections) are four the outbound connections initiated towards the discovered nodes using the discovery protocol. 
-When a lookup is done,  the nodes discovered are stored in a buffer. 
-For each node of the buffer a connection is initiated. 
-The connection can be successful when the node targeted is alive and has empty slots in the inbound connections,  otherwise the connection is unsuccessful and a new node is selected.
-The nodes from the buffer are consumed as connections are attempted to the nodes.
-The buffer not only stores the nodes information but also the registrar node that replied with it.
+Once ads are discovered,  the searcher can initiate topic-specific connections based on rules specified by the application. 
+Applications do not only receive a list of potential nodes to connect but also the registrar node source of the search response.
 In order to avoid eclipse attacks it is recommended not to start connections with nodes coming from the same registrar. 
 Therefore connections are initiated always trying to keep the maximum diversity of the  registrars nodes used.
+Once all nodes received have been used to try new connections,  a new search process is initiated. 
+
+%\subsubsection{Updating connections}
+%\michal{Didn't touch this subsection. Should it be here?}
+%\sergi{i integrated some part in the last paragrah and the resti is already in the background section}
+%Using the search results, a searcher updates its subprotocol-specific connections. 
+%For instance,  each Ethereum client keeps connections towards 50 other nodes,  2/3 of those are for inbound connections (\ie 34 connections) where the client has no control over them, and the rest (about 16 connections) are four the outbound connections initiated towards the discovered nodes using the discovery protocol. 
+%When a lookup is done,  the nodes discovered are stored in a buffer. 
+%For each node of the buffer a connection is initiated. 
+%The connection can be successful when the node targeted is alive and has empty slots in the inbound connections,  otherwise the connection is unsuccessful and a new node is selected.
+%The nodes from the buffer are consumed as connections are attempted to the nodes.
+%The buffer not only stores the nodes information but also the registrar node that replied with it.
+%In order to avoid eclipse attacks it is recommended not to start connections with nodes coming from the same registrar. 
+%Therefore connections are initiated always trying to keep the maximum diversity of the  registrars nodes used.
 
 %\onur{need to explain this process since security depends on that.}
 

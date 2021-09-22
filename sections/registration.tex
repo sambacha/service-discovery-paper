@@ -53,7 +53,8 @@ The inclusion of issue-time allows the registrars to prioritise advertisers that
 \end{figure}
 
 An advertiser gives up and stops the registration process with a registrar upon either $r$ unsuccessful registration attempts (i.e., after being issued $r$ tickets without being admitted. In that case, the advertiser removes the registrar from its registration table and selects a new node located in the same bucket and attempts a new registration procedure. 
-\michal{Is the below true? Shouldn't we try to register at the same node?}
+%\michal{Is the below true? Shouldn't we try to register at the same node?}
+%\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
 Similarly,  after the expiration of a previously placed ad the node is removed from the ticket table and the process is restarted with a new node picked from the local table.
 
 

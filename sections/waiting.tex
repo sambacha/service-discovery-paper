@@ -37,7 +37,7 @@ Lower values of parameter $P_{topic}$ cause the similarity score to converge to 
 However,  for calculating the IP address diversity we use a different similarity score. 
 A simple similarity score used for IDs and topics cannot be applied for IP addresses. 
 An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}. 
-Previous work \hl{[ref]} often limits the number of IP addresses coming from the same (\eg /24 IPv4 address) network. 
+Go Ethereum client~\footnote{https://github.com/ethereum/go-ethereum} limits the number of IP addresses coming from the same (\eg /24 IPv4 address) network. 
 However,  it is impossible to reliably set those limits without knowledge about the network size or NAT configuration of honest nodes. 
 Instead, we propose an approach that directly captures the similarity level across different IPs and translates it into a numerical score. 
 
