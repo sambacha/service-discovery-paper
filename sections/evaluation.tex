@@ -23,7 +23,7 @@
 
 \subsection{Evaluation Setup}
 
-For the  performance evaluation of the proposed discovery scheme. we extended the existing  large-scale peer-to-peer network simulatior PeerSim~\cite{p2p09-peersim}.
+For the  performance evaluation of the proposed discovery scheme. we extended the existing  large-scale peer-to-peer network simulator PeerSim~\cite{p2p09-peersim}.
 We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. 
 Our network simulator is available here\footnote{https://github.com/datahop/p2p-service-discovery}
 
@@ -126,30 +126,26 @@ Nodes have a pool of 50 connections available, 16 for outgoing connections and 3
 
 %\paragraph{Ticket registrations:
 
-In Figure~\ref{fig:regs} we observe the average active registrations in the system per topic. 
+In Figure~\ref{fig:regs} we observe the average active registrations in the system per topic with different number of nodes in the simulation,  from 500 to 10000 nodes. 
 We can observe nodes for all topics are able to place a substantial amount of registrations, even the less popular topics. 
 As number of nodes increase in the network, we can observe the differences between registrations per topic are reduced. 
 Actually, it can be observed the most popular topic (t1) is able to place less registrations than t2. 
 This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.
 
-In Figure~\ref{fig:time_reg} we observe the average time necessary for a node to place a registration.
+In Figure~\ref{fig:time_reg} we observe the average time necessary for a node to place a registration,  from 500 to 10000 nodes in the simulation.
 We can observe for topic t1 it reaches the limit of advertising lifetime. Once the calculated waiting time exceeds this threshold
 nodes decide to cancel the registration process with the targeted node and try a new registration in another node.
 \sergi{I think we should include failed/uncomplete registrations in the plot}
 
-
-
-
-\sergi{TODO: change Log scale for fig \ref{fig:regs}}
 \begin{figure}[!h]
 \centering
 \subfigure[{Active registrations}]{
-\includegraphics[width=0.225\textwidth]{img/eval/registration_origin.png}
+\includegraphics[width=0.225\textwidth]{img/eval/registration_origin.eps}
 \label{fig:regs}
 } 
 \hspace{-0.25cm}
 \subfigure[{Time to register}]{
-\includegraphics[width=0.225\textwidth]{img/eval/avg_time_register.png}
+\includegraphics[width=0.225\textwidth]{img/eval/avg_time_register.eps}
 \label{fig:time_reg}
 }
  \caption{Ticket registrations} 
@@ -167,27 +163,27 @@ nodes decide to cancel the registration process with the targeted node and try a
 %\end{figure}
 
 %\paragraph{\bf{Network load}:}
-\sergi{TODO: change Log scale for fig \ref{fig:messages}}
 In Figure~\ref{fig:messages}~and~\ref{fig:msg_distr} we can observe the traffic load generated in the network.
 In Figure~\ref{fig:messages} we observe most of the messages are ticket requests/replies, and the subsequent registration request/replies
 after receiving a ticket from a node. 
 This is caused by the fact that nodes are constantly registering dynamically. 
 In Figure~\ref{fig:msg_distr} the messages received distribution. 
 We can observe some nodes receive much more messages.
-This is caused by the bucket ndoe distributiong, where nodes with identifiers close to topic hash ids receive more initial tickets requests because there are less.
-However, we can see the number of messages received does not exceed \hl{X} times the average value of the messages received. 
-Moreover, we can also observe with the increase of nodes in the network, the load that these nodes receive does not increase in the same way. 
+This is caused by the bucket node distribution, where nodes with identifiers close to topic hash ids receive more initial tickets requests because there are less.
+However, we observe while the number of nodes in the network is increased 20 times,  the  maximum number of messages received by some nodes does not increase in the same way,  only being twice the amount when comparing 500 with 10000 nodes,  ans with increases lower than 30\% when number of nodes are doubled.
+Moreover,  we can also see the number of messages received does not exceed 10 times the average value of the messages received. 
+
 Therefore, the system is able to scale without danger of overloading some of the nodes of the network.
 
 \begin{figure}[!h]
 \centering
 \subfigure[{Number of messages}]{
-\includegraphics[width=0.225\textwidth]{img/eval/message_quantity.png} 
+\includegraphics[width=0.225\textwidth]{img/eval/message_quantity.eps} 
 \label{fig:messages}
 } 
 \hspace{-0.25cm}
 \subfigure[{Message distribution}]{
-\includegraphics[width=0.225\textwidth]{img/eval/messages_received2.png} %\hspace{-1.5em}%
+\includegraphics[width=0.225\textwidth]{img/eval/messages_received.eps} %\hspace{-1.5em}%
 \label{fig:msg_distr}
 }
  \caption{Traffic load} 
@@ -196,8 +192,6 @@ Therefore, the system is able to scale without danger of overloading some of the
 \end{figure}   
 
 %\paragraph{\bf{Discovery performance}:}
-
-\sergi{TODO: modify figures with bigger fonts}
 
 In Figure~\ref{fig:reg_disc}~and~\ref{fig:timedisc} we can observe how nodes are discovered within the network.
 In Figure~\ref{fig:reg_disc} we observe the percentage of the nodes in the network that are discovered and how often are discovered.
@@ -215,12 +209,12 @@ We also observe the deviation is bounded at around 60 seconds, with equivalent d
 \begin{figure}[!h]
 \centering
 \subfigure[{Registrant discovery distribution}]{
-\includegraphics[width=0.225\textwidth]{img/eval/registrant_distribution.png} 
+\includegraphics[width=0.225\textwidth]{img/eval/registrant_distribution.eps} 
 \label{fig:reg_disc}
 } 
 \hspace{-0.25cm}
 \subfigure[{Time between registration and first discovery}]{
-\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.png} %\hspace{-1.5em}%
+\includegraphics[width=0.225\textwidth]{img/eval/min_time_discovery.eps} %\hspace{-1.5em}%
 \label{fig:timedisc}
 }
  \caption{Discovery performance} 
@@ -238,7 +232,7 @@ We observe the hopcount keeps quite stable between 20 and 40, even for the least
 \begin{figure}[h!]
 \centering
 %\epsfig{file=imgs/eval/scen5.pdf, width=0.45\textwidth}
-\includegraphics[width=0.35\textwidth]{img/eval/lookup_hopcount.png}
+\includegraphics[width=0.35\textwidth]{img/eval/lookup_hopcount.eps}
 \caption{Lookup performance}
 \label{fig:hopcount}
 \vspace{-0.15in}
