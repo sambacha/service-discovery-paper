@@ -3,31 +3,29 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-
-In  this  section,  we  provide  a  detailed  investigation  of  the performance of the proposed discovery scheme.
-We present the performance evalution in three different subsections. 
-In the first one we evaluate the performance of our novel waiting function by measuring the ticket table occupancy
-according with our design goals and parameters.
-The second one is a thorough performance evaluation under different scenarios, including Sybil attacks, of the whole network discovery solution using a peer-to-peer network simulator.
+%
+%In  this  section,  we  provide  a  detailed  investigation  of  the performance of the proposed discovery scheme.
+%We present the performance evalution in three different subsections. 
+%In the first one we evaluate the performance of our novel waiting function by measuring the ticket table occupancy
+%according with our design goals and parameters.
+%The second one is a thorough performance evaluation under different scenarios, including Sybil attacks, of the whole network discovery solution using a peer-to-peer network simulator.
 %In the third one we include an evaluation using the most used Ethereum client software, Geth~\cite{go-ethereum}, in a testbed scenario.
 
-\subsection{Ticket table occupancy evaluation}
+%\subsection{Ticket table occupancy evaluation}
 
-\sergi{Ticket table occupancy and waiting time evaluation TBC}
+%\sergi{Ticket table occupancy and waiting time evaluation TBC}
 
-\subsection{Network simulator evaluation}
+%\subsection{Network simulator evaluation}
 
-\sergi{TODO: modify figures with bigger fonts}
-\sergi{TODO: registrant distribution is not very readable. probably should be redesigned}
-\sergi{TODO: Lookup performance should be compared with something. Discv4? }
+%\sergi{TODO: modify figures with bigger fonts}
+%\sergi{TODO: registrant distribution is not very readable. probably should be redesigned}
+%\sergi{TODO: Lookup performance should be compared with something. Discv4? }
 
-%\subsubsection{Evaluation Setup}
+\subsection{Evaluation Setup}
 
-For the network performance evaluation we extended the existing 
-large-scale peer-to-peer network simulatior PeerSim~\cite{p2p09-peersim}.
-We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. Our network simulator is available here\footnote{https://github.com/datahop/p2p-service-discovery}
-
-In Table~\ref{tab:param} we show the parameters used in the simulation. 
+For the  performance evaluation of the proposed discovery scheme. we extended the existing  large-scale peer-to-peer network simulatior PeerSim~\cite{p2p09-peersim}.
+We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. 
+Our network simulator is available here\footnote{https://github.com/datahop/p2p-service-discovery}
 
 \begin{table}[!hbt]
 \centering
@@ -75,22 +73,22 @@ Num of connections & 50 \\%& 0.8225 & 0.9897\\
 \vspace{-0.05in}
 \end{table}
 
+In Table~\ref{tab:param} we show the parameters used in the simulation. 
 We performed 4 hours long simulations with different number of nodes from 500 to 10000.
 In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).
 There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.
-Nodes are modeled similarly to an Ethereum client. 
+Nodes are modelled similarly to an Ethereum client. 
 When a node joins the network it starts advertising for the participating topics.
 Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
 for a specific topic to start connections with discovered nodes.
-When an initial lookup is done, the discovered nodes are stored in a buffer per topic.
-Nodes start attempting connections with the discovered nodes from the buffer until all connections 
-are full.
+When an initial lookup is done,  the discovered nodes are stored in a buffer per topic.
+Nodes start attempting connections with the discovered nodes from the buffer until all connections  are full.
 In case the connection is possible (the targeted node has an available slot in the pool of connections and the node is still up), it is added 
 to the local list of connections.
 Nodes are removed from the discovered nodes buffer for each attempt of connection.
 When a node goes down, a connection attempt is maded with a new nodes from the buffer to occupy all available connection slots.
 When the discovered nodes for a certain topic is empty, a new topic lookup is performed.
-
+Nodes have a pool of 50 connections available, 16 for outgoing connections and 34 for incoming.
 
 %\begin{table}[!hbt]
 %\centering
@@ -123,7 +121,7 @@ When the discovered nodes for a certain topic is empty, a new topic lookup is pe
 
 %\paragraph{\bf{Active registrations}:}
 
-\subsubsection{Performance Results}
+\subsection{Performance Results}
 
 
 %\paragraph{Ticket registrations:
