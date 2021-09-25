@@ -36,6 +36,7 @@ G8 & The protocol should be resistant to attacks by malicious nodes or their Syb
 \hline
 \end{tabular}
 }
+\ramin{G1 is an objective of the implementation, not of topic-based service discovery}
 \vspace{-0.2in}
 \end{table}
 
@@ -48,7 +49,8 @@ The end-goal of service discovery is to enable nodes to be discovered under topi
     \item How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?
 \end{enumerate}
 
-\para{Where should specific ads be placed in the network?} We envision a large number of topics in the system. However, it is difficult to predict the actual number. The number of topics in the system might also change over time. 
+\para{Where should specific ads be placed in the network?} We envision a large number of topics in the system. However, it is difficult to predict the actual number. The number of topics in the system might also change over time.
+\ramin{Move above paragraph to section 3?}
 
 Original Kademlia DHT offers the default \emph{put} and \emph{get} operations that store data on a single node who's ID is the closest to the hash of the data. 
 The procedures can uniformly distribute the topics across the network and make efficient use of the existing routing in the DHT table (\textbf{+G4, +G5}). 

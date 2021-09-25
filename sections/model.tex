@@ -31,7 +31,8 @@ A DHT node can participate in advertising and searching for multiple topics and 
 A node providing a certain service,  each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
 An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. 
 Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
-We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
+We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution.
+\ramin{Is there a way to support the above assumption? Is the power law distribution visible in existing applications? (according to the text, there are 4076)} 
 
 %A node providing a certain service,  each identified with a topic,  is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
 %An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
@@ -59,6 +60,7 @@ Also,  maintaining nodes require some infrastructure resources (public IP addres
 %We also assume that the number of IP addresses under the control of an attacker is limited. 
 that an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
+\ramin{Depending on the target conference, it could be useful to put security aspects in a separate, more visible section (e.g. "Threat model" etc.)} 
 
 %\onur{maybe we should indicate somewhere that DHT and discovery are separate layers and are largely independent except initially DHT is used for bootstrapping the discovery.}
 
