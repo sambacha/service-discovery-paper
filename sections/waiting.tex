@@ -22,6 +22,7 @@ The higher values of $P_{occupancy}$, the faster the increase.
 With the current occupancy $d$ close to the capacity of the table $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests.
 \ramin{There is no motivation given for $b\cdot a$. Maybe remove it from the occupancy score (and add it as a factor to the equation for $w(IP,ID,topic)$?}  
 
+
 The role of the \emph{similarity score} is to determine how similar is the incoming request to the ads already in the topic table in terms of the IP address, the ID and the topic. 
 Requests significantly different from the current content of the table receive lower similarity score resulting in lower overall waiting time. 
 Such an approach promotes fairness across topics (it is easier for less popular topics to get into the table) and protects against attempts to fill the topic table by a small number of advertisers (as identified by their IP addresses and IDs). The similarity score is defined as a sum of similarity score for IP, ID and the topic of the request: $\textit{similarity score} = \textit{similarity score(IP)} + \textit{similarity score(ID)} + \textit{similarity score(topic)}$. 
@@ -35,6 +36,7 @@ where $d(topic)$ is the number of ads for the specified topic already in the tab
 The score goes to $1$ as the specified topic dominates the table $d(topic)  \approx  d$. 
 Lower values of parameter $P_{topic}$ cause the similarity score to converge to $1$ faster. 
 \ramin{Unfair to small tables? According to the equation, a small table with two ads with the same topic is worse than a table with 100 ads of which 99 have the same topic}
+\michal{It depends, how we define fairness here. Initially, we used $n$ (the capacity of the table) in the divisor (instead of $d$). However, for large tables, it allows an attacker to dominate the table when the table is far from being full. This is difficult to reverse later on. 2 same topics will indeed have the highest score but it also means 100\% of the same topics - we don't want that. Using $d$ allows us to talk percentage of request present in the table and be independent from the capacity of the table.}
 
 However,  for calculating the IP address diversity we use a different similarity score. 
 A simple similarity score used for IDs and topics cannot be applied for IP addresses. 
@@ -73,7 +75,9 @@ The divisor of the equation represents the maximum possible score.
 That is, a score obtained if all the IP addresses in the \emph{tree} would be the same as the one being added.
 
 \ramin{Following the above explanation, shouldn't the divisor be $\frac{rootCounter^{33}-1}{rootCounter-1}$?}
+\michal{Hmm, I don't think so. If you consider a tree with only 2 levels (root + children) and rootCounter = 1, the max score is 2 ($1^0 + 1^1$). Following your formula, it'd be $\frac{0}{0}$, right? Happy to discuss if I'm not getting something here.}
 \ramin{Isn't the similary score very small most of the time? Even if the new IP shares 31 bits with all the other IP addresses in the table, the similary score would be only around $\textit{rootCounter}^{-P_\textit{IP}}$}
+\michal{indeed it almost never goes to $1$. However, using high values of $P_\textit{IP}$ helps to solve that. The formula seems to works pretty well with correct parameters during simulations but I'm happy to discuss improvements here. }
 
 Similarly to ID and topic score,  the IP similarity score range from $0$ to $1$ and returns values closer to 1 for different addresses sharing the same prefix (the longer the shared prefix, the higher the score).
 

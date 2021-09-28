@@ -22,6 +22,7 @@ Unlike existing discovery protocols that work in a local setting (MDNS/Bonjour) 
 To serve its purpose, \sysname must be efficient and introduce lower overhead than previous, random walk-based approach. An open and decentralized discovery system introduces new security challenges that need to be addressed. Malicious nodes may decide to deviate from the protocol in order to increase their own visibility or disrupt system operations. A particularly important security challenge is the \textit{Sybil attack} which can amplify the attacking power of malicious nodes, typically with very little resource consumption. The Sybils can launch various attacks including Denial-of-Service (DoS) by ignoring ad lookups, spam ads with bogus topic advertisement, and launch more sophisticated attacks to isolate nodes from their peers in their target sub-networks (\ie eclipse attack). 
 \michal{The above needs completion}
 \ramin{Is the above information about attacks needed in the introduction?}
+\michal{Probably not. We must just say there are problems with security}
 
 We build \sysname on top of the existing Ethereum DHT to avoid major changes to the infrastructure and take advantage of already existing routing infrastructure. The system propagates application-specific advertisements to multiple nodes chosen in an unpredictable way to protect against targeted attacks and network dynamics. At the same time, \sysname provides efficient ad discovery operations terminating within a bounded number of steps for all the applications regardless of their popularity.
 
