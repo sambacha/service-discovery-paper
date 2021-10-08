@@ -25,7 +25,7 @@
 
 For the  performance evaluation of the proposed discovery scheme. we extended the existing  large-scale peer-to-peer network simulator PeerSim~\cite{p2p09-peersim}.
 We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. 
-Our network simulator is available here\footnote{https://github.com/datahop/p2p-service-discovery}
+We make the code publicly available for the scientific community\footnote{https://github.com/datahop/p2p-service-discovery}.
 
 \begin{table}[!hbt]
 \centering
@@ -75,8 +75,8 @@ Num of connections & 50 \\%& 0.8225 & 0.9897\\
 
 In Table~\ref{tab:param} we show the parameters used in the simulation. 
 We performed 4 hours long simulations with different number of nodes from 500 to 10000.
-In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).
-There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.
+In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).\michal{We need simulations with more topics. 5 is just not enough.}
+There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.\michal{We 144? Do we have any churn data from Ethereum?}
 Nodes are modelled similarly to an Ethereum client. 
 When a node joins the network it starts advertising for the participating topics.
 Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
@@ -122,7 +122,7 @@ Nodes have a pool of 50 connections available, 16 for outgoing connections and 3
 %\paragraph{\bf{Active registrations}:}
 
 \subsection{Performance Results}
-
+\michal{We should group the result so that they show achievement of specific goals that we described before}
 
 %\paragraph{Ticket registrations:
 
@@ -130,7 +130,7 @@ In Figure~\ref{fig:regs} we observe the average active registrations in the syst
 We can observe nodes for all topics are able to place a substantial amount of registrations, even the less popular topics. 
 As number of nodes increase in the network, we can observe the differences between registrations per topic are reduced. 
 Actually, it can be observed the most popular topic (t1) is able to place less registrations than t2. 
-This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.
+This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.\michal{This still doesn't make sense to me. The waiting times are calculated based on the content already inside the table rather than pending registrations.}
 
 In Figure~\ref{fig:time_reg} we observe the average time necessary for a node to place a registration,  from 500 to 10000 nodes in the simulation.
 We can observe for topic t1 it reaches the limit of advertising lifetime. Once the calculated waiting time exceeds this threshold
