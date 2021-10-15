@@ -53,6 +53,8 @@ Lookup table buckets & 17 \\%& 0.8225 & 0.9897\\
 \hline
 Registration lifetime & 15 minutes \\%& 0.8225 & 0.9897\\
 \hline
+Registration waiting time limit & 15 minutes \\%& 0.8225 & 0.9897\\
+\hline
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
 \hline
 Number of topics & 5 \\%& 0.8225 & 0.9897\\
@@ -86,7 +88,7 @@ Nodes start attempting connections with the discovered nodes from the buffer unt
 In case the connection is possible (the targeted node has an available slot in the pool of connections and the node is still up), it is added 
 to the local list of connections.
 Nodes are removed from the discovered nodes buffer for each attempt of connection.
-When a node goes down, a connection attempt is maded with a new nodes from the buffer to occupy all available connection slots.
+When a node goes down, a connection attempt is made with a new nodes from the buffer to occupy all available connection slots.
 When the discovered nodes for a certain topic is empty, a new topic lookup is performed.
 Nodes have a pool of 50 connections available, 16 for outgoing connections and 34 for incoming.
 
@@ -125,16 +127,22 @@ Nodes have a pool of 50 connections available, 16 for outgoing connections and 3
 \michal{We should group the result so that they show achievement of specific goals that we described before}
 
 %\paragraph{Ticket registrations:
+In the following we detail the performance evaluation in four different subsections.  In the first we show the registration performance.  Secondly we show the traffic load and overhead of the designed mechanism.  Then we continue with the lookup and discovery performance and we finish with the security analysis.
+
+\subsubsection{Registration  performance}
 
 In Figure~\ref{fig:regs} we observe the average active registrations in the system per topic with different number of nodes in the simulation,  from 500 to 10000 nodes. 
 We can observe nodes for all topics are able to place a substantial amount of registrations, even the less popular topics. 
 As number of nodes increase in the network, we can observe the differences between registrations per topic are reduced. 
 Actually, it can be observed the most popular topic (t1) is able to place less registrations than t2. 
-This is caused by the fact that with more nodes trying to register for the same topic, waiting times increase and therefore is more difficult to register.\michal{This still doesn't make sense to me. The waiting times are calculated based on the content already inside the table rather than pending registrations.}
+This is caused by the fact that with more nodes trying to register for the same topic,  waiting times increase.
+If the waiting time increases over the waiting time limit (in the simulations is set to 15 min),  the node cancels the registration and tries with a different nodes.
+When cancellations happen it may lead to less active registrations, because it may end up with longer registration processes.
+In our simulation we observe less registrations for t1 than t2  because t1 registrations waiting time go over the waiting time limit more often.
 
 In Figure~\ref{fig:time_reg} we observe the average time necessary for a node to place a registration,  from 500 to 10000 nodes in the simulation.
-We can observe for topic t1 it reaches the limit of advertising lifetime. Once the calculated waiting time exceeds this threshold
-nodes decide to cancel the registration process with the targeted node and try a new registration in another node.
+We can observe that average registration time is always below 500 seconds and this is reduced for less popular topics and smaller networks. 
+This figure does not include registration times for cancelled registrations.
 \sergi{I think we should include failed/uncomplete registrations in the plot}
 
 \begin{figure}[!h]
@@ -163,6 +171,8 @@ nodes decide to cancel the registration process with the targeted node and try a
 %\end{figure}
 
 %\paragraph{\bf{Network load}:}
+\subsubsection{Network load}
+
 In Figure~\ref{fig:messages}~and~\ref{fig:msg_distr} we can observe the traffic load generated in the network.
 In Figure~\ref{fig:messages} we observe most of the messages are ticket requests/replies, and the subsequent registration request/replies
 after receiving a ticket from a node. 
@@ -191,9 +201,11 @@ Therefore, the system is able to scale without danger of overloading some of the
 \vspace{-0.15in}
 \end{figure}   
 
+\subsubsection{Discovery and lookup performance}
+
 %\paragraph{\bf{Discovery performance}:}
 
-In Figure~\ref{fig:reg_disc}~and~\ref{fig:timedisc} we can observe how nodes are discovered within the network.
+In Figure~\ref{fig:reg_disc} and \ref{fig:timedisc} we can observe how nodes are discovered within the network.
 In Figure~\ref{fig:reg_disc} we observe the percentage of the nodes in the network that are discovered and how often are discovered.
 Each node in the network is represented by a circle, and the size of the cirle represents the relative frequency of discoveries compared with other nodes in the network.
 We can observe that for all topics the percentage of nodes discovered in the network is very close to 100\%. This means almost all nodes in the network are able to be discovered by other nodes. The number of dicovered nodes is not 100\% because of the existence of turbulence (there are some nodes just joined the network and there has not been enough time yet to be discovered). In case there are a low number of nodes for a specific topic (e.g. t5 with 500 nodes network) the 100\% is reached.
@@ -223,16 +235,18 @@ We also observe the deviation is bounded at around 60 seconds, with equivalent d
 \end{figure}   
 
 
-In Figure~\ref{fig:hopcount} we observe the hops necessary to traverse during a lookup to discover N distinct nodes for a topic.
-In the simulation we set N to 50.
-We observe the hopcount keeps quite stable between 20 and 40, even for the least popular topics where is more difficult to find registrations.
+In Figure~\ref{fig:hopcount} we can observe the lookup performance of \sysname compared with Discv4 for a 5000 nodes simulation.
+In the plot we show the average number of nodes discovered for each hop during a lookup per topic, taking into account that Discv4 cannot do per topic lookups,  so we discard received nodes that do not support the specific service.
+In the figure we observe that for t1 the discovered nodes are higher when using Discv4, since all topics support t1 and any node discovered will be a valid node. 
+However, as the popularity of the topic decreases it also does the lookup performance of Discv4,  since it is very difficult to find nodes for non-popular topics without supporting per topic lookups.
+In this sense,  Discv5 lookup performance also decreases the performance with non-popular topics (simply because there are less nodes in the network) however this decrease is diminished.  Between t1 and t5 the lookup performance is decrease approximately to a 1/2th for Discv5, while when using Discv4 the lookup performance decreased to a less than a 1/10th.
 
 %TODO add lookup description including mechanisms to avoid sybils.
 
 \begin{figure}[h!]
 \centering
 %\epsfig{file=imgs/eval/scen5.pdf, width=0.45\textwidth}
-\includegraphics[width=0.35\textwidth]{img/eval/lookup_hopcount.eps}
+\includegraphics[width=0.35\textwidth]{img/eval/lookup_hopcount_discv4.png}
 \caption{Lookup performance}
 \label{fig:hopcount}
 \vspace{-0.15in}
