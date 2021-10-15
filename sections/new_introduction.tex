@@ -5,16 +5,23 @@
 \para{Motivation} Ethereum~\cite{buterin2013ethereum}  is one of the largest permissionless,  open-source  blockchains supporting Turing-complete scripting via smart contracts. Ethereum runs a Peer-to-Peer (P2P) network based on Kademlia Distributed Hash Table (DHT) ~\cite{maymounkov2002kademlia} to exchange pending transactions and mined blocks. 
 
 Apart from supporting blockchain data exchange, the Ethereum P2P network is used by other applications. This includes multiple Ethereum testnets (Rinkeby, Ropsten), decentralized application (iExec, Swarm, Whisper) or alternative cryptocurrencies (Pirl, Musicoin). In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications~\cite{kim2018measuring}. 
+Having multiple applications running on top of the same P2P network has many advantages compared with every application having its own P2P network.
+Using a single P2P network can be helpful for the service discovery of those not so popular applications that just run a few of nodes. 
+Those applications do not need to run their own bootstrap nodes required when no node is yet known,  and also it is more secure in terms of resistance to sybil attacks. 
+\sergi{I think this 4,076 value is not real.  Reading the paper it says that most of services maybe just eth misconfigured nodes and they list just 10 different known services in the table}
 \michal{It'd be good to say why Ethereum wants to have a common P@P network for many applications.}
 
-Regardless of supported applications, all the nodes on the network must also run the Ethereum’s P2P communication protocol suite (DEVp2p) and join the Ethereum Distributed Hash Table (DHT). DEVp2p includes individual sub-systems and protocols for various network-level services for peers to use such as initializing DHT routing tables and establishing secure communication with the DHT peers. Nodes can then form application-specific P2P networks confining the dissemination of their application-specific messages (\eg event notifications) to only the interested peers.
+Regardless of supported applications, all the nodes on the network must also run the Ethereum’s P2P communication protocol suite (DEVp2p) and join the Ethereum Distributed Hash Table (DHT). 
+DEVp2p includes individual sub-systems and protocols for various network-level services for peers to use such as initializing DHT routing tables and establishing secure communication with the DHT peers. 
+Nodes can then form application-specific P2P networks confining the dissemination of their application-specific messages (\eg event notifications) to only the interested peers.
 
-
-
-\para{State of the art} To form an application-specific P2P network, its participants must first find each other among nodes who do not support the application. In the current service discovery system of Ethereum---\ie discovery version 4 (Discv4)---nodes perform a \textit{brute-force} discovery process. A node willing to discover application-specific peers randomly traverses the DHT and initiates connections with all the encountered nodes. A permanent connection is established only if a peer supports the same application and terminated otherwise. Such an approach results in large communication overhead and long discovery time, particularly for less popular applications with small number of peers.
-
-\ramin{The below paragraph doesn't fit into the flow of the text. Move to begin of previous paragraph?}
+\para{State of the art} To form an application-specific P2P network, its participants must first find each other among nodes who do not support the application. 
 Unlike existing discovery protocols that work in a local setting (MDNS/Bonjour) or rely on centralisation and trusted operators (\eg rendezvous servers in pub-sub systems~\cite{}), node discovery in Ethereum must work at large scale (in the global Internet) and in a completely decentralised setting  (\ie a trust-less environment). 
+In the current service discovery system of Ethereum---\ie discovery version 4 (Discv4)---nodes perform a \textit{brute-force} discovery process. 
+A node willing to discover application-specific peers randomly traverses the DHT and initiates connections with all the encountered nodes, no matter the service is running.
+A permanent connection is established only if a peer supports the same application and terminated otherwise. 
+Such an approach results in large communication overhead and long discovery time, particularly for less popular applications with small number of peers.
+
 
 \para{Discv5} In this work, we propose the discovery system version 5 (\textit{\sysname}) --- a \textbf{service discovery sub-system} which enables secure and robust discovery of application-specific peers in the Ethereum network. Different from the current system, \sysname allows nodes to associate themselves with a set of tags, i.e., \textit{``topics''}, and advertise the association to the network \ie  \textbf{registering an \emph{ad}}. The information is collectively stored in the network and does not rely on any single trusted party. Any node can then query (\ie lookup) the network for a topic to obtain a list of application-specific peers and directly connect to them without bothering other members of the network. 
 
