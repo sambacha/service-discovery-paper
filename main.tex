@@ -50,16 +50,13 @@
 
 
 \begin{abstract}
-Ethereum is one of the largest permission-less, open-source blockchains supporting Turing-complete scripting via smart contracts. 
-Ethereum runs a Peer-to-Peer (P2P) network based on Kademlia Distributed Hash Table (DHT) to exchange pending transactions and mined blocks. 
-Apart from supporting blockchain data exchange,  the Ethereum P2P network is used by other applications. 
-This includes multiple Ethereum testnets,  other decentralized application like iExec or Swarm  and alternative cryptocurrencies, such as Pirl.
-In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications. Majority of these applications require a dedicated P2P network for its peers to confine the dissemination of their application-specific messages (e.g.event notifications) to only the interested peers.
+Ethereum is one of the largest permission-less, open-source blockchains supporting Turing-complete scripting via smart contracts. Ethereum runs a Peer-to-Peer (P2P) network that rely on Kademlia Distributed Hash Table (DHT) for peer discovery and exchanging pending transactions and mined blocks. 
+Apart from supporting blockchain data exchange, the Ethereum P2P network is used by other applications taking advantage of the existing infrastructure to facilitate bootstraping of their own, application-specific networks. However, in order to achieve this task, peers using the same application must first find each other among other, unrelated nodes.
 
-In this work, we propose a service discovery system (Discv5) which enables secure and robust discovery of application-specific peers in the Ethereum network to form dedicated P2P networks for each application. 
-Different from the current system Discv4, Discv5 allows nodes to associate themselves with a set of tags, \ie "topics",  and advertise the association to the network, i.e.registering an ad.
+In this work, we propose a service discovery system (\sysname) which enables secure and robust discovery of application-specific peers in a large, host P2P network. 
+Our system enables nodes to associate themselves with a set of \emph{topics}. The association is collectively stored by the network, and can be later found by interested peers within a bounded amount of time. \sysname included a robust admission mechanism limiting the resource usage by its participants and preventing a vast range of malicious behaviours. 
 
-We present an overview of Discv5 and evaluate the system under different system parameters. Compared to the state-of-the-art decentralised discovery systems, our system achieves better load-balancing, better security against Sybil attacks and requires significantly more resource consumption by the attackers to successfully launch sophisticated attacks such as the eclipsing attack.
+We present the design of \sysname and evaluate the system in multiple scenarios. Compared to the state-of-the-art, our system achieves more equal load distribution, lower computational and communication overhead and better robustness in the presence of a powerful attacker.
 \end{abstract}
 
 \maketitle
