@@ -4,8 +4,19 @@ The waiting time function is used to calculate the total time advertisers have t
 The function directly shapes the structure of the topic table,  determines its diversity and performs flow control. 
 It also protects against attacks, where a malicious actor tries to dominate the topic table and exhaust resources of the registrar. 
 
-Each request is given a waiting time based on the IP address of the registrar, the ID of the registrar, the topic of the request and the current occupancy of the topic table. 
-The waiting time function is divided into two parts: \emph{occupancy score} and  \emph{similarity score}. The final result is a product of both scores: $w =  \textit{occupancy score} \times \textit{similarity score} $. 
+Each request is given a waiting time based on the IP address of the registrar, the ID of the registrar, the topic of the request and the current state of the topic table. 
+The waiting time function is divided into three parts: \emph{const} (constant for all the requests), \emph{occupancy score} (ranging from $0$ to $\infty$) and  \emph{similarity score} (ranging from $0$ to $3$). The final result is a product of both scores: 
+\begin{equation}
+\label{eq:global}
+w = \emph{const} \times \textit{occupancy score} \times \textit{similarity score}. 
+\end{equation}
+
+The \emph{const} part determines the absolute values of the returned waiting time and is given by:
+\begin{equation}
+\label{eq:const}
+    \textit{const} = ba
+\end{equation}
+where $a$ is the \emph{ad lifetime} (the amount of time each ad spend in the topic table), and $b$ is a system parameter. Higher values of $b$ result in higher returned waiting times and lower average occupancy of the topic table. Furthermore, a right value of $b$ allows to protect against admitting similar advertisements when the \emph{similarity score} is low (\ie when the table is almost empty). 
 
 The \emph{occupancy score} is based uniquely on the number of the ads already in the table.
 Its role is to progressively increase the waiting time as the topic table fills up and to limit the memory used by a registrar.
@@ -13,15 +24,13 @@ The \emph{occupancy score} is defined by equation~\ref{eq:occupancy}:
 
 \begin{equation}
 \label{eq:occupancy}
-    \textit{occupancy score} = \frac{ba}{(1-\frac{d}{n})^{P_{occupancy}}}
+    \textit{occupancy score} = \frac{1}{(1-\frac{d}{n})^{P_{occupancy}}}
 \end{equation}
-where $a$ is the \emph{ad lifetime} (the amount of time each ad spend in the topic table), $d$ is the number of ads in the table, $n$ is the capacity of the table. $b$ and $P_{occupacy}$ are protocol configurable parameters. 
-When the number of ads in the table is low ($d \ll n$ ), the \emph{occupancy score} goes to $ba$. 
+where $d$ is the number of ads in the table, $n$ is the capacity of the table. $b$ and $P_{occupacy}$ are protocol configurable parameters. 
+When the number of ads in the table is low ($d \ll n$ ), the \emph{occupancy score} goes to $1$. 
 As the topic table fills up, the score will be amplified by the divisor of the equation. 
 The higher values of $P_{occupancy}$, the faster the increase. 
 With the current occupancy $d$ close to the capacity of the table $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests.
-\ramin{There is no motivation given for $b\cdot a$. Maybe remove it from the occupancy score (and add it as a factor to the equation for $w(IP,ID,topic)$?}  
-
 
 The role of the \emph{similarity score} is to determine how similar is the incoming request to the ads already in the topic table in terms of the IP address, the ID and the topic. 
 Requests significantly different from the current content of the table receive lower similarity score resulting in lower overall waiting time. 
@@ -64,20 +73,16 @@ Removing an IP from the \emph{tree} follows the analogical procedure but decreas
 
 After each addition of an address to the \emph{tree} a score is generated.
 The score is a sum of counter values of visited nodes raised to the power of the node level. 
-\michal{Probably need an equation here but not sure how to write it down. Maybe @Ramin could help?} 
-\ramin{The above as an equation :-) $$score(IP)=\sum_{i=0}^{32} p_{\geq i}^i$$ where $p_{\geq i}$ is the number of IP addresses in the table sharing a prefix with $IP$ with a length of at least $i$}
+$$score(IP)=\sum_{i=1}^{32} p_{\geq i}$$
+where $p_{\geq i}$ is the number of IP addresses in the table sharing a prefix with $IP$ with a length of at least $i$
+
 The counter values are taken \emph{before} the increment caused by adding the address\footnote{The first added address will thus always have a score of $0$}. 
 Finally,  the similarity score for an IP is defined by:
 \begin{equation}
-    \textit{similarity score(IP}) = (\frac{\textit{score(IP)}}{-(\textit{rootCounter})(1 - 2^{33})})^{P_\textit{IP}}
+    \textit{similarity score(IP}) = (\frac{\textit{score(IP)}}{31\textit{rootCounter})})^P_{IP}
 \end{equation}
-The divisor of the equation represents the maximum possible score. 
-That is, a score obtained if all the IP addresses in the \emph{tree} would be the same as the one being added.
+The divisor of the equation represents the maximum possible score, where all the IPs in the tree are the same as the newly inserted address. 
 
-\ramin{Following the above explanation, shouldn't the divisor be $\frac{rootCounter^{33}-1}{rootCounter-1}$?}
-\michal{Hmm, I don't think so. If you consider a tree with only 2 levels (root + children) and rootCounter = 1, the max score is 2 ($1^0 + 1^1$). Following your formula, it'd be $\frac{0}{0}$, right? Happy to discuss if I'm not getting something here.}
-\ramin{Isn't the similary score very small most of the time? Even if the new IP shares 31 bits with all the other IP addresses in the table, the similary score would be only around $\textit{rootCounter}^{-P_\textit{IP}}$}
-\michal{indeed it almost never goes to $1$. However, using high values of $P_\textit{IP}$ helps to solve that. The formula seems to works pretty well with correct parameters during simulations but I'm happy to discuss improvements here. }
 
 Similarly to ID and topic score,  the IP similarity score range from $0$ to $1$ and returns values closer to 1 for different addresses sharing the same prefix (the longer the shared prefix, the higher the score).
 
@@ -86,10 +91,10 @@ The final formula for the waiting time function can be represented with  the fol
 \begin{equation}
 \begin{split}
     \textit{w(IP, ID, topic)} = 
-    (\frac{\textit{score(IP)}}{-(\textit{rootCounter})(1 - 2^{33})})^{P_\textit{IP}} + \\
+    ba(\frac{\textit{score(IP)}}{-(\textit{rootCounter})(1 - 2^{33})})^{P_\textit{IP}} + \\
     + (\frac{d(ID)}{d})^{P_{ID}} +
     (\frac{d(topic)}{d})^{P_{topic}})
-    \frac{ba}{(1-\frac{d}{n})^{P_{occupancy}}}
+    \frac{1}{(1-\frac{d}{n})^{P_{occupancy}}}
 \end{split}
 \end{equation}
 

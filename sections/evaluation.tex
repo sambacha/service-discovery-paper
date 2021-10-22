@@ -3,29 +3,10 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-%
-%In  this  section,  we  provide  a  detailed  investigation  of  the performance of the proposed discovery scheme.
-%We present the performance evalution in three different subsections. 
-%In the first one we evaluate the performance of our novel waiting function by measuring the ticket table occupancy
-%according with our design goals and parameters.
-%The second one is a thorough performance evaluation under different scenarios, including Sybil attacks, of the whole network discovery solution using a peer-to-peer network simulator.
-%In the third one we include an evaluation using the most used Ethereum client software, Geth~\cite{go-ethereum}, in a testbed scenario.
 
-%\subsection{Ticket table occupancy evaluation}
-
-%\sergi{Ticket table occupancy and waiting time evaluation TBC}
-
-%\subsection{Network simulator evaluation}
-
-%\sergi{TODO: modify figures with bigger fonts}
-%\sergi{TODO: registrant distribution is not very readable. probably should be redesigned}
-%\sergi{TODO: Lookup performance should be compared with something. Discv4? }
+We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point and extend it to make it equivalent to the existing Ethereum DHT. We compare \sysname against Discv4 and a key/value store implemented on top Ethereum DHT, where advertisements are stored on the node closest to the topic hash. We make the code publicly available for the scientific community\footnote{https://github.com/datahop/p2p-service-discovery}. In the evaluation, we focus on the following aspects: \textit{(1)} Optimal parameter selection, \textit{(2)} Overhead, \textit{(3)} Load Distribution and \textit{(4)} Security. 
 
 \subsection{Evaluation Setup}
-
-For the  performance evaluation of the proposed discovery scheme. we extended the existing  large-scale peer-to-peer network simulator PeerSim~\cite{p2p09-peersim}.
-We implemented the current Discv5 protocol by modyfing the available PeerSim Kademlia implementation with the differences of the Kademlia version used by the Ethereum network, and developing our solution on top of it. 
-We make the code publicly available for the scientific community\footnote{https://github.com/datahop/p2p-service-discovery}.
 
 \begin{table}[!hbt]
 \centering
@@ -74,11 +55,11 @@ Num of connections & 50 \\%& 0.8225 & 0.9897\\
 \label{tab:param}
 \vspace{-0.05in}
 \end{table}
-
+\michal{In this section we need to justify our parameters}
 In Table~\ref{tab:param} we show the parameters used in the simulation. 
 We performed 4 hours long simulations with different number of nodes from 500 to 10000.
 In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).\michal{We need simulations with more topics. 5 is just not enough.}
-There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.\michal{We 144? Do we have any churn data from Ethereum?}
+There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.\michal{Why 144? Do we have any churn data from Ethereum?}
 Nodes are modelled similarly to an Ethereum client. 
 When a node joins the network it starts advertising for the participating topics.
 Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
@@ -91,7 +72,7 @@ Nodes are removed from the discovered nodes buffer for each attempt of connectio
 When a node goes down, a connection attempt is made with a new nodes from the buffer to occupy all available connection slots.
 When the discovered nodes for a certain topic is empty, a new topic lookup is performed.
 Nodes have a pool of 50 connections available, 16 for outgoing connections and 34 for incoming.
-
+\michal{Should mention the Ethereum traces we use (Node IPs, IDs etc.)}
 %\begin{table}[!hbt]
 %\centering
 %\scriptsize
@@ -118,10 +99,19 @@ Nodes have a pool of 50 connections available, 16 for outgoing connections and 3
 %\vspace{-0.05in}
 %\end{table}
 
+\subsection{Parameter Selection}
+\michal{We should show results allowing to find optimal values for:, $b$, $P_\textit{occupancy}$, $P_\textit{topic}$, $P_\textit{ID}$,   $P_\textit{IP}$ }
+\subsection{Efficiency}
+To measure:
+\begin{itemize}
+    \item Total message send/received for different network sizes (separate for registration/discovery?)
+    \item Total message send/received for different number of topics (separate for registration/discovery?)
+    
+\end{itemize}
 
-%\subsubsection{Results}
+\subsection{Load Distribution}
 
-%\paragraph{\bf{Active registrations}:}
+\subsection{Security}
 
 \subsection{Performance Results}
 \michal{We should group the result so that they show achievement of specific goals that we described before}

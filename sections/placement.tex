@@ -38,7 +38,7 @@ Placing a fixed amount of ads per bucket, make registrars close to a topic hash 
 Increasing $K$, makes the advertiser easier to find at the cost of increased communication overhead. 
 
 The advertiser starts by the first bucket (the furthest away from the topic hash) in the \emph{registration table}, selects $K$ random peers and attempts to perform a registration. 
-We describe details on the registration procedure in \Cref{sec:registration_single}. 
+We describe details on the registration procedure in \Cref{sec:registration}. 
 A successful registration places an ad on an advertiser for a fixed amount of time $t_\textit{lifetime}$.
 If a registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
 The advertisers always maintains $K$ attempts and/or successful registrations per bucket unless less than $K$ peers are present in a specific bucket. 
@@ -62,7 +62,7 @@ Similarly to the DHT routing, the registration procedure is guaranteed to find t
 
 
 
-\subsection{Topic Search}\label{sec:lookup}
+\subsection{Lookup operation}\label{sec:lookup}
 To find ads, \sysname uses a process similar to the registration procedure. 
 The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
 The searcher starts by creating a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
