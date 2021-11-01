@@ -98,18 +98,27 @@ Nodes have a pool of 50 connections available, 16 for outgoing connections and 3
 %\label{tab:nodes}
 %\vspace{-0.05in}
 %\end{table}
-
+\michal{Should the Ethereum snapshots + IMC paper data be a base for the workloaded?}
 \subsection{Parameter Selection}
 \michal{We should show results allowing to find optimal values for:, $b$, $P_\textit{occupancy}$, $P_\textit{topic}$, $P_\textit{ID}$,   $P_\textit{IP}$ }
 \subsection{Efficiency}
-To measure:
+\michal{Should we implement LRU with DHT?}
+To measure (for DHT, Discv4 and \sysname):
 \begin{itemize}
     \item Total message send/received for different network sizes (separate for registration/discovery?)
-    \item Total message send/received for different number of topics (separate for registration/discovery?)
+    \item Total message send/received for different number of topics (separate for) registration/discovery?)
+    \item Show the impact of increasing the capacity of the table?
     
 \end{itemize}
+\michal{Should we have for each line min and max value shown similar to std error? Or maybe plot areas of different color? Similar to her: \url{https://matplotlib.org/stable/gallery/lines_bars_and_markers/fill_between_demo.html}}
 
 \subsection{Load Distribution}
+\begin{itemize}
+    \item Active registrations per topic (not relevant for Discv4)
+    \item Time to register
+    \item Time to discover
+    \item How many times each advertiser is being discovered.
+\end{itemize}
 
 \subsection{Security}
 
