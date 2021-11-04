@@ -4,7 +4,7 @@
 % use true/false to toggle all comments (both kinds)
 
 \newboolean{showcomments}
-\setboolean{showcomments}{true}
+\setboolean{showcomments}{false}
 
 % ====== comments ======
 \newcommand\important[1]{\todo[inline]{\textbf{Important:} #1}}
@@ -16,6 +16,7 @@
 \newcommand\onur[1]{\todo[color=red,inline]{\textbf{Onur:} #1}}
 \newcommand\sergi[1]{\todo[color=pink,inline]{\textbf{Sergi:} #1}}
 \newcommand\ramin[1]{\todo[color=brown,inline]{\textbf{Ramin:} #1}}
+\newcommand\mustafa[1]{\todo[color=brown,inline]{\textbf{Mustafa:} #1}}
 % Uncomment the following command to make all comments disappear
 \ifthenelse{\boolean{showcomments}} { }
 {
