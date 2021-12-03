@@ -1,0 +1,23 @@
+\section{Background}
+\label{sec:background}
+In this section, we provide background on structured and unstructured Peer-to-peer networks. 
+
+\subsection{Peer-to-Peer Networks}
+Peer-to-peer (P2P) networks are distributed application architectures that partition tasks or workloads between peers. Peers are equally privileged participants in the application, making P2P networks a sound basis for the decentralised applications. Peers make a portion of their resources, such as processing power, disk storage or network bandwidth, directly available to other network participants, without the need for central coordination by servers or stable hosts. Peers are both suppliers and consumers of resources, in contrast to the traditional client–server model.
+% in which the consumption and supply of resources is divided.
+
+P2P networks implement a virtual overlay network on top of the physical network topology, where the nodes in the overlay form a subset of the nodes in the physical network. Data is still exchanged directly over the underlying TCP/IP network, but at the application layer peers are able to communicate with each other directly, via the logical overlay links. Overlays are used for indexing and peer discovery, and make the P2P systems independent from the physical network topology. The two main types of P2P networks are \textit{(i)} unstructured and \textit{(ii)} structured. 
+
+\para{Unstructured P2P Networks}
+Unstructured P2P networks do not impose a particular structure on the overlay network by design, but rather are formed by nodes that randomly form connections to each other~\cite{gnutella, gossip, kazaa}. Without a globally imposed structure, unstructured networks are easy to build and are highly robust in the face of high rates of churn. 
+
+On the other hand finding content is difficult in an unstructured network. In the earlier P2P networks such as Gnutella~\cite{gnutella}, the search queries were flooded through the network to find as many peers as possible that share the data. However, flooding is unscalable as its overhead on the network grows linearly with number of search queries, which in turn grows with system size. Furthermore, since there is no correlation between a peer and the content managed by it, there is no guarantee that scoped flooding will find a peer that has the desired data. The problem gets more severe for unpopular content that, while being present only on a few nodes, might be difficult to find. More recent P2P systems use more scalable search mechanisms such as random walk, as we discuss in Section~\ref{P2PsearchEngines}. 
+
+
+\para{Structured P2P Networks}
+In structured P2P networks the overlay is organized into a specific topology, and the protocol ensures that any node can efficiently search the network for content, even if the resource is extremely rare. The most common type of structured P2P networks implement a distributed hash table (DHT)~\cite{kademlia, chord, pastry, can, tapestry} in which a variant of consistent hashing is used to assign responsibility for maintaining each content or resource to a particular peer. This enables peers to search for resources on the network using a hash table; that is, (key, value) pairs are stored in the DHT, and any participating node can efficiently retrieve the value associated with a given key within a bounded number of steps (usually $O(log(n))$, where $n$ is the number of peers in the network).
+
+Unfortunately, maintaining a structured overlay topology makes this type of networks less robust in networks with a high rate of churn. It exposes the network to vast range of attacks that are much more difficult to perform in an unstructured P2P network~\cite{Trifa2012TaxonomyOS}.
+
+\para{P2P Networks in use}
+Modern decentralized application usually implement a mix of both types of networks. Ethereum uses a Kademlia DHT traversal to find peers with which it will form an unstructured network used for blocks dissemination. Similarly, IPFS~\cite{ipfs} maintains parallel unstructured (BitSwap) and structured (Kademlia DHT) networks for to store information about location of files stored in the networks. 
