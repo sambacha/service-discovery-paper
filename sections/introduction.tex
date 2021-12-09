@@ -2,14 +2,44 @@
 %=========================================================
 
 \section{Introduction}
-\michal{A new introduction proposition focusing less on Ethereum.}
+\michal{maybe some motivation for centralization/decentralization}
+
+Peer-to-peer (P2P) networks are distributed application architectures that partition tasks or workloads between peers. Peers are equally privileged participants in the application, making P2P networks a sound basis for the decentralised applications. Peers make a portion of their resources, such as processing power, disk storage or network bandwidth, directly available to other network participants, without the need for central coordination by servers or stable hosts. Peers are both suppliers and consumers of resources, in contrast to the traditional client–server model. After their initial development in early 2000', P2P networks are now heavily used by blockchains [eth,bitcoin] (exchanging blocks and transactions), cooperative file sharing application [ipfs stor4j] (to exchange content) and more. 
+
+One of the most basic operations of P2P networks is an ability to collectively store information in a decentralized key/value store. The whole dataset is partitioned between network participants, so that each node stores only a small amount of data. As the network grows, it increases its capacity to store data. The data can be then retrieved by querying the network with the corresponding key (\eg a filename, keywords, a hash). While P2P network realize the key/value store differently, the implementations fall into two main categories: \textit{(i)} unstructured and \textit{(ii)} structured.
+
+\para{Unstructured P2P Networks}
+Unstructured P2P networks do not impose a particular structure on the overlay network by design, but rather are formed by nodes that randomly form connections to each other~\cite{gnutella, gossip, kazaa}. Without a globally imposed structure, unstructured networks are easy to build and are highly robust in the face of high rates of churn. 
+
+On the other hand finding content is difficult in an unstructured network. In the earlier P2P networks such as Gnutella~\cite{gnutella}, the search queries were flooded through the network to find as many peers as possible that share the data. However, flooding is unscalable as its overhead on the network grows linearly with number of search queries, which in turn grows with system size. Furthermore, since there is no correlation between a peer and the content managed by it, there is no guarantee that scoped flooding will find a peer that has the desired data. The problem gets more severe for unpopular content that, while being present only on a few nodes, might be difficult to find. More recent P2P systems use more scalable search mechanisms such as random walk, as we discuss in Section~\ref{P2PsearchEngines}. 
+
+\para{Structured P2P Networks}
+In structured P2P networks the overlay is organized into a specific topology, and the protocol ensures that any node can efficiently search the network for content, even if the resource is extremely rare. The most common type of structured P2P networks implement a distributed hash table (DHT)~\cite{kademlia, chord, pastry, can, tapestry} in which a variant of consistent hashing is used to assign responsibility for maintaining each content or resource to a particular peer. This enables peers to search for resources on the network using a hash table; that is, (key, value) pairs are stored in the DHT, and any participating node can efficiently retrieve the value associated with a given key within a bounded number of steps (usually $O(log(n))$, where $n$ is the number of peers in the network).
+
+Unfortunately, maintaining a structured overlay topology makes this type of networks less robust in networks with a high rate of churn. It exposes the network to vast range of attacks that are much more difficult to perform in an unstructured P2P network~\cite{Trifa2012TaxonomyOS}.
+
+As for now, decentralized application developers must choose between security and robustness of unstructured P2P networks and efficiency of structured P2P networks. In this work, we propose a key/value store implementation which enables secure,  efficient and robust  information storage and retrieval(\textit{\sysname}).
+
+We build \sysname on top of a DHT to avoid major changes to the system and take advantage of the already existing routing infrastructure. The protocol propagates disseminates data to multiple nodes chosen in an unpredictable way to protect against targeted attacks. Our design encourages diversity of data stored at each node making the system resistant to network dynamics. At the same time, \sysname provides efficient data retrieval terminating within a bounded number of steps  regardless of data popularity. The protocol implements a robust admission mechanism to limit the resource usage on all the nodes, ensure fairness, and prevent a vast range of malicious behaviours even in the presence of a powerful attacker.
+
+\subsection{Motivating Examples}
+\para{Ethereum} Ethereum~\cite{buterin2013ethereum}  is one of the largest permissionless,  open-source  blockchains supporting Turing-complete scripting via smart contracts. Ethereum runs a Peer-to-Peer (P2P) network based on Kademlia Distributed Hash Table (DHT) ~\cite{maymounkov2002kademlia} to exchange pending transactions and mined blocks. 
+
+Apart from supporting blockchain data exchange, the Ethereum P2P network is also used by other applications. This includes multiple Ethereum testnets (Ropsten, Rinkeby),  alternative cryptocurrencies(Pirl, Musicoin) and other decentralized platforms such as iExec or Swarm.
+In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications\cite{kim2018measuring}. Most of those applications require a dedicated P2P network to disseminate application-specific messages (\eg event notifications) to the interested peers but rely on the larger, Ethereum P2P network for bootstrapping. However, the join an application-specific P2P network, nodes need first to find peers running the same application. 
+
+In the current Ethereum service discovery system, \ie discovery version 4 (Discv4), nodes perform a \textit{brute-force} discovery process. A node willing to discover application-specific peers randomly traverses the DHT and initiates connections with all the encountered nodes. A permanent connection is established only if a peer supports the same application and terminated otherwise. Such an approach provides strong security guarantees but results in a large communication overhead and long discovery times, particularly for unpopular applications with a small number of peers. While multiple, alternative discovery systems have been proposed \hl{[?]}, they rely on unrealistic assumptions \hl{[?]}, introduce high overhead or fail to operate in a presence of an adversary \hl{[?]}. 
+
+\para{IPFS}
+\michal{We use IPFS in the evaluation, so it might be good to briefly introduce it here.}
+
+\subsection{Contributions} 
+We make the following contributions:
 \begin{itemize}
-    \item Centralization is bad, we need decentralized applications + all the benefits of decentralization
-    \item Decentralized applications need efficient p2p networks to find peers and exchange information (+examples of blockchains, IPFS etc.)
-    \item Traditionally, there's a choice between structured and unstructured P2P networks. Structured are more efficient but insecure, while unstructured are more secure but inefficient. 
-    \item In this work, we attempt to breach this gap. We propose a structured P2P network that can be both secure and efficient. 
-    \item Subsection Motivation example: Ethereum
-    \item Contributions
-    \item This paper is organised...
+    \item In \Cref{sec:placement}, we design a DHT-based data placement system that distributes service advertisement in the network. The protocol combines pseudo-random data placement for security with deterministic operations for efficiency. We present a lookup operation that finds a subset of advertisement placed in the system within a bounded amount of time. The procedure ensure the diversity of data sources and is resistant against manipulation by malicious registrars. 
+    \item In \Cref{sec:registration} we design a lightweight admission protocol allowing advertisers to place data after waiting for a specified amount of time. \sysname guarantees that advertisers cannot place more data by deviating from the protocol and does not create any intermediary state at nodes holding the advertisements. 
+    \item In \Cref{sec:waitingTime}, we design a function that calculates a waiting time after which data can be placed on nodes. The function limits the amount of resources used by each node, promotes data diversity stored within nodes, and protects against a vast range of malicious behaviours. 
 \end{itemize}
-\michal{May need to introduce the bootstrapping problem somewhere.}
+
+In \Cref{sec:eval}, we evaluate \sysname under different system parameters and against state-of-the-art decentralised discovery systems. Our system achieves better load-balancing and requires more resource consumption by the attackers to successfully launch attacks such as eclipsing attacks. We also provide performance evaluation results from both simulations and from real system deployment. \sysname is scheduled for implementation in the next version of the Ethereum P2P network. 
+
