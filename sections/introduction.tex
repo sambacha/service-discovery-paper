@@ -23,7 +23,7 @@ As for now, decentralized application developers must choose between security an
 We build \sysname on top of a DHT to avoid major changes to the system and take advantage of the already existing routing infrastructure. The protocol propagates disseminates data to multiple nodes chosen in an unpredictable way to protect against targeted attacks. Our design encourages diversity of data stored at each node making the system resistant to network dynamics. At the same time, \sysname provides efficient data retrieval terminating within a bounded number of steps  regardless of data popularity. The protocol implements a robust admission mechanism to limit the resource usage on all the nodes, ensure fairness, and prevent a vast range of malicious behaviours even in the presence of a powerful attacker.
 
 \subsection{Motivating Examples}
-\para{Ethereum} Ethereum~\cite{buterin2013ethereum}  is one of the largest permissionless,  open-source  blockchains supporting Turing-complete scripting via smart contracts. Ethereum runs a Peer-to-Peer (P2P) network based on Kademlia Distributed Hash Table (DHT) ~\cite{maymounkov2002kademlia} to exchange pending transactions and mined blocks. 
+\para{Ethereum} Ethereum~\cite{buterin2013ethereum}  is one of the largest permissionless,  open-source  blockchains supporting Turing-complete scripting via smart contracts. Ethereum runs a Peer-to-Peer (P2P) network based on Kademlia Distributed Hash Table (DHT)~\cite{maymounkov2002kademlia} to exchange pending transactions and mined blocks. 
 
 Apart from supporting blockchain data exchange, the Ethereum P2P network is also used by other applications. This includes multiple Ethereum testnets (Ropsten, Rinkeby),  alternative cryptocurrencies(Pirl, Musicoin) and other decentralized platforms such as iExec or Swarm.
 In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications\cite{kim2018measuring}. Most of those applications require a dedicated P2P network to disseminate application-specific messages (\eg event notifications) to the interested peers but rely on the larger, Ethereum P2P network for bootstrapping. However, the join an application-specific P2P network, nodes need first to find peers running the same application. 
@@ -31,7 +31,7 @@ In 2018, the Ethereum P2P network nodes operated a total of 4,076 different appl
 In the current Ethereum service discovery system, \ie discovery version 4 (Discv4), nodes perform a \textit{brute-force} discovery process. A node willing to discover application-specific peers randomly traverses the DHT and initiates connections with all the encountered nodes. A permanent connection is established only if a peer supports the same application and terminated otherwise. Such an approach provides strong security guarantees but results in a large communication overhead and long discovery times, particularly for unpopular applications with a small number of peers. While multiple, alternative discovery systems have been proposed \hl{[?]}, they rely on unrealistic assumptions \hl{[?]}, introduce high overhead or fail to operate in a presence of an adversary \hl{[?]}. 
 
 \para{IPFS}
-\michal{We use IPFS in the evaluation, so it might be good to briefly introduce it here.}
+\michal{We use IPFS in the evaluation, so it might be good to briefly introduce it here. Maybe we use Filecoin as a better example.}
 
 \subsection{Contributions} 
 We make the following contributions:
