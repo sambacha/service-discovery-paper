@@ -1,23 +1,65 @@
 \section{Background}
 \label{sec:background}
-In this section, we provide background on structured and unstructured Peer-to-peer networks. 
+\sysname is built on top of a Distributed Hash Table (DHT). 
 
-\subsection{Peer-to-Peer Networks}
-Peer-to-peer (P2P) networks are distributed application architectures that partition tasks or workloads between peers. Peers are equally privileged participants in the application, making P2P networks a sound basis for the decentralised applications. Peers make a portion of their resources, such as processing power, disk storage or network bandwidth, directly available to other network participants, without the need for central coordination by servers or stable hosts. Peers are both suppliers and consumers of resources, in contrast to the traditional client–server model.
+In this section, we provide background Distributed Hash Tables (DHT) on top of which we buid \sysname. 
+
+\subsection{Distributed Hash Tables}
+In a DHT, each node is uniquely identified by a randomly generated node ID (\eg a marshaled version of node's public key). We assume that it is easy to generate many different IDs but computationally infeasible to generate a specific one. The DHT act as a key/value store supporting put and get operations. A data item stored in the DHT is found by its key (\eg a hash of the data itself). Node IDs and data keys share the same representation; in the following we use the term ID for both. DHTs define a metric for "closeness" of IDs. The DHT stores data at nodes whose node ID is the “closest” to the data’s key. 
+
+A DHT node stores its known peers in a routing table divided into buckets which partition the known network based on the local node’s ID (\Cref{fig:kademlia}). Bucket $i$ stores nodes whose distance is in $[2i, 2i+1)$. The routing table stores a detailed view of peers close to the node and a less detailed view of parts of the network located further away.
+
+%Items in the DHT and nodes on the network are located by \emph{lookups}. A lookup successively queries nodes that are closest to the desired target ID (key or node ID). Intuitively, a peer closer to the target ID maintains a more detailed view of the target part of the network and provides the initial node with additional peers to query. For instance, the green node in \Cref{fig:kademlia} looking data ID in \emph{bucket 1} will ask known peers in \emph{bucket 1} that will provide additional peers closer to the data ID. Storing data follow the same process.  
+
+\begin{figure}
+    \includegraphics[width=0.4\textwidth]{img/kademlia}
+    \caption{DHT routing table.}
+    \label{fig:kademlia}
+ \end{figure}
+ 
+In order for a newly instantiated DHT node to find peers, it usually adds a hard-coded set of bootstrap node IDs to its routing table\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}. Subsequently, when attempting to locate a target node on the network, the node searches its routing table for the $\alpha$ peers that are closest to the target node. The node then sends these $\alpha$ nodes a FIND\_NODE message that specifies the target node ID, and each peer responds with the list of nodes from its own routing table that are closest to the target. The querying node adds any new node information (i.e., node ID, IP Address, UDP/TCP ports) it discovers through this process to its routing table, and then iteratively repeats the process until it converges on the target node.
+ 
+
+\subsection{Node discovery in Ethereum}
+Ethereum uses a DHT-based discovery system enabling application-specific nodes to find their peers. Nodes maintain a discovery table whose sole purpose is to maintain a set of known-peers. The structure of the discovery table is identical to a DHT routing table - each node organises known-nodes according to their distance from itself. A node populates its routing table by attempting to locate a random target node ID and store the nodes encountered during the process in its discovery table, \ie a random walk. When the node locates the closest peers to a random target, the walk is complete. 
+
+Once a node starts populating its discovery table with peers, the node starts establishing an individual application-level session (\ie handshake) with each known-peer in the table in order to identify their subprotocol. In case, the node discovers that a peer is part of a target subprotocol, then the node can send a connection request to the peer (see Section~\ref{sec:connections}) after the handshake; otherwise, the handshake session is terminated. The process of looking for peers is suspended when a node establishes a sufficient number of outbound connections.
+
+This brute-force discovery approach involving random walks and handshakes has several drawbacks. First of all, handshakes with peers that are not running a target subprotocol are wasteful and costs unnecessary overhead. More importantly, random walks can take long time to discover peers that are part of unpopular subprotocols (\ie subprotocols for which there are a small number of peers). 
+
+The nodes must carefully select which peers to connect with in order to avoid eclipse attacks. In an eclipse attack, an adversary monopolises all the connections of a victim node with its Sybils, \ie eclipsing the connections, effectively controlling the victim's view of the network. Once it eclipses a victim, an adversary can then feed the victim custom protocol messages as part of a follow-up attack such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
+
+%\subsection{Application-level Connections}
+%\label{sec:connections}
+
+%DEVp2p is responsible for managing the connections to other peers which form the overlay P2P network. For instance,  the Go-ethereum client by default establishes a total of 50  connections to other Ethereum nodes.  Of these 50 slots, around two-thirds (\ie 34) are reserved for inbound connections,  while the remaining 16 are allocated for outbound connections. Inbound connections are initiated by remote peers of a node with a connection request, and the node can decide whether to accept or reject the request. When all the incoming connection slots of a node are full, the node rejects the incoming connection. If a slot is free, a node is free to accept a connection request, although, it is not recommended for simply accepting any request for security reasons as we explain below.
+
+%
+
+%\ramin{Below and above pargraph have a lot of overlap. Merge?}
+
+%Avoiding eclipsing requires careful selection of peers to fill the 50 slots. The set of connections require protection from Eclipsing attacks where an adversary uses a set of Sybil nodes to monopolize the connections of a victim, isolating from the rest of the network. Inbound connections are chosen from incoming connection requests from peers. Enforcing IP diversity in the chosen inbound peers is recommended by existing studies~\cite{henningsen2019eclipsing, marcus2018low}. Outbound connections are chosen locally and picking a random subset from a large list of known-nodes is shown to be effective against eclipsing attacks. 
+
+
+
+
+
+%\subsection{Peer-to-Peer Networks}
+%Peer-to-peer (P2P) networks are distributed application architectures that partition tasks or workloads between peers. Peers are equally privileged participants in the application, making P2P networks a sound basis for the decentralised applications. Peers make a portion of their resources, such as processing power, disk storage or network bandwidth, directly available to other network participants, without the need for central coordination by servers or stable hosts. Peers are both suppliers and consumers of resources, in contrast to the traditional client–server model.
 % in which the consumption and supply of resources is divided.
 
-P2P networks implement a virtual overlay network on top of the physical network topology, where the nodes in the overlay form a subset of the nodes in the physical network. Data is still exchanged directly over the underlying TCP/IP network, but at the application layer peers are able to communicate with each other directly, via the logical overlay links. Overlays are used for indexing and peer discovery, and make the P2P systems independent from the physical network topology. The two main types of P2P networks are \textit{(i)} unstructured and \textit{(ii)} structured. 
+%P2P networks implement a virtual overlay network on top of the physical network topology, where the nodes in the overlay form a subset of the nodes in the physical network. Data is still exchanged directly over the underlying TCP/IP network, but at the application layer peers are able to communicate with each other directly, via the logical overlay links. Overlays are used for indexing and peer discovery, and make the P2P systems independent from the physical network topology. The two main types of P2P networks are \textit{(i)} unstructured and \textit{(ii)} structured. 
 
-\para{Unstructured P2P Networks}
-Unstructured P2P networks do not impose a particular structure on the overlay network by design, but rather are formed by nodes that randomly form connections to each other~\cite{gnutella, gossip, kazaa}. Without a globally imposed structure, unstructured networks are easy to build and are highly robust in the face of high rates of churn. 
+%\para{Unstructured P2P Networks}
+%Unstructured P2P networks do not impose a particular structure on the overlay network by design, but rather are formed by nodes that randomly form connections to each other~\cite{gnutella, gossip, kazaa}. Without a globally imposed structure, unstructured networks are easy to build and are highly robust in the face of high rates of churn. 
 
-On the other hand finding content is difficult in an unstructured network. In the earlier P2P networks such as Gnutella~\cite{gnutella}, the search queries were flooded through the network to find as many peers as possible that share the data. However, flooding is unscalable as its overhead on the network grows linearly with number of search queries, which in turn grows with system size. Furthermore, since there is no correlation between a peer and the content managed by it, there is no guarantee that scoped flooding will find a peer that has the desired data. The problem gets more severe for unpopular content that, while being present only on a few nodes, might be difficult to find. More recent P2P systems use more scalable search mechanisms such as random walk, as we discuss in Section~\ref{P2PsearchEngines}. 
+%On the other hand finding content is difficult in an unstructured network. In the earlier P2P networks such as Gnutella~\cite{gnutella}, the search queries were flooded through the network to find as many peers as possible that share the data. However, flooding is unscalable as its overhead on the network grows linearly with number of search queries, which in turn grows with system size. Furthermore, since there is no correlation between a peer and the content managed by it, there is no guarantee that scoped flooding will find a peer that has the desired data. The problem gets more severe for unpopular content that, while being present only on a few nodes, might be difficult to find. More recent P2P systems use more scalable search mechanisms such as random walk, as we discuss in Section~\ref{P2PsearchEngines}. 
 
 
-\para{Structured P2P Networks}
-In structured P2P networks the overlay is organized into a specific topology, and the protocol ensures that any node can efficiently search the network for content, even if the resource is extremely rare. The most common type of structured P2P networks implement a distributed hash table (DHT)~\cite{kademlia, chord, pastry, can, tapestry} in which a variant of consistent hashing is used to assign responsibility for maintaining each content or resource to a particular peer. This enables peers to search for resources on the network using a hash table; that is, (key, value) pairs are stored in the DHT, and any participating node can efficiently retrieve the value associated with a given key within a bounded number of steps (usually $O(log(n))$, where $n$ is the number of peers in the network).
+%\para{Structured P2P Networks}
+%In structured P2P networks the overlay is organized into a specific topology, and the protocol ensures that any node can efficiently search the network for content, even if the resource is extremely rare. The most common type of structured P2P networks implement a distributed hash table (DHT)~\cite{kademlia, chord, pastry, can, tapestry} in which a variant of consistent hashing is used to assign responsibility for maintaining each content or resource to a particular peer. This enables peers to search for resources on the network using a hash table; that is, (key, value) pairs are stored in the DHT, and any participating node can efficiently retrieve the value associated with a given key within a bounded number of steps (usually $O(log(n))$, where $n$ is the number of peers in the network).
 
-Unfortunately, maintaining a structured overlay topology makes this type of networks less robust in networks with a high rate of churn. It exposes the network to vast range of attacks that are much more difficult to perform in an unstructured P2P network~\cite{Trifa2012TaxonomyOS}.
+%Unfortunately, maintaining a structured overlay topology makes this type of networks less robust in networks with a high rate of churn. It exposes the network to vast range of attacks that are much more difficult to perform in an unstructured P2P network~\cite{Trifa2012TaxonomyOS}.
 
-\para{P2P Networks in use}
-Modern decentralized application usually implement a mix of both types of networks. Ethereum uses a Kademlia DHT traversal to find peers with which it will form an unstructured network used for blocks dissemination. Similarly, IPFS~\cite{ipfs} maintains parallel unstructured (BitSwap) and structured (Kademlia DHT) networks for to store information about location of files stored in the networks. 
+%\para{P2P Networks in use}
+%Modern decentralized application usually implement a mix of both types of networks. Ethereum uses a Kademlia DHT traversal to find peers with which it will form an unstructured network used for blocks dissemination. Similarly, IPFS~\cite{ipfs} maintains parallel unstructured (BitSwap) and structured (Kademlia DHT) networks for to store information about location of files stored in the networks. 
