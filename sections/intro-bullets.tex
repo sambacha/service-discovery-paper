@@ -6,25 +6,23 @@ Ethereum~\cite{buterin2013ethereum}  is one of the largest permission-less (\ie 
 
 In addition to running its own blockchain platform, Ethereum is home to third-party decentralised applications and platforms that run alternative cryptocurrencies and host various services such as content delivery. 
 
-A vast majority of these applications require dedicated ``sub-networks'', each consisting of only the peers participating in a particular application, to enable exchange of application-specific data such as transactions, blocks, \etc to be disseminated to only the peers interested in that data. 
+A vast majority of these applications require dedicated ``sub-networks'', each consisting of only the peers participating in a particular application, to enable exchange of application-specific data such as transactions, blocks, \etc to be disseminated to only the peers interested in that data. In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications and this number if expected to grow~\cite{kim2018measuring}
 
 In order to form application-specific sub-networks, the peers must first join an (application-agnostic) Ethereum network and participate in a \textit{service discovery protocol (Discv4)} to find other live peers that are part of the desired application's sub-network. 
 
-The Ethereum network is based on Kademlia\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. 
+The process of finding application-specific peers its crucial for the security of the entire system. For instance, a blockchain node that cannot find honest peers or is fully eclipsed by malicious peers is can accept an incorrect state of the blockchain. 
+%These application-level attacks use as a precursor the more basic, targeted attacks such as eclipsing where an attacker aims to fill up a peer's application-level connections with its Sybils - afterwards, an application can be fed with any custom data as part of an attack such as double-spending, stubborn mining, \etc. 
 
-Unlike the earlier DHT systems, Kademlia follows a flexible peer selection process that allows random sampling of peers from each distance-specific interval along the circle (where identifiers are arranged). 
+%The Ethereum network is based on Kademlia\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. 
+%Unlike the earlier DHT systems, Kademlia follows a flexible peer selection process that allows random sampling of peers from each distance-specific interval along the circle (where identifiers are arranged). 
+%Each node establishes \textit{DHT-level network connections} with a fixed number of sampled peers from each distance and also adds those peers to the corresponding (distance-specific) entry in its local routing table.
 
-Each node establishes \textit{DHT-level network connections} with a fixed number of sampled peers from each distance and also adds those peers to the corresponding (distance-specific) entry in its local routing table.
+\para{State-of-the-art} Discv4 is the current \textit{service discovery mechanism} of Ethereum. It is based on Kademlia~\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. Discv4 performs random DHT walks (picking random destinations from the DHT id space) and returns to the application a random sample of encountered nodes. The application must then determine whether returned peers support the same application. This is done by initiating a handshake protocol with each returned peer. 
 
-\para{State-of-the-art} Discv4 is the current \textit{service discovery mechanism} of Ethereum. Discv4 merely makes random walks (picking random destinations from the DHT id space) and forms a random sample of peers learned from \textit{encountered nodes} along the walks. 
-
-These sample of peers are then returned to the application, which must determine each peer's supported application, \ie by initiating a handshake protocol with each peer to query their supported applications. 
-
-Until an application forms enough application-level connections with peers of the corresponding application, it requests more peers from Discv4 to continue the \textit{exhaustive search process}.  
+%\michal{The below is not that relevant IMO}
+%Until an application forms enough application-level connections with peers of the corresponding application, it requests more peers from Discv4 to continue the \textit{exhaustive search process}.  
 
 The randomness in the sampling of peers in both the DHT-level connections by Kademlia and application-level connections by Discv4 provides (a best-effort) Byzantine resilience in a permission-less network where financially-motivated attacks targeting individual applications are common. 
-
-These application-level attacks use as a precursor the more basic, targeted attacks such as eclipsing where an attacker aims to fill up a peer's application-level connections with its Sybils - afterwards, an application can be fed with any custom data as part of an attack such as double-spending, stubborn mining, \etc. 
 
 In addition to security, another major challenge facing Discv4 is the \textit{scalability}: although random peer selection provides an acceptable-level of security against eclipsing attacks, the current discovery process is rather slow in finding peers for even moderately popular applications. 
 
