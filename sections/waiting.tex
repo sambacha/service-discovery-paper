@@ -125,7 +125,7 @@ However, such a solution is computationally expensive (\eg $O(n)$) and unfeasabl
     \label{fig:lower_bound}
 \end{figure}
 
-When asking for a new waiting time before the previously obtained one elapses, an advertisers loses its already accumulated waiting time . It means that asking for a new waiting at time $t_2$ can lower the overall waiting only if the new waiting time is $w(t_2)$ is smaller than $w(t_1)$ by more than $t2 - t1$: $w(t_1) - w(t_2) < t_2 - t_1$.
+When asking for a new waiting time before the previously obtained one elapses, an advertiser loses its already accumulated waiting time. It means that asking for a new waiting at time $t_2$ can lower the overall waiting only if the new waiting time $w(t_2)$ is smaller than $w(t_1)$ by more than $t2 - t1$: $w(t_1) - w(t_2) < t_2 - t_1$.
 To make sure it is not the case,  our protocol enforces a lower bound on the waiting time. \Ie we make sure that a advertiser's waiting time received at $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than $t2 - t1$ (\Cref{fig:lower_bound}). 
 However, holding such a bound for every request (\ie every combination of IP/ID/topic) would cause significant memory overhead ($O(|IPs|\times|IDs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create state at the registrar. 
 
@@ -139,6 +139,6 @@ To store the lower bound in a more efficient way, we rewrite the waiting formula
 \end{equation}
 Ensuring that the lower bound is enforced for each of the three components makes sure that the total waiting will respect the lower bound as well. At the same time, it only requires storing lower bound for every IP/ID/topic and not all their combinations. This approach reduces the memory overhead to $O(|IPs|+|IDs|+|topics|) = O(d)$.
 
-For each of the components above IP, ID and topic present in the table, we keep a bound. When a specific IP enters the table for the first time, the bound(IP) is set to 0 and a timestamp timestamp(IP) is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time $w_{IP}$ and return the higher value among $w_{IP} = max(w_{IP}, bound(IP) - timestamp(IP))$. It makes sure that advertisers never receive a better time by frequently coming requesting new tickets. The bound and the bound are updated when a new ticket is issued and $w_{IP} > (bound(IP) - timestamp(IP))$. The same holds for IDs and topics.
+For each of the components above IP, ID, and topic present in the table, we keep a bound. When a specific IP enters the table for the first time, bound(IP) is set to 0 and a timestamp(IP) is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time $w_{IP}$ and return the higher value among $w_{IP} = max(w_{IP}, bound(IP) - timestamp(IP))$. It makes sure that advertisers never receive a better time by frequently requesting new tickets. The bound and the timestamp are updated when a new ticket is issued and $w_{IP} > (bound(IP) - timestamp(IP))$. The same holds for IDs and topics.
 
 

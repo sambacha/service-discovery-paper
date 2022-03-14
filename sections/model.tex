@@ -8,7 +8,7 @@
 %\michal{Those are speerate layers.}
 We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes cannot share the same ID.  
 
-Our system is built on top of existing Ethereum DHT used in Discv4, \ie nodes use Ethereum DHT to bootstrap and initially discover nodes to fill Discv5 tables,  however its operation is independent from current Ethereum DHT and could be implemented without it.
+Our system is built on top of existing Ethereum DHT used in Discv4, \ie nodes use Ethereum DHT to bootstrap and initially discover nodes to fill Discv5 tables, however its operation is independent from current Ethereum DHT and could be implemented without it.
 
 The system indexes participants by their registered topic identifiers or topic(s), for short. 
 A \emph{topic} is an identifier for a service provided by a node. 
@@ -38,10 +38,11 @@ We assume that the popularity of the topics in the system may vary significantly
 %We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
 
 \michal{The section below is weird. We go into a lot of details about connections (that we didn't introduce) and some blockchain-specific attacks (which are application-specific). Maybe we should just say that we assume presence of byzantine nodes?}
+\dk{I agree with that comment; still I think the specific attacks are helpful for motivating the need to protect against eclipse attacks.}
 We assume the presence of adversarial or malicious nodes in the DHT. 
-Malicious nodes are nodes that do not strictly follow the protocol to communicate with any other nodes in the network,  trying to get some benefit or have the control of the network.
+Malicious nodes are nodes that do not strictly follow the protocol to communicate with any other nodes in the network, trying to get some benefit or have the control of the network.
 The main threat of the presence of malicious nodes in the network is the possibility of any node being eclipsed by malicious nodes.
-This means,  all incoming and outgoing connections of a node are made to malicious nodes controlled by the same entity. 
+This means, all incoming and outgoing connections of a node are made to malicious nodes controlled by the same entity. 
 When a node is eclipsed it can be easily manipulated,
 filtering the victim’s view of the blockchain.  
 Eclipse attacks
@@ -54,12 +55,13 @@ we assume that nodes are able to discover valid nodes and are not fully eclipsed
 %\sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
 
 Malicious nodes may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
-As creating a node requires maintaining periodic,  encrypted communication with its peers,  the number of active IDs an attacker can posses at a time is limited. 
+As creating a node requires maintaining periodic,  encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. 
 Also,  maintaining nodes require some infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker is limited, as well as the fact 
 %We also assume that the number of IP addresses under the control of an attacker is limited. 
 that an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
 \ramin{Depending on the target conference, it could be useful to put security aspects in a separate, more visible section (e.g. "Threat model" etc.)} 
+\dk{Yes. A separate section "threat model" introducing the discussed concepts (see Michal's comment) would also make this easier to understand. Since protecting against / mitigating eclipse attacks is an important contribution of this paper, imo, a threat model section is important.}
 
 %\onur{maybe we should indicate somewhere that DHT and discovery are separate layers and are largely independent except initially DHT is used for bootstrapping the discovery.}
 
