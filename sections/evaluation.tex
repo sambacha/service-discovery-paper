@@ -3,7 +3,7 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT a build \sysname on top of it. We compare our system against Discv4 (currently implemented in Ethereum) and a key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of this solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy. 
+We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT a build \sysname on top of it. We compare our system against Discv4 (currently implemented in Ethereum) and a key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of these solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy. 
 
 
 We make the code publicly available for the scientific community\footnote{https://github.com/datahop/p2p-service-discovery}. In the evaluation, we focus on the following aspects: \textit{(1)} Optimal parameter selection, \textit{(2)} Overhead, \textit{(3)} Fairness and \textit{(4)} Security. 

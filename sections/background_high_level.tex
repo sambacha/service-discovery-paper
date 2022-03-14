@@ -5,7 +5,7 @@
 In this section, we provide background Distributed Hash Tables (DHT) on top of which we buid \sysname. 
 
 \subsection{Distributed Hash Tables}
-In a DHT, each node is uniquely identified by a randomly generated node ID (\eg a marshaled version of node's public key). We assume that it is easy to generate many different IDs but computationally infeasible to generate a specific one. The DHT act as a key/value store supporting put and get operations. A data item stored in the DHT is found by its key (\eg a hash of the data itself). Node IDs and data keys share the same representation; in the following we use the term ID for both. DHTs define a metric for "closeness" of IDs. The DHT stores data at nodes whose node ID is the “closest” to the data’s key. 
+In a DHT, each node is uniquely identified by a randomly generated node ID (\eg a marshaled version of node's public key). We assume that it is easy to generate many different IDs but computationally infeasible to generate a specific one. The DHT acts as a key/value store supporting put and get operations. A data item stored in the DHT is found by its key (\eg a hash of the data itself). Node IDs and data keys share the same representation; in the following we use the term ID for both. DHTs define a metric for "closeness" of IDs. The DHT stores data at nodes whose node ID is the “closest” to the data’s key. 
 
 A DHT node stores its known peers in a routing table divided into buckets which partition the known network based on the local node’s ID (\Cref{fig:kademlia}). Bucket $i$ stores nodes whose distance is in $[2i, 2i+1)$. The routing table stores a detailed view of peers close to the node and a less detailed view of parts of the network located further away.
 
@@ -18,7 +18,8 @@ A DHT node stores its known peers in a routing table divided into buckets which 
  \end{figure}
  
 In order for a newly instantiated DHT node to find peers, it usually adds a hard-coded set of bootstrap node IDs to its routing table\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}. Subsequently, when attempting to locate a target node on the network, the node searches its routing table for the $\alpha$ peers that are closest to the target node. The node then sends these $\alpha$ nodes a FIND\_NODE message that specifies the target node ID, and each peer responds with the list of nodes from its own routing table that are closest to the target. The querying node adds any new node information (i.e., node ID, IP Address, UDP/TCP ports) it discovers through this process to its routing table, and then iteratively repeats the process until it converges on the target node.
- 
+
+\dk{could mention DNS discovery\footnote{https://eips.ethereum.org/EIPS/eip-1459} as a means for discv5 bootstrap. We implemented this for Waku v2.}
 
 \subsection{Node discovery in Ethereum}
 Ethereum uses a DHT-based discovery system enabling application-specific nodes to find their peers. Nodes maintain a discovery table whose sole purpose is to maintain a set of known-peers. The structure of the discovery table is identical to a DHT routing table - each node organises known-nodes according to their distance from itself. A node populates its routing table by attempting to locate a random target node ID and store the nodes encountered during the process in its discovery table, \ie a random walk. When the node locates the closest peers to a random target, the walk is complete. 
@@ -26,6 +27,7 @@ Ethereum uses a DHT-based discovery system enabling application-specific nodes t
 Once a node starts populating its discovery table with peers, the node starts establishing an individual application-level session (\ie handshake) with each known-peer in the table in order to identify their subprotocol. In case, the node discovers that a peer is part of a target subprotocol, then the node can send a connection request to the peer (see Section~\ref{sec:connections}) after the handshake; otherwise, the handshake session is terminated. The process of looking for peers is suspended when a node establishes a sufficient number of outbound connections.
 
 This brute-force discovery approach involving random walks and handshakes has several drawbacks. First of all, handshakes with peers that are not running a target subprotocol are wasteful and costs unnecessary overhead. More importantly, random walks can take long time to discover peers that are part of unpopular subprotocols (\ie subprotocols for which there are a small number of peers). 
+\dk{A math. estimation would be nice here.}
 
 The nodes must carefully select which peers to connect with in order to avoid eclipse attacks. In an eclipse attack, an adversary monopolises all the connections of a victim node with its Sybils, \ie eclipsing the connections, effectively controlling the victim's view of the network. Once it eclipses a victim, an adversary can then feed the victim custom protocol messages as part of a follow-up attack such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
 

@@ -12,6 +12,8 @@ We start by describing data structures necessary for topic-specific registration
 \para{Registration Table}
 In order to execute the ad distribution process described below,  each advertiser maintains a per-topic \emph{registration table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars.  The registration table is similar to the routing table used in Kademlia protocol (as described in \Cref{sec:background}). It stores advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. I.e. the registration table stores $k$ potential registrars for every distance range (bucket) from the topic ID (\Cref{fig:ticket_table}). When created, the table is initialized with peers from the routing table. 
 
+\dk{Imo, it is not clear if there is a single topic table each node maintains, or if each node has one topic table for each Topic ID. Especially because the previous Section said there is a \emph{second} table for topics.}
+
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/ticket_table}
     \caption{Creation of ticket table from the routing table.}
@@ -38,6 +40,7 @@ Placing a fixed amount of ads per bucket, make registrars close to a topic hash 
 Increasing $K$, makes the advertiser easier to find at the cost of increased communication overhead. 
 
 The advertiser starts by the first bucket (the furthest away from the topic hash) in the \emph{registration table}, selects $K$ random peers and attempts to perform a registration. 
+\dk{Why not all bucktes in parallel?}
 We describe details on the registration procedure in \Cref{sec:registration}. 
 A successful registration places an ad on an advertiser for a fixed amount of time $t_\textit{lifetime}$.
 If a registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
@@ -68,7 +71,7 @@ The goal is to find $N_\textit{lookup}$ node advertised with a specific topic.
 The searcher starts by creating a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
 \michal{Should we have separate $K$ for registration and lookup? You might argue that if less ads are placed, more lookups are needed and vice-versa.}
 \sergi{we actually use different values of $k$ for registration and search.  we could name it differently}
-The searchers progressively moves through buckets (starting from the furthest away), randomly chooses $K$ registrars per buckets and sends them lookup requests. 
+The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K$ registrars per buckets and sends them lookup requests. 
 Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
 There is a tradeoff between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
 By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) and low amount of ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. We investigate the impact of both parameters in \Cref{sec:eval}.

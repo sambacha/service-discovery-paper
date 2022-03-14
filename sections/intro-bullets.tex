@@ -7,18 +7,18 @@ Ethereum~\cite{buterin2013ethereum}  is one of the largest permission-less (\ie 
 
 In addition to running its own blockchain platform, Ethereum is home to third-party decentralised applications and platforms that run alternative cryptocurrencies and host various services such as content delivery. \er{I would give a few examples of these applications here}
 
-A vast majority of these applications require dedicated ``sub-networks'', each consisting of only the peers participating in a particular application, to enable exchange of application-specific data such as transactions, blocks, \etc to be disseminated to only the peers interested in that data. In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications and this number if expected to grow~\cite{kim2018measuring}. \er{could we show either the evolution of the \# of applications over time (if it has an exponential shape)?}
+A vast majority of these applications require dedicated ``sub-networks'', each consisting of only the peers participating in a particular application, to enable exchange of application-specific data such as transactions, blocks, \etc to be disseminated to only the peers interested in that data. In 2018, the Ethereum P2P network nodes operated a total of 4,076 different applications and this number is expected to grow~\cite{kim2018measuring}. \er{could we show either the evolution of the \# of applications over time (if it has an exponential shape)?}
 
 In order to form application-specific sub-networks, the peers must first join an (application-agnostic) Ethereum network and participate in a \textit{service discovery protocol (Discv4)} to find other live peers that are part of the desired application's sub-network. \er{to discuss: ``service discovery'' could be understood as locating the single server in charge of a service--this term is often used in SOA. In the P2P world, I have seen the term ``membership management'' used as well to denote the discovery of a random set of peers from a group (seminal paper is SCAMP~\cite{ganesh2003peer}). We should preferably use the term used in the ETH community but we can give the precision in the RW section (I can do it).}
 
-The process of finding application-specific peers its crucial for the security of the entire system. For instance, a blockchain node that cannot find honest peers or is fully eclipsed by malicious peers is can accept an incorrect state of the blockchain. \er{This is a bit light in terms of motivation imo. We need to make it very clear that our primary target is to resist eclipse attacks, so I would give more arguments about what malicious nodes can do in our model here (without detailing the said model yet)}
+The process of finding application-specific peers is crucial for the security of the entire system. For instance, a blockchain node that cannot find honest peers or is fully eclipsed by malicious peers might accept an incorrect state of the blockchain. \er{This is a bit light in terms of motivation imo. We need to make it very clear that our primary target is to resist eclipse attacks, so I would give more arguments about what malicious nodes can do in our model here (without detailing the said model yet)}
 %These application-level attacks use as a precursor the more basic, targeted attacks such as eclipsing where an attacker aims to fill up a peer's application-level connections with its Sybils - afterwards, an application can be fed with any custom data as part of an attack such as double-spending, stubborn mining, \etc. 
 
 %The Ethereum network is based on Kademlia\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. 
 %Unlike the earlier DHT systems, Kademlia follows a flexible peer selection process that allows random sampling of peers from each distance-specific interval along the circle (where identifiers are arranged). 
 %Each node establishes \textit{DHT-level network connections} with a fixed number of sampled peers from each distance and also adds those peers to the corresponding (distance-specific) entry in its local routing table.
 
-\para{State-of-the-art} Discv4 is the current \textit{service discovery mechanism} of Ethereum. It is based on Kademlia~\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. Discv4 performs random DHT walks (picking random destinations from the DHT id space) and returns to the application a random sample of encountered nodes. The application must then determine whether returned peers support the same application. This is done by initiating a handshake protocol with each returned peer. \er{the process repeats until successful?}
+\para{State-of-the-art} Discv4 is the current \textit{service discovery mechanism} of Ethereum. It is based on Kademlia~\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. Discv4 performs random DHT walks (picking random destinations from the DHT id space) and returns a random sample of encountered nodes to the application. The application must then determine whether returned peers support the same application. This is done by initiating a handshake protocol with each returned peer. \er{the process repeats until successful?}
 
 %\michal{The below is not that relevant IMO}
 %Until an application forms enough application-level connections with peers of the corresponding application, it requests more peers from Discv4 to continue the \textit{exhaustive search process}.  
@@ -26,11 +26,13 @@ The process of finding application-specific peers its crucial for the security o
 The randomness in the sampling of peers in both the DHT-level connections by Kademlia and application-level connections by Discv4 provides (a best-effort) Byzantine resilience in a permission-less network where financially-motivated attacks targeting individual applications are common.
 \er{I would not go as far as to write that it is Byzantine-resilient. It is a mitigation, but it has limits.} \er{is Kademlia used for something else than the random walk?}
 
-In addition to security, another major challenge facing Discv4 is the \textit{scalability}: although random peer selection provides an acceptable-level of security against eclipsing attacks, the current discovery process is rather slow in finding peers for even moderately popular applications. \er{Does not strike me that discv4 is really subject to security problems, in the very worst case you could ask all peers in the network and would be guaranteed to get the $n$ ones you are looking for following topic $t$.}
+In addition to security, another major challenge facing Discv4 is the \textit{scalability}: although random peer selection provides an acceptable-level of security against eclipsing attacks, the current discovery process is rather slow in finding peers for even moderately popular applications. \er{Does not strike me that discv4 is really subject to security problems, in the very worst case you could ask all peers in the network and would be guaranteed to get the $n$ ones you are looking for following topic $t$.} \dk{If large parts of the network are eclipsed, all nodes offering a certain topic/service might be unreachable. Eclipse attacks can prevent nodes from being able to ask all peers.}
 
 As more peers and applications join the Ethereum network, the inefficiency of brute-force discovery process is likely to become a bottleneck for the applications.
+\dk{Could provide a simple model showing this. I have done a basic calulation, which I will link in the PR.}
+\dk{Waku v2\footnote{\url{https://wakunetwork.com}} is such an application. We discussed the shortcomings of random-walk discovery and are planning to implement more efficient means. You could list Waku as a motivation/example of an application that wants more efficient discovery means like the topic table this paper proposes.}
 
-\para{Discv5} In this work, we propose a new \textbf{service discovery layer} which enables secure,  efficient and robust  discovery of application-specific peers in the Ethereum network.
+\para{Discv5} In this work, we propose a new \textbf{service discovery layer} which enables secure,  efficient and robust discovery of application-specific peers in the Ethereum network.
 Different from Discv4, \sysname allows nodes (\ie advertisers) to associate themselves with a set of \emph{topics} (\eg application IDs), and advertise the association (\ie an ad) in the network. 
 
 The information is collectively stored by network participants (\ie registrars) without relying on a single trusted party at any point. Any node can then query the network for a topic to obtain a list of application-specific peers and directly connect to them without disturbing other members of the network. 
@@ -48,4 +50,7 @@ Our design encourages diversity of advertisements stored at each registrar makin
 \end{itemize}
 
 \er{need some key figures from the evaluation}
+
+\dk{The wording suggests this paper introduces \sysname. But \sysname already exists. This paper actually introduces an efficient topic discovery method for \sysname.}
+
 
