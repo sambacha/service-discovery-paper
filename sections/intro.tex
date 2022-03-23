@@ -18,16 +18,14 @@ Before a sub-network can be formed, its peers must first discover each other. Th
 \para{State-of-the-art} Currently, Ethereum provides Discv4 - a decentralized, general purpose \textit{service discovery protocol} enabling any node to discover \textit{a random sample} of peers running a desired application. A node first \textit{(i)} joins the (application-agnostic) Ethereum network, \textit{(ii)} discovers application-specific peers and \textit{(iii)} joins a sub-network by connecting to the discovered peers. The protocol is based on Kademlia~\cite{maymounkov2002kademlia} – a well-established Distributed Hash Table (DHT) implementation. Discv4 uses a simple, brute-force discovery mechanism involving random walks in the DHT containing peers from all ranges of applications. Each walk encounters random peers which are then supplied to the application. The application determines whether the supplied peers support the desired application through dedicated handshake messages. The process continues until a desired number of connection slots are filled. 
 
 With the built-in randomness of the Kademlia peer selection mechanism, Discv4 is relatively secure against denial of service and eclipse attacks. Each nodes queries an unpredictable set of peers regardless of its application. As a result, an attacker cannot easily stop the process or strategically place its Sybil identities.
-\mk{I'd make the message below stronger - i.e., to make it clear it's impossible to continue with Discv4.}
-However, the overall process is inefficient and can take long time, especially for unpopular applications with a small number of peers (\ie handshaking with the entire network in the worst-case scenario). As more peers and applications join the Ethereum network, the inefficiency of brute-force discovery process is likely to become a bottleneck of the entire ecosystem.
-%  \er{the process repeats until successful?}
+However, the overall process is highly inefficient, can take long time and generates significant message overhead. This is especially visible for unpopular applications with a small number of peers.  For instance, assuming an application with 10 nodes in a network of 5,000 nodes, a newcomer needs to perform an average 500 of handshakes to find a single peer. As more applications join the Ethereum network, the inefficiency of the brute-force discovery process becomes a bottleneck and prevents the growth of the entire ecosystem. 
 
 %The randomness in the sampling of peers in both the DHT-level connections by Kademlia and application-level connections by Discv4 provides (a best-effort) Byzantine resilience in a permission-less network where financially-motivated attacks targeting individual applications are common. \er{I would not go as far as to write that it is Byzantine-resilient. It is a mitigation, but it has limits.} \er{is Kademlia used for something else than the random walk?}
 
 %In addition to security, another major challenge facing service discovery is the \textit{scalability}: although random peer selection provides an acceptable-level of security against eclipsing attacks, the current discovery process is rather slow in finding peers for even moderately popular applications. \er{Does not strike me that discv4 is really subject to security problems, in the very worst case you could ask all peers in the network and would be guaranteed to get the $n$ ones you are looking for following topic $t$.} 
 \dk{If large parts of the network are eclipsed, all nodes offering a certain topic/service might be unreachable. Eclipse attacks can prevent nodes from being able to ask all peers.}
 
-\dk{Could provide a simple model showing this. I have done a basic calulation, which I will link in the PR.}
+\dk{Could provide a simple model showing this. I have done a basic calculation, which I will link in the PR.}
 \dk{Waku v2\footnote{\url{https://wakunetwork.com}} is such an application. We discussed the shortcomings of random-walk discovery and are planning to implement more efficient means. You could list Waku as a motivation/example of an application that wants more efficient discovery means like the topic table this paper proposes.}
 
 \para{Our Contribution} In this work, we propose \sysname - a new \textbf{service discovery layer} which enables secure,  efficient and robust discovery of application-specific peers in the Ethereum network.
@@ -35,22 +33,20 @@ Different from Discv4, \sysname allows nodes (\ie advertisers) to associate them
 
 The information is collectively stored by network participants (\ie registrars) without relying on a single trusted party at any point. Any node can then query the network for a topic to obtain a list of application-specific peers and directly connect to them without disturbing other members of the network. 
 
-We build \sysname on top of the existing Kademlia DHT to propagate application-specific advertisements to randomly-sampled nodes to make deliberate attacks on the network costly to mount and persist. Our design encourages diversity of advertisements stored at each registrar making the system resistant to network dynamics and partitions. At the same time, \sysname provides efficient peer discovery operations terminating within a certain maximum number of steps (logarithmic in the network size) for all the topics regardless of their popularity. The protocol implements a robust admission mechanism to limit the resource usage on all the nodes, ensure fairness across topics, and prevent a vast range of malicious behaviours even in the presence of a powerful attacker.
+We build \sysname on top of the existing Kademlia DHT to propagate application-specific advertisements to randomly-sampled nodes to make deliberate attacks on the network costly to mount and persist. Our design encourages diversity of advertisements stored at each registrar making the system resistant to network dynamics and partitions. At the same time, \sysname provides efficient peer discovery operations terminating within a certain maximum number of steps (logarithmic in the network size) for all the topics regardless of their popularity. 
+
+An open system allowing any node to place advertisement requires an admission protocol. Each registrar, having limited storage capacities, must decide which advertisement to accept and when should they expiry. This component is crucial for the system security and robustness in a highly dynamic environment. \sysname implements a lightweight admission mechanism to limit the resource usage on all the nodes, ensure fairness across topics, and prevent a vast range of malicious behaviours even in the presence of a powerful attacker.
 
 \para{Contributions} We make the following contributions:
 \begin{itemize}
     \item In \Cref{sec:placement}, we design a DHT-based data placement system that distributes service advertisement in the network. The protocol combines pseudo-random data placement for security with deterministic operations for efficiency. We present a lookup operation that finds a subset of advertisement placed in the system within a bounded amount of time. The procedure ensure the diversity of data sources and is resistant against manipulation by malicious registrars. 
-    \item In \Cref{sec:registration} we design a lightweight admission protocol allowing advertisers to place ads after waiting for a specified amount of time. \er{I would mention the problem and not only the solution here (make continuous registration of fake/malicious entries more complicated and limit their impact)}\mk{That's a good point - we haven't mention admission control before - TODO} \sysname guarantees that advertisers cannot place more advertisement at a specific registrar by deviating from the protocol %\er{is this completely true? I understood they could place more, but not many times more?}\mk{now it is. we ensure that with the lowe bound mechanism}
+    \item In \Cref{sec:registration} we design a lightweight admission protocol allowing advertisers to place ads after waiting for a specified amount of time. %\er{I would mention the problem and not only the solution here (make continuous registration of fake/malicious entries more complicated and limit their impact)}\mk{We've now added motivation for that in the paragraph just before the contributions} 
+    \sysname guarantees that advertisers cannot place more advertisement at a specific registrar by deviating from the protocol %\er{is this completely true? I understood they could place more, but not many times more?}\mk{now it is. we ensure that with the lowe bound mechanism}
     and does not create any intermediary state at nodes holding the advertisements.
     \item In \Cref{sec:waitingTime}, we design a function that calculates a waiting time after which advertisement can be placed on nodes holding advertisements. The function limits the amount of resources used by each node, promotes ads diversity stored within nodes, and protects against a vast range of malicious behaviours. 
 \end{itemize}
 
-\er{need some key figures from the evaluation}
-
-\dk{The wording suggests this paper introduces \sysname. But \sysname already exists. This paper actually introduces an efficient topic discovery method for \sysname.}
-
-
-
+Our evaluations shows...
 
 
 %Rather than each application building its own, dedicated peer discovery protocol where only the peers of individual applications participate, 
