@@ -1,5 +1,28 @@
 \section{Overview}
 \label{sec:overview}
+\para{Ad placement} The first challenge of a robust service discovery platform is the questions of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic. It is possible to deterministically choose a group of nodes based on the topic itself. Such a solutions makes it efficient to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach results in unequal load across registrars, especially when the popularity of the topics vary significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Furthermore,  in case a topic-specific registrar leaves the network, the registration process would have to re-start from scratch causing disturbance in the network. Finally, an attacker could generate and strategically place its Sybil identities taking control over the entire topic-specific traffic and exposing the system to eclipse and DoS attacks. 
+
+Alternatively,  advertisers could place their ads on random registrars across the entire network. This approach is much more difficult to attack as a malicious player would need to take control over the entire network to control a single topic. Furthermore, random placement is resistant to network dynamics and achieves good load balance across registrars regardless of the topic popularity distribution\footnote{The registration process still generates higher amounts of traffic located close to popular topics. This is a problem we solve with the admission protocol descibed below.}. On the other hand, random placement makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+
+\sysname implements an alternative method of placing ads. Advertisers starts the registrations process from nodes located far away from the topic hash and traverse the DHT towards nodes close to the topic hash. On their way, advertisers place ads on encountered registrars with an increasing density. So that the closer to the topic hash, the higher number of ads is placed. The searchers mimic the process and ask encountered registrars for topic-specific ads. The lookup process stop, when enough ads are found. 
+
+Both registration and lookup operations are efficient and finish within a logarithmic amount of steps. At the same time, the non-deterministic nature of the DHT traversal makes it difficult for an attacker to hijack the process. Placing Sybil identities close to the topic hash (or anywhere else in the network) does not prevent searchers from acquiring legitimate peers on their way through the DHT. Finally, searchers of popular topics are likely to find enough ads before reaching the DHT region close to the topic hash and terminate the operation. It prevents creation of hot-spots in the network and ensures a more equal load distribution among registrars. 
+
+\para{Admission control} The second challenge consists of an admission control mechanism. Registrars have a limited amount memory and can store only a finite number of ads. If the registration demand surpasses the supply or when an attacker bombards the network with dummy ads, each registrar has to decide which ads should be admitted. 
+
+\sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). 
+The advertiser will have to wait a reported waiting time by the registrar and only then the advertiser will be able to place a registration that will be admitted by the registrar.
+
+The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and space left in the registry. 
+The more different the request is (in terms of the IP/ID of the registrar and the topic) from the current content of the registry, the lower the calculated waiting time. 
+At the same time, the calculated waiting time increases as the registry fills up. 
+The diversity metric  simplifies the admission for unpopular topic, as receive lower waiting times and are more likely to be admitted.
+Furthermore,  high diversity in the registries' contents makes \sysname resistant to network dynamics. The proposed admission mechanism also prevents spam attacks performed by an attacker. 
+For instance, consecutive registration attempts from a limited poll of IP addresses will receive increasing waiting times eventually blocking further registration attempts made by the attacker. 
+The waiting time mechanism also improves the load distribution in the network since it includes to current registry size in the waiting time calculation.
+%Including the current topic table size in the waiting time also improves the load distribution. 
+Registrars located close to the hashes of popular topics will quickly fill their registry and return higher waiting times to the advertisers, limiting the incoming traffic by throttling down registrations requests for the nodes that initially receive more registrations requests (that will be nodes with nodes IDs close to topic hash ID).
+
 
 \begin{table} 
 %\vspace{-0.15in}
@@ -14,25 +37,15 @@
 \toprule
 \textbf{Objective} & \textbf{Description} \\
 \hline
-G1 & Fair allocation of registries by all the topics \\
+Efficiency & time + overhead \\
 \hline
 %G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
 %\hline
-G2 & All advertisers within each topic should have a similar probability of being discovered. \\
+Fairness & Fairness/Equal Load (across topics/across nodes) \\
 \hline
-G3 & The load (in terms of messaging overhead) should be equally distributed across registrars. \\
+Security & Eclipse and DoS attacks resistance\\
 \hline
-G4 & The registration operations should be efficient in terms of time. \\
-\hline
-G5 & The registration operations should be efficient in terms of messaging, computational, and state maintenance overhead. \\
-\hline 
-G6 & The search operation should be efficient in terms of time and messages sent to nodes (hop count) for all the topics independent of their popularity. \\
-\hline
-%G7 & The number of registrations should be sufficient for an efficient discovery. \\ Onur: I don't think we need this
-%\hline
-G7 & The protocol should be resistant to network dynamics (nodes joining and leaving). \\
-\hline 
-G8 & The protocol should be resistant to attacks by malicious nodes or their Sybils. \\
+Robustness & resistance to network dynamics, some nodes failing etc.\\
 \hline
 \end{tabular}
 }
@@ -42,14 +55,14 @@ G8 & The protocol should be resistant to attacks by malicious nodes or their Syb
 
 
 %The end-goal of service discovery is to enable nodes to be discovered under topics which they choose to be associated in a secure, robust and efficient manner. %\Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below. We define two main questions which need to be answered before achieving our goals:
-As identified in the previous section, below are two main challenges facing \sysname in achieving the design objectives:
+%As identified in the previous section, below are two main challenges facing \sysname in achieving the design objectives:
 
-\begin{enumerate}
+%\begin{enumerate}
 %    \item Where should specific ads be placed in the network ?
  %   \item How to ensure fairness with limited resources of the registrars in an open system with malicious nodes?
-        \item Distribution of ads with good load-balancing but also with efficient topic lookups,
-        \item Access control over registry resources for fairness and security but without sacrificing the efficiency of search/registration operations.
-\end{enumerate}
+%        \item Distribution of ads with good load-balancing but also with efficient topic lookups,
+%        \item Access control over registry resources for fairness and security but without sacrificing the efficiency of search/registration operations.
+%\end{enumerate}
 
 %\para{Ad distribution} We envision a large number of topics in the system. However, it is difficult to predict the actual number. The number of topics in the system might also change over time.
 
@@ -60,7 +73,7 @@ As identified in the previous section, below are two main challenges facing \sys
 
 %Alternatively,  advertisers could place their ads on random advertisers across the entire network. This approach is much more difficult to attack as a malicious player would need to take control over the entire network to control a single topic (\textbf{+G8}). Furthermore, random placement is resistant to network dynamics, as registrations are stored on multiple registrars (\textbf{+G7}) and achieves good load balance across registrars regardless of the topic popularity distribution (\textbf{+G3}). On the other hand, random placement makes it difficult for searchers to find placed ads, especially for unpopular topics. The main goal of structured placement (through original Kademlia DHT) is to provide bounde lookup times with good performance for large networks and good scalability.On the other hand, placing registrations in a random way does not provide any of these performance guarantees: either the advertisers must place a large number of ads to simplify the search, or searchers need to consult with potentially a large number of registrars before finding a relevant ad to simplify the registration. Both approaches require significant amounts of time ((\textbf{-G3}) and additional traffic (\textbf{-G4}). 
 
-\para{Ad distribution} As discussed in \Cref{sec:objectives}, Kademlia's rendezvous-based approach is efficient but has poor load-balancing and is insecure, while the random placement approach of Ethereum's current discovery system is secure but inefficient. Our approach combines advantages of both as follows. First, both advertisers and searchers maintain a secondary routing table (\Cref{fig:ticket_table}) with a topic-oriented bucket structure where known peers are organised in buckets according to their distance from the target topic's hash, not from the advertiser maintaining the table. Then, each advertiser chooses a fixed number of randomly chosen peers from each bucket and initiate the registration operation with them in parallel. Only if the registration on a peer $p$ is complete or aborted (because it is taking too long), a new peer is selected from the same bucket as $p$. On the other hand, the search process limits the scope of search to a single bucket of the secondary routing table at a time. Searchers start from the farthest bucket to the topic hash and pick a fixed number of randomly picked registrars to search. If the searcher cannot find enough relevant ads for the target topic in the current bucket, then the search proceeds with the next closest bucket to the topic hash. 
+%\para{Ad distribution} As discussed in \Cref{sec:objectives}, Kademlia's rendezvous-based approach is efficient but has poor load-balancing and is insecure, while the random placement approach of Ethereum's current discovery system is secure but inefficient. Our approach combines advantages of both as follows. First, both advertisers and searchers maintain a secondary routing table (\Cref{fig:ticket_table}) with a topic-oriented bucket structure where known peers are organised in buckets according to their distance from the target topic's hash, not from the advertiser maintaining the table. Then, each advertiser chooses a fixed number of randomly chosen peers from each bucket and initiate the registration operation with them in parallel. Only if the registration on a peer $p$ is complete or aborted (because it is taking too long), a new peer is selected from the same bucket as $p$. On the other hand, the search process limits the scope of search to a single bucket of the secondary routing table at a time. Searchers start from the farthest bucket to the topic hash and pick a fixed number of randomly picked registrars to search. If the searcher cannot find enough relevant ads for the target topic in the current bucket, then the search proceeds with the next closest bucket to the topic hash. 
 
 
 %When an advertiser wants to place an ad for a topic, it first hashes the topic and creates a topic-specific table we call \textbf{Ticket Table} (\Cref{fig:ticket_table}. The ticket table is similar to the DHT routing table but pre-populated with peers from the routing table but organized in buckets in a different way and used to store the tickets used for the ongoing registrations.It creates buckets based on the distance from the topic hash instead of relying on the distance from the node ID (as the DHT routing table does). The advertisers choose a fixed amount of nodes per bucket and initiate the registration process on each of them.Registrars store registrations in a table called \textbf{Registry},  where registrations are indexed by topic. Only when the registration process is completed, or the process has been aborted because it is taking too much time, a new node is selected in the bucket to do more registrations. For the search process,  the searcher starts querying  a node from the furthest distance from the topic hash and repeats the operation gradually moving towards the topic hash,  stopping the operation when enough ads have been found.
@@ -68,32 +81,32 @@ As identified in the previous section, below are two main challenges facing \sys
 %It will then move to the next bucket (\ie \emph{bucket 1} on \Cref{fig:ticket_table}) and repeats the operation gradually moving towards the topic hash. 
 %The search operation closely mimics the registration but stops when enough ads are found. 
 
-Combining topic-oriented bucket organization together with intra-bucket random ad placement makes the system secure and efficient at the same time. 
-Each registration operation generates a fixed amount of traffic regardless of the topic popularity (\textbf{+G5}). 
-Search operations for highly popular topics can stop after consulting just a few buckets if enough peers are found. 
-It speeds up the process (\textbf{+G4}), lowers the system message overhead (\textbf{+G5}) and prevents searchers from consulting advertisers close to the topic hash ensuring good load balance (\textbf{+G3}). 
-At the same time, searchers of less popular topics are guaranteed to find ads by eventually reaching the closest bucket in a bounded amount of steps. 
-\sysname is secure against Sybil attacks (\textbf{+G8})
-\dk{Why? If attackers can create enough Sybils at chosen locations, they could still eclipse. Imo, further protection against Sybil attacks is necessary.}
-and resistant against node failures (\textbf{+G7}). Failure or corruption of a single node (or a group of nodes) close to the topic hash does not prevent honest nodes from discovering their honest peers. 
-Furthermore, attacking every advertiser holding topic-specific ads is impossible due to the unpredictable nature of placing ads. 
+%Combining topic-oriented bucket organization together with intra-bucket random ad placement makes the system secure and efficient at the same time. 
+%Each registration operation generates a fixed amount of traffic regardless of the topic popularity (\textbf{+G5}). 
+%Search operations for highly popular topics can stop after consulting just a few buckets if enough peers are found. 
+%It speeds up the process (\textbf{+G4}), lowers the system message overhead (\textbf{+G5}) and prevents searchers from consulting advertisers close to the topic hash ensuring good load balance (\textbf{+G3}). 
+%At the same time, searchers of less popular topics are guaranteed to find ads by eventually reaching the closest bucket in a bounded amount of steps. 
+%\sysname is secure against Sybil attacks (\textbf{+G8})
+%\dk{Why? If attackers can create enough Sybils at chosen locations, they could still eclipse. Imo, further protection against Sybil attacks is necessary.}
+%and resistant against node failures (\textbf{+G7}). Failure or corruption of a single node (or a group of nodes) close to the topic hash does not prevent honest nodes from discovering their honest peers. 
+%Furthermore, attacking every advertiser holding topic-specific ads is impossible due to the unpredictable nature of placing ads. 
 
- \para{Access control} The ad distribution procedure above attempts to spread the load equally across nodes in the network to avoid hotspot regions that can be easy targets for attackers. 
- However, malicious advertisers can still target (\ie spam) one or multiple registrars with their traffic. 
-Furthermore,  honest advertisers registering for large number of topics may exhaust limited resources of the registrars. 
+ %\para{Access control} The ad distribution procedure above attempts to spread the load equally across nodes in the network to avoid hotspot regions that can be easy targets for attackers. 
+ %However, malicious advertisers can still target (\ie spam) one or multiple registrars with their traffic. 
+%Furthermore,  honest advertisers registering for large number of topics may exhaust limited resources of the registrars. 
 % \michal{Add more motivation here. Show some examples of Sybil attacking. }
- \sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). 
-The advertiser will have to wait a reported waiting time by the registrar and only then the advertiser will be able to place a registration that will be admitted by the registrar.
+ %\sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). 
+%The advertiser will have to wait a reported waiting time by the registrar and only then the advertiser will be able to place a registration that will be admitted by the registrar.
 %The registrar also issues a \textbf{ticket} to the advertiser. The ticket specifies the time of the initial request, the calculated waiting time and is digitally signed by the registrar. The advertiser includes the ticket in its following registration requests and will be admitted only if the waiting is lower than the time the advertiser already waited for (as indicated by the initial request time). 
  
-The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and space left in the registry. 
-The more different the request is (in terms of the IP/ID of the registrar and the topic) from the current content of the registry, the lower the calculated waiting time. 
-At the same time, the calculated waiting time increases as the registry fills up. 
-The diversity,  calculated using a similarity score,  simplifies the admission for unpopular topic, as receive lower waiting times and are more likely to be admitted (\textbf{+G1, +G2}).
-Furthermore,  high diversity in the registries' contents makes \sysname resistant to network dynamics (\textbf{+G7}). The proposed admission mechanism also prevents Sybil attacks performed by an attacker with a limited amount of resources (\textbf{+G8}). 
-For instance, consecutive registration attempts from a single IP address will receive increasing waiting times eventually blocking further registration attempts made by the attacker. 
-The waiting time mechanism also improves the load distribution in the network since it includes to current registry size in the waiting time calculation.
+%The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and space left in the registry. 
+%The more different the request is (in terms of the IP/ID of the registrar and the topic) from the current content of the registry, the lower the calculated waiting time. 
+%At the same time, the calculated waiting time increases as the registry fills up. 
+%The diversity,  calculated using a similarity score,  simplifies the admission for unpopular topic, as receive lower waiting times and are more likely to be admitted (\textbf{+G1, +G2}).
+%Furthermore,  high diversity in the registries' contents makes \sysname resistant to network dynamics (\textbf{+G7}). The proposed admission mechanism also prevents Sybil attacks performed by an attacker with a limited amount of resources (\textbf{+G8}). 
+%For instance, consecutive registration attempts from a single IP address will receive increasing waiting times eventually blocking further registration attempts made by the attacker. 
+%The waiting time mechanism also improves the load distribution in the network since it includes to current registry size in the waiting time calculation.
 %Including the current topic table size in the waiting time also improves the load distribution. 
-Registrars located close to the hashes of popular topics will quickly fill their registry and return higher waiting times to the advertisers, limiting the incoming traffic (\textbf{+G3}) by throttling down registrations requests for the nodes that initially receive more registrations requests (that will be nodes with nodes IDs close to topic hash ID).
+%Registrars located close to the hashes of popular topics will quickly fill their registry and return higher waiting times to the advertisers, limiting the incoming traffic (\textbf{+G3}) by throttling down registrations requests for the nodes that initially receive more registrations requests (that will be nodes with nodes IDs close to topic hash ID).
 
 %The main goal of distributing advertisements to be found within the network. An important issue is how advertisers distribute their ads among registrar nodes. Since every node may act as an advertisement medium for any topic,  advertisers and searchers looking for ads must somehow meet at common registrars. Ideally, the topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes. Given that in a decentralised setting, advertisers and registrars can not apriori agree on a subset of nodes to serve as the advertisement media for the topics, the main challenge for nodes is to find the "right" set of nodes to send advertisements and topic search queries so that they quickly meet at common nodes.
