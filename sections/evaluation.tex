@@ -3,10 +3,29 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT a build \sysname on top of it. We compare our system against Discv4 (currently implemented in Ethereum) and a key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of these solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy. 
 
+We evaluate the \sysname prototype and answer the following research questions:
+\begin{enumerate}
+    \item What is the overhead introduced by \sysname's register and lookup operations? How does it compare to the current Discv4 system and vanilla DHT-based solutions?
+    \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
+    \item How do malicious nodes impact \sysname’s performance?
+\end{enumerate}
 
-We make the code publicly available for the scientific community\footnote{https://github.com/datahop/p2p-service-discovery}. In the evaluation, we focus on the following aspects: \textit{(1)} Optimal parameter selection, \textit{(2)} Overhead, \textit{(3)} Fairness and \textit{(4)} Security. 
+\para{Setup} We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. We compare our system against Discv4 service discovery (currently implemented in Ethereum) and a traditional key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of these solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy and provide a DHT-based solution with our admission protocol (\Cref{sec:waitingTime}). 
+
+ The simulator reports the following performance metrics:
+ \begin{itemize}
+     \item a
+ \end{itemize}
+ 
+ We verify the impact of the following parameters:
+ \begin{itemize}
+     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to \hl{5000}, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to \hl{3\%} and increase it to \hl{4\%} to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we }
+     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT. We set its default value to \hl{4000}, as reported by an Ethereum measurement study from 2018~\cite{kim2018measuring}.\mk{can we justify a lower value here?}
+     \item \textbf{Malicious nodes} - a number of malicious participants of the Ethereum DHT expressed as a percentage of the network size. We set its default value to \hl{20\%}. Each malicious node receives a distinct, randomly generated ID. 
+     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. It is expressed as a percentage of malicious node. We set its default value to \hl{20\%} meaning that every 5 malicious nodes will share a single, random IPv4 address.
+     
+ \end{itemize}
 
 \subsection{Evaluation Setup}
 
