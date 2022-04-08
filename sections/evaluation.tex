@@ -8,144 +8,31 @@ We evaluate the \sysname prototype and answer the following research questions:
 \begin{enumerate}
     \item What is the overhead introduced by \sysname's register and lookup operations? How does it compare to the current Discv4 system and vanilla DHT-based solutions?
     \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
-    \item How do malicious nodes impact \sysname’s performance?
+    \item How do malicious nodes impact \sysname’s performance? How difficult is it to launch eclipse and DoS attacks against the system?
 \end{enumerate}
 
 \para{Setup} We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. We compare our system against Discv4 service discovery (currently implemented in Ethereum) and a traditional key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of these solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy and provide a DHT-based solution with our admission protocol (\Cref{sec:waitingTime}). 
 
- The simulator reports the following performance metrics:
+ The simulator reports the following performance metrics. 
  \begin{itemize}
-     \item a
+     \item \textbf{Message Overhead} - the number of messages received by each node. We calculate separate values for both lookup and registration operations. Higher values mean larger strain put on each nodes and increased time to complete each operation. 
+     \item \textbf{Discovered Peers} - the number of application-specific peers discovered by searchers during lookup operations. Each operation is finished after discovering 30 nodes. The metric allows to verify whether each searcher can discover its peers.
+     \item \textbf{Discovered By} - the number of searchers each advertiser was discovered by. This metric allows us to verify whether each peer is being discovered and how the number of discoveries differs across peers.
+     \item \textbf{Placed Registrations} - the number of registration placed by each advertiser. 
+     \item \textbf{Accepted Registrations} - the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
  \end{itemize}
+ We calculate per-node average for the metrics above and report their standard deviation. Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
  We verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to \hl{5000}, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to \hl{3\%} and increase it to \hl{4\%} to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we }
-     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT. We set its default value to \hl{4000}, as reported by an Ethereum measurement study from 2018~\cite{kim2018measuring}.\mk{can we justify a lower value here?}
+     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to \hl{5000}, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to \hl{3\%} and increase it to \hl{4\%} to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we can justify focusing uniquely on IPv4.}
+     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT. We set its default value to \hl{4000}, as reported by an Ethereum measurement study from 2018~\cite{kim2018measuring}.\mk{can we justify a lower value here? E.g., by saying that we don't take a few nodes network in the account. } Each node in the network registers for and looks up a single topic. The topics are assigned to the nodes based on a zipf distribution with the exponent \hl{$\lambda = 0.7$}.
      \item \textbf{Malicious nodes} - a number of malicious participants of the Ethereum DHT expressed as a percentage of the network size. We set its default value to \hl{20\%}. Each malicious node receives a distinct, randomly generated ID. 
      \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. It is expressed as a percentage of malicious node. We set its default value to \hl{20\%} meaning that every 5 malicious nodes will share a single, random IPv4 address.
-     
  \end{itemize}
 
-\subsection{Evaluation Setup}
-
-\begin{table}[!hbt]
-\centering
-\scriptsize
-\begin{tabular}{|c|c|}%|c|c|}
-\hline
-Parameter     & Value (\%) \\
-\hline
-\hline
-%Network size & 2000 nodes \\%&  0.4321 & 0.8883\\
-%\hline
-Simulation time & 4 hours \\%& 0.7569 & 0.9959\\
-\hline
-Kademlia bucket size & 16 \\%& 0.6104 & 0.8515\\
-\hline
-Kademlia buckets & 17 \\%& 0.8225 & 0.9897\\
-\hline
-Ticket table bucket size & 5 \\%& 0.8225 & 0.9897\\
-\hline
-Ticket table buckets & 10 \\%& 0.8225 & 0.9897\\
-\hline
-Lookup table bucket size & 16 \\%& 0.8225 & 0.9897\\
-\hline
-Lookup table buckets & 17 \\%& 0.8225 & 0.9897\\
-\hline
-Registration lifetime & 15 minutes \\%& 0.8225 & 0.9897\\
-\hline
-Registration waiting time limit & 15 minutes \\%& 0.8225 & 0.9897\\
-\hline
-Number of topics & 5 \\%& 0.8225 & 0.9897\\
-\hline
-Number of topics & 5 \\%& 0.8225 & 0.9897\\
-\hline
-Zipf dist exp & 0.7 \\%& 0.8225 & 0.9897\\
-\hline
-Ticket table capacity & 500 \\
-\hline
-Turbulence event & Every 144 seconds per 1000 nodes. \\%& 0.8225 & 0.9897\\
-\hline
-Num of connections & 50 \\%& 0.8225 & 0.9897\\
-\hline
-\bottomrule
-\end{tabular}
-\vspace{2mm}
-\caption{Evaluation scenario parameters}
-\label{tab:param}
-\vspace{-0.05in}
-\end{table}
-\michal{In this section we need to justify our parameters}
-In Table~\ref{tab:param} we show the parameters used in the simulation. 
-We performed 4 hours long simulations with different number of nodes from 500 to 10000.
-In the simulations there are 5 different topics and all nodes participate in at least one topic (t1).\michal{We need simulations with more topics. 5 is just not enough.}
-There is turbulence in the simulation,  \ie new nodes are added to the network and existing nodes are removed at a rate of one event every 144 seconds per each thousand nodes in the network.\michal{Why 144? Do we have any churn data from Ethereum?}
-Nodes are modelled similarly to an Ethereum client. 
-When a node joins the network it starts advertising for the participating topics.
-Each node has a pool of connections (separated by outgoing and incoming connections) for each topic in which they participate, and it perform lookups
-for a specific topic to start connections with discovered nodes.
-When an initial lookup is done,  the discovered nodes are stored in a buffer per topic.
-Nodes start attempting connections with the discovered nodes from the buffer until all connections  are full.
-In case the connection is possible (the targeted node has an available slot in the pool of connections and the node is still up), it is added 
-to the local list of connections.
-Nodes are removed from the discovered nodes buffer for each attempt of connection.
-When a node goes down, a connection attempt is made with a new nodes from the buffer to occupy all available connection slots.
-When the discovered nodes for a certain topic is empty, a new topic lookup is performed.
-Nodes have a pool of 50 connections available, 16 for outgoing connections and 34 for incoming.
-\michal{Should mention the Ethereum traces we use (Node IPs, IDs etc.)}
-%\begin{table}[!hbt]
-%\centering
-%\scriptsize
-%\begin{tabular}{|c|c|}%|c|c|}
-%\hline
-%Topic & 500 Nodes & 1000 Nodes & 5000 nodes & 10000 nodes \\
-%\hline
-%\hline
-%T1 & 500 nodes & 1000 nodes & 5000 nodes & 10000 nodes \\%&  0.4321 & 0.8883\\
-%\hline
-%T2 & 1272 nodes \\%& 0.7569 & 0.9959\\
-%\hline
-%T3 & 803 nodes \\%& 0.6104 & 0.8515\\
-%\hline
-%T4 & 496 nodes \\%& 0.8225 & 0.9897\\
-%\hline
-%T5 & 218 nodes \\%& 0.8225 & 0.9897\\
-%\hline
-%\bottomrule
-%\end{tabular}
-%\vspace{2mm}
-%\caption{Nodes per topic}
-%\label{tab:nodes}
-%\vspace{-0.05in}
-%\end{table}
-\michal{Should the Ethereum snapshots + IMC paper data be a base for the workloaded?}
-
-
-\subsection{Parameter Selection}
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Choose optimal parameter for $b$.} 
-\label{fig:params_b}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Choose optimal parameter for $P_\textit{occupancy}$.} 
-\label{fig:params_b}
-\end{figure}   
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Choose optimal parameter for $P_\textit{ID}$ and   $P_\textit{IP}$.} 
-\label{fig:params_b}
-\end{figure}  
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Choose optimal parameter for $P_\textit{topic}$.} 
-\label{fig:params_b}
-\end{figure}  
+Each simulation takes \hl{4h} of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time. For \sysname and DHT-based solution, we set the registration table capacity to \hl{500} to allign with the memory requirements from the official Ethereum DHT implementation. We set all the DHT-related parameters to the default values from the current Ethereum DHT: \hl{17} buckets and \hl{16} node in each bucket. \sysname parameters have the following values: number of registrations placed per bucket = \hl{3}, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
+They were selected based on extensive simulations that we skip due to the space limitation but include in our Github repository~\cite{our_repo}. 
 
 
 \subsection{Efficiency}
