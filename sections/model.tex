@@ -6,63 +6,37 @@
 
 %\michal{Say we build on top of the DHT. What do we need from the DHT?}
 %\michal{Those are speerate layers.}
-We assume a network of nodes all being part of the Ethereum DHT\footnote{Currently, Ethereum DHT consist of 3,500-5,000 nodes.}. During the bootstrap process, nodes generate public/secret key pairs that are used to secure point-to-point communication with their peers (providing integrity and confidentiality). Each node is identified by its \emph{ID} (hash of the public key) and its IP address. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However,  two nodes cannot share the same ID.  
+We assume a network of nodes. At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers. Nodes are identified by their \emph{node ID}, which is simply the hash of their public key. We assume that multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However, two nodes cannot share the same ID.
 
-Our system is built on top of existing Ethereum DHT used in Discv4, \ie nodes use Ethereum DHT to bootstrap and initially discover nodes to fill Discv5 tables, however its operation is independent from current Ethereum DHT and could be implemented without it.
+Our system, \sysname, is built on the existing Ethereum DHT\footnote{At the time of writing, the Ethereum DHT consist of 3,500-5,000 nodes.}, \ie nodes use the Ethereum DHT to bootstrap and initially discover nodes to fill their tables. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT.
 
-The system indexes participants by their registered topic identifiers or topic(s), for short. 
-A \emph{topic} is an identifier for a service provided by a node. 
-All nodes play the following roles in the network:
+\sysname indexes participants according to \emph{topics}. A topic is an identifier for a
+service or application provided by a node. Topics are 256-bit integers, like node IDs.
+
+A node providing a certain service (topic), is said to \emph{register} an advertisement for itself when it registers the ad on a registrar to make itself discoverable under that topic. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assume that the popularity of topics in the system may vary significantly and follows a power law distribution~\cite{kim2018measuring}. Any can participate in registering and searching for multiple topics and uses the same ID and IP for all topics.
+
+\felix{Can we remove this role list?}
+
+Nodes fulfill the following roles in the network:
 
 \begin{itemize}
-    \item \textbf{Registrar} - a node that accepts registrations made by advertisers and respond to topic queries. When asked for a specific topic, a registrar should respond with advertisers that registered for the topic the registrar is aware of. 
-All the DHT nodes play this role. 
-Registrar may hold advertisements for multiple topics. 
-    \item \textbf{Advertiser} - nodes that register for a specific topic and want to be discovered by their peers. The advertisers make themselves discoverable by placing advertisements on registrars. Nodes play a topic-specific advertiser role for every topic application it runs.
-    \item \textbf{Searcher} - a node that tries to discover advertisers under a specific topic. 
-All nodes in the network play the searcher role when trying to discover nodes in the network for every topic application it runs.
+    \item \textbf{Registrar} - accepts advertisements and responds to topic queries. When asked for a specific topic, a registrar responds with nodes that registered for the topic.  All DHT nodes act as Registrars. A Registrar holds advertisements for multiple topics.
+    \item \textbf{Advertiser} - registers for a specific topic and wants to be discovered by its peers. The advertisers make themselves discoverable by placing advertisements. Nodes are advertisers for every topic/service it provides.
+    \item \textbf{Searcher} - attempts to discover nodes for a specific topic.
 \end{itemize}
 
-%Multiple advertisers/searchers hosted by the same DHT node will share the same ID and IP address but will differ in topic. 
-A DHT node can participate in advertising and searching for multiple topics and they will use the same ID and IP for all topics.
+\subsection{Threat Model}
 
-%Our system indexes participants by their registered topic identifiers or topic(s), for short. 
-%A \emph{topic} is an identifier for a service provided by a node.
-A node providing a certain service,  each identified with a topic, is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
-An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. 
-Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
-We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution~\cite{kim2018measuring}.
+Our system is designed to operate in an adversarial environment, \ie. the Internet. We assume the presence of malicious actors in the DHT. These actors do not strictly follow the protocol when communicating with others, and attempt to influence the discovery results of honest nodes, steering them toward the attacker-controlled nodes.
 
-%A node providing a certain service,  each identified with a topic,  is said to \emph{place an ad} for itself when it registers the ad on a registrar to make itself discoverable under that topic. 
-%An \emph{ad} (\ie advertisement) is the registration of an advertiser for a topic on another node. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
-%We assume that the popularity of the topics in the system may vary significantly and follows a power law distribution. 
+Malicious actors can spawn multiple virtual nodes within one physical machine and thus control many node IDs. Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker are limited. Specifically, we assume that it is easier for an attacker to generate similar IP addresses (within a single subnet) than it is is to control many diverse IP addresses (with different prefixes).
 
-\michal{The section below is weird. We go into a lot of details about connections (that we didn't introduce) and some blockchain-specific attacks (which are application-specific). Maybe we should just say that we assume presence of byzantine nodes?}
-\dk{I agree with that comment; still I think the specific attacks are helpful for motivating the need to protect against eclipse attacks.}
-We assume the presence of adversarial or malicious nodes in the DHT. 
-Malicious nodes are nodes that do not strictly follow the protocol to communicate with any other nodes in the network, trying to get some benefit or have the control of the network.
-The main threat of the presence of malicious nodes in the network is the possibility of any node being eclipsed by malicious nodes.
-This means, all incoming and outgoing connections of a node are made to malicious nodes controlled by the same entity. 
-When a node is eclipsed it can be easily manipulated,
-filtering the victim’s view of the blockchain.  
-Eclipse attacks
-enable a variety of follow-up attacks such as double spending
-and stubborn mining~\cite{stubborn}.
-Regardless of the presence of the attackers in the network, 
-we assume that nodes are able to discover valid nodes and are not fully eclipsed by having only malicious nodes on their routing tables at the Ethereum DHT level.
-%Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.  
+We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
+
+Security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation. This is because the DHT's basic protocol is used to initialize and maintain the data structures used by the service discovery layer.
+
+% As creating a node requires maintaining periodic, encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited.
+
+%Regardless of the number of the attacker, we assume that no honest node is fully eclipsed by the malicious ones. \textit{I.e.,} each honest DHT node has at least one honest peer.
 %
 %\sergi{we assume this or is it a requirement for the design? Maybe last sentence shouldn't go in this section \michal{I'd say both. We assume this and it's a requirement for our design. IMO, this is something we take for granted and don't propose anything to enhance it. Note, it's about eclipsing DHT nodes not about the the eclipse attack within a topic that we investigate later.}}
-
-Malicious nodes may spawn multiple virtual nodes within one physical machine and thus create multiple IDs. 
-As creating a node requires maintaining periodic,  encrypted communication with its peers, the number of active IDs an attacker can posses at a time is limited. 
-Also,  maintaining nodes require some infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker is limited, as well as the fact 
-%We also assume that the number of IP addresses under the control of an attacker is limited. 
-that an attacker is able to generate more similar IP addresses (within a single subnet) than diverse IP addresses (with different prefixes). 
-We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
-\ramin{Depending on the target conference, it could be useful to put security aspects in a separate, more visible section (e.g. "Threat model" etc.)} 
-\dk{Yes. A separate section "threat model" introducing the discussed concepts (see Michal's comment) would also make this easier to understand. Since protecting against / mitigating eclipse attacks is an important contribution of this paper, imo, a threat model section is important.}
-
-%\onur{maybe we should indicate somewhere that DHT and discovery are separate layers and are largely independent except initially DHT is used for bootstrapping the discovery.}
-
-
