@@ -29,9 +29,7 @@ Nodes fulfill the following roles in the network:
 
 Our system is designed to operate in an adversarial environment, \ie. the Internet. We assume the presence of malicious actors in the DHT. These actors do not strictly follow the protocol when communicating with others, and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
-Malicious actors can spawn multiple virtual nodes within one physical machine and thus control many node IDs. Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker are limited. Specifically, we assume that it is easier for an attacker to generate similar IP addresses (within a single subnet) than it is is to control many diverse IP addresses (with different prefixes).
-
-We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
+Malicious actors can spawn multiple virtual nodes within one physical machine and thus control many node IDs. Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker are limited. Specifically, we assume that it is easier for an attacker to generate similar IP addresses (within a single subnet) than it is is to control many diverse IP addresses (with different prefixes). We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in Section \ref{sec:eval}.
 
 Security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation. This is because the DHT's basic protocol is used to initialize and maintain the data structures used by the service discovery layer.
 
