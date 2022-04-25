@@ -27,7 +27,7 @@ Nodes fulfill the following roles in the network:
 
 \subsection{Threat Model}
 
-Our system is designed to operate in an adversarial environment, \ie. the Internet. We assume the presence of malicious actors in the DHT. These actors do not strictly follow the protocol when communicating with others, and attempt to influence the discovery results of honest nodes, steering them toward the attacker-controlled nodes.
+Our system is designed to operate in an adversarial environment, \ie. the Internet. We assume the presence of malicious actors in the DHT. These actors do not strictly follow the protocol when communicating with others, and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
 Malicious actors can spawn multiple virtual nodes within one physical machine and thus control many node IDs. Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume the resources under the control of an attacker are limited. Specifically, we assume that it is easier for an attacker to generate similar IP addresses (within a single subnet) than it is is to control many diverse IP addresses (with different prefixes).
 
