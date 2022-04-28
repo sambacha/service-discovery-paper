@@ -1,12 +1,16 @@
 \section{Overview}
 \label{sec:overview}
-\para{Ad placement} The first challenge of a robust service discovery platform is the questions of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic. It is possible to deterministically choose a group of nodes based on the topic itself. Such a solutions makes it efficient to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach results in unequal load across registrars, especially when the popularity of the topics vary significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Furthermore,  in case a topic-specific registrar leaves the network, the registration process would have to re-start from scratch causing disturbance in the network. Finally, an attacker could generate and strategically place its Sybil identities taking control over the entire topic-specific traffic and exposing the system to eclipse and DoS attacks. 
+\para{Ad placement} The first challenge of a robust service discovery platform is the questions of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic. It is possible to deterministically choose a group of nodes based on the topic itself using put and get operations of the DHT. Such a solutions makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach results is \emph{not fair} causing unequal load across registrars, especially when the popularity of the topics vary significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities taking control over the entire topic-specific traffic. 
 
-Alternatively,  advertisers could place their ads on random registrars across the entire network. This approach is much more difficult to attack as a malicious player would need to take control over the entire network to control a single topic. Furthermore, random placement is resistant to network dynamics and achieves good load balance across registrars regardless of the topic popularity distribution\footnote{The registration process still generates higher amounts of traffic located close to popular topics. This is a problem we solve with the admission protocol descibed below.}. On the other hand, random placement makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+%Furthermore,  in case a topic-specific registrar leaves the network, the registration process would have to re-start from scratch causing disturbance in the network.
+
+Alternatively, advertisers could place their ads on random registrars across the entire network. This approach is \emph{secure} and difficult to attack as an attacker would need to take control over the entire network to control a single topic. Furthermore, random placement is \emph{fair} and achieves good load balance across registrars regardless of the topic popularity distribution. On the other hand, random placement makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+
+
 
 \sysname implements an alternative method of placing ads. Advertisers starts the registrations process from nodes located far away from the topic hash and traverse the DHT towards nodes close to the topic hash. On their way, advertisers place ads on encountered registrars with an increasing density. So that the closer to the topic hash, the higher number of ads is placed. The searchers mimic the process and ask encountered registrars for topic-specific ads. The lookup process stop, when enough ads are found. 
 
-Both registration and lookup operations are efficient and finish within a logarithmic amount of steps. At the same time, the non-deterministic nature of the DHT traversal makes it difficult for an attacker to hijack the process. Placing Sybil identities close to the topic hash (or anywhere else in the network) does not prevent searchers from acquiring legitimate peers on their way through the DHT. Finally, searchers of popular topics are likely to find enough ads before reaching the DHT region close to the topic hash and terminate the operation. It prevents creation of hot-spots in the network and ensures a more equal load distribution among registrars. 
+Both registration and lookup operations are \emph{efficient} and finish within a logarithmic amount of steps. At the same time, the non-deterministic nature of the DHT traversal makes it \emph{secure} and difficult for an attacker to hijack the process. Placing Sybil identities close to the topic hash (or anywhere else in the network) does not prevent searchers from acquiring legitimate peers on their way through the DHT. Finally, searchers of popular topics are likely to find enough ads before reaching the DHT region close to the topic hash and terminate the operation making it \emph{fair}. It prevents creation of hot-spots in the network and ensures a more equal load distribution among registrars. The registration process still generates higher amounts of traffic located close to popular topics. This is a problem we solve with the admission protocol described below.
 
 \para{Admission control} The second challenge consists of an admission control mechanism. Registrars have a limited amount memory and can store only a finite number of ads. If the registration demand surpasses the supply or when an attacker bombards the network with dummy ads, each registrar has to decide which ads should be admitted. 
 
@@ -24,34 +28,6 @@ The waiting time mechanism also improves the load distribution in the network si
 Registrars located close to the hashes of popular topics will quickly fill their registry and return higher waiting times to the advertisers, limiting the incoming traffic by throttling down registrations requests for the nodes that initially receive more registrations requests (that will be nodes with nodes IDs close to topic hash ID).
 
 
-\begin{table} 
-%\vspace{-0.15in}
-\caption{Objectives of topic-based service discovery.}
-%\vspace{-0.1in}
-\label{tab:objectives}
-\renewcommand{\arraystretch}{1.5}
-\renewcommand{\tabcolsep}{0.5em}
-\centering
-\scriptsize{
-\begin{tabular} {p{1cm}p{5cm}}
-\toprule
-\textbf{Objective} & \textbf{Description} \\
-\hline
-Efficiency & time + overhead \\
-\hline
-%G1 & Regardless of the topic they are registering, advertisers should not be globally denied from registering their ad. \\
-%\hline
-Fairness & Fairness/Equal Load (across topics/across nodes) \\
-\hline
-Security & Eclipse and DoS attacks resistance\\
-\hline
-Robustness & resistance to network dynamics, some nodes failing etc.\\
-\hline
-\end{tabular}
-}
-\ramin{G1 is an objective of the implementation, not of topic-based service discovery}
-\vspace{-0.2in}
-\end{table}
 
 
 %The end-goal of service discovery is to enable nodes to be discovered under topics which they choose to be associated in a secure, robust and efficient manner. %\Cref{tab:objectives} provides a comprehensive list of the design objectives, which we refer to in the text below. We define two main questions which need to be answered before achieving our goals:

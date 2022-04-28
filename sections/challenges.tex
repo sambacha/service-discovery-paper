@@ -12,33 +12,12 @@ In this section, we discuss the objectives of \sysname design under four main ca
 \michal{An equal load balance might be too strong for us. We do have some minor (but still) differences in the traffic received}
 \para{Fairness} \sysname ensures an equal load balance across systems participants and DHT regions (\ie avoids hotspots). The system provides efficient lookup and registration operations for all the participants regardless of the topic they look up/register for. Each advertiser has a similar chance of being discovered by its peers. 
 
-\para{Security} As an open, permissionless system, \sysname must operate securely in a Byzantine environment. Adversaries can generate Sybils at little cost and launch various attacks to disrupt discovery of and to eclipse peers of target applications. Completely eliminating Sybil/malicious peers from the discoved peers is technically impossible. However, \sysname provides efficiency and fairness for all the honest participants under the presence of a powerful attacker and increases the cost of launching such attacks. We provide a complete list of malicious behaviours \sysname protects from in \Cref{sec:eval}.
-
-%The attacks on \sysname involve adversaries (and their Sybils) abusing their advertiser and registrar roles:
-
-%\dk{It might be worth mentioning that even with perfect protection against Sybil attacks, a powerful attacker controlling a certain percentage of the network (Tor attacker model) can mount eclipse attacks.}
-%\mk{That's a good point, we should probably just target making Sybil attacks costly/difficult rather then impossible (which actually cannot be achieved}
-
-%XXX Onur: we might want to mention that we don't worry about malicious (e.g., spamming) searchers and explain why.
-
-
-%\michal{The malicious behaviours below can probably go to the evaluation section where we talk about security.}
-%\begin{itemize}
-% \item \textit{Malicious advertisers} can launch \textit{spamming attacks} on the registrars by attempting to register a lot of ads,
-% \item \textit{Malicious registrars} can ignore topic queries to disrupt the discovery process, or return made-up results (\eg containing Sybils) to topic queries.
-%\end{itemize}
-
-%A spamming attack aims to \textit{poison} the limited ad storage resources (\ie \textit{registries}) of the registrars, which are shared across all topics, with ads by the adversaries and their Sybils.
-
-%\felix{Can the following PoW reference here be removed? This section is just to present the objectives, not alternative solutions to objectives?}
-
-%A typical approach to avoid such misuse of resources is to make their consumption costly, for instance, by incorporating a Proof-of-Work (PoW) scheme \hl{[]} into the registration process and requiring advertisers to present proofs of resource consumption before they are allowed to place their ads. However, PoW schemes, although widely-used in decentralised systems, unnecessarily consume and promote pooling of computing resources to create centralised hubs~\cite{gervais2014bitcoin}.
+\para{Security} As an open, permissionless system, \sysname must operate securely in a Byzantine environment.  Completely eliminating Sybil/malicious peers from the discoved peers is technically impossible. However, \sysname provides efficiency and fairness for all the honest participants under the presence of a powerful attacker and increases the cost of launching such attacks. We provide a complete list of malicious behaviours \sysname protects from in \Cref{sec:eval}.
+%Therefore, \sysname (such as the access control) must ensure that adversaries require as many physical machines as possible to launch successful eclipse attacks or disrupt discovery for a target application.
 
 %In addition, \sysname must also ensure \textit{fair allocation} of storage resources by different topics to prevent starvation of unpopular topics (\textbf{G1}). To achieve fair allocation of the registry, while also securing it against poisoning, registrars must exercise \textit{access control} to select which ads are stored. While an access control mechanism cannot completely prevent poisoning in a trustless P2P setting, it should at least make it difficult or expensive for a single adversary to overrun registries using its Sybils. As we explain in \Cref{sec:overview}, registrars achieve these objectives by shaping the incoming ad registration requests, prioritising ads which contribute most to the diversity of nodes in the registry.
 
-%Therefore, \sysname (such as the access control) must ensure that adversaries require as many physical machines as possible to launch successful eclipse attacks or disrupt discovery for a target application.
 
-%In a structured P2P network, adversaries can strategically target specific regions in the DHT ID space for placement of both their ads and Sybils (\ie by generating Sybil Node IDs within the desired region of DHT ID space) if that leads to better discoverability for their ads or Sybil registrars. The success of such regional attacks is closely related to the load-balancing performance of \sysname: if the registrations for any topic favor specific regions in the DHT (\ie creating hotspots), then strategically targeting the hotspot regions can significantly amplify the strength of such attacks as we demonstrate in Section \hl{X}.
 
 
 %With good load-balancing, all nodes in \sysname incur approximately equal overhead from registration and search operations (\textbf{G3}). We consider \textit{message traffic, computation, and storage requirements} of search/registration operations as 'overhead'. At the same time, \sysname must provide efficient registration and discovery in terms of their impact on the network, timeliness\footnote{Ideally, topic search should be fast even when the number of advertisers for a topic is much smaller than the number of all live nodes.} and robustness of search/registration operations (\textbf{G4, G5, G6}) in the face of peer churn (\textbf{G8}) and existence of access control measures. Also, the efficiency in discovery should apply equally to all the advertisers within a topic so that they each have a similar probability of being discovered (\textbf{G2}).
