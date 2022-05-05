@@ -3,45 +3,61 @@
 
 \section{Introduction}
 
-Ethereum is one of \er{or \textbf{the} largest?} the largest decentralized platform currently in operation.
+Ethereum is one of \er{or \textbf{the} largest?} the largest decentralized platform currently in operation. \er{see the official numbers, 27.000 nodes in total? Source?}
 While is is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet}), the Ethereum platform is also home to a number of additional decentralized applications.
 This includes blockchains used for test purposes (testnets such as \emph{Ropsted} or \emph{Rinkeby}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}). \er{maybe give more/more diversified examples? IPFS? Others? Why isn't IPFS on the plot btw?}
 In 2018, a study of the Ethereum ecosystem~\cite{kim2018measuring} indicated that the platform featured no less than 4,076 of them, and that this number will keep growing in the future. \er{this really reads as if the paper was written in 2018, don't we have more recent numbers? Ideally we would like to have them for several years and show the trend.}
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
-    \caption{Sub-networks in the Ethereum ecosystem.
-    \protect\er{maybe give the date when the snapshot was taken. Also, ``Other'' should be ``Others''. We can also consider using a split x axis in order to avoid the very small lines for everything else than the mainnet. The figure is also not giving a sense of the long tail with networks of a few hundreds/thousands of nodes (our focus)}}
+    \caption{Number of different nodes identities witnessed in Ethereum's main applications, over an observation period of one year \protect\er{was it one year exactly?} (numbers reported by Kim et al.~\cite{kim2018measuring}).
+    \protect\er{maybe give the date when the snapshot was taken. Also, ``Other'' should be ``Others''. We can also consider using a split x axis in order to avoid the very small lines for everything else than the mainnet. The figure is also not giving a sense of the long tail with networks of a few hundreds/thousands of nodes (our focus)}
+    \protect\er{present relative numbers rather than absolute ones}
+    }
     \label{fig:ecosystem}
 \end{figure}
 
 Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating the Kademlia distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}
-Membership to this general network is managed by a number of trusted \emph{bootstrap nodes} operated by the Ethereum foundation, and providing initial list of contact peers for nodes entering the network.
+Bootstrapping membership to this general network is handled by a number of trusted \emph{bootstrap nodes} operated by the Ethereum foundation, who provide an initial list of contact peers to nodes entering the network.
 Once joined, every node must connect to one or more sub-network(s) formed of peers participating to its application(s) of interest.
-The size of these sub-networks can vary greatly.
+The size of these sub-networks can vary significantly.
 \Cref{fig:ecosystem} depicts the size distribution of the platform main applications.
 This distribution features a \emph{long tail}, with a vast majority of applications formed of a few thousand nodes or less, much less than the mainnet or the testnets. \er{would be useful to give more precise quantiles, e.g., 80\% have less than 1.000 nodes, 90\% less than 200 nodes, etc.}
 
-In this paper, we are interested in the membership management of the Ethereum sub-networks dedicated to each application (also known as \emph{services}).
-We focus on the \emph{service discovery} mechanism, by which a newly-joined node discovers a subset of peers already members of an application's sub-network, allowing it to join the P2P network specific to that application, as illustrated by \Cref{fig:subnetwork}
+In this paper, we focus on the \emph{service discovery} mechanism, by which a newly-joined node discovers a subset of peers already members of an application's sub-network.
+This set of peers are then contacted in order to join the P2P overlay specific to that application, as illustrated by \Cref{fig:subnetwork}.
 
 \begin{figure}[b!]
     \includegraphics[width=1\linewidth]{img/subnetwork}
-    \caption{Formation of application-specific sub-networks using a universal service discovery network.}
+    \caption{Formation of application-specific sub-networks using a universal service discovery network.
+    \protect\er{would be good to use different structures for the sub-networks, here they look quite similar}
+    }
     \label{fig:subnetwork}
 \end{figure}
 
-Service discovery is a particularly sensitive mechanism in the Ethereum ecosystem.
-Its implementation must ensure, indeed, that malicious participants to this open network are unable to bias its execution in their favor or against a victim--and that, despite the ability of these adversaries to establish and operate multiple Sybil identities in the network.
-Of particular importance is the protection against \emph{eclipse} attacks, where an adversary would lure its victim(s) into a sub-network formed of only nodes under its own control. %, i.e., by returning only such nodes to a service discovery request.
+Service discovery is a particularly sensitive mechanism in the Ethereum platform.
+Its implementation must ensure, indeed, that malicious participants to this open network are unable to bias its execution in their favor or against a victim--and that, despite the ability of these adversaries to establish and operate multiple Sybil identities.
+Of particular importance is the protection against \emph{eclipse} attacks, where an adversary would lure its victim(s) into a sub-network formed of only nodes under its control. %, i.e., by returning only such nodes to a service discovery request.
 Similarly, an adversary could wish to run \emph{denial-of-service} attacks against a specific application, preventing other nodes from discovering peers from its associated sub-network.
 On the other hand, the mechanism must remain efficient and scalable.
-It is not desirable, in particular, that it relies on a set of centralized registry nodes maintaining the membership of each and every application, for both scalability and governance reasons.
+It is not desirable, in particular, that it relies on a set of \emph{centralized} registry nodes maintaining the membership of each and every application, both for scalability and governance reasons.
+% \er{also the applications may want to hide themselves (but this clashes completely with our announcement approach)}
 
-The current service discovery mechanism used in the Ethereum platform is part of \texttt{discv4}, a set of protocols building atop the global Kademlia DHT.
-It employs a simple but robust random walk approach.
-A node willing to join an application's sub network simply contacts in sequence a series nodes collected from the DHT, asking for application membership until it finds sufficiently many peers to join the sub-network.
-This approach offers strong resilience to malicious behaviors, and in particular against denial-of-service attacks, but it suffers from very poor performance and scalability, in particular for small sub-networks.
+The current service discovery mechanism used in the Ethereum platform is part of \texttt{discv4}, a set of protocols atop the global Kademlia DHT.
+It employs a simple but robust \emph{random walk} approach.
+A node willing to join an application's sub network simply contacts in sequence a series of nodes collected from the DHT, asking for application membership until it has collected enough peers. % to join the sub-network.
+This approach offers good resilience to malicious behaviors
+% , and in particular against denial-of-service attacks, 
+but it suffers from very poor scalability and performance, in particular for small sub-networks.
+While using the Kademlia DHT to store membership information at a specific node would allow deterministic lookup of this information, regardless of the application's popularity, this solution would suffer from very poor robustness to attacks and would lead to hotspots and overload for nodes in charge of popular services.
+
+\smallskip
+\noindent
+\textbf{Contributions.}
+%
+We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to the Ethereum platform.
+\sysname 
+
 
 To be continued:
 \begin{itemize}
