@@ -12,7 +12,7 @@
 \section{Background}
 \label{sec:background}
 
-In this section, we first provide background on the Kademlia~\cite{maymounkov2002kademlia} DHT in Section~\ref{sec:kademlia} followed by a description of the Ethereum P2P network in Section~\ref{sec:eth-net}.  In Section~\ref{sec:discv4}, we present Discv4, the current service discovery protocol of Ethereum. Finally, we discuss the security and efficiency of DISCV4RANDOM in Section~\ref{sec:securityEfficiency}. 
+In this section, we first provide background on the Kademlia~\cite{maymounkov2002kademlia} DHT in \Cref{sec:kademlia} followed by a description of the Ethereum P2P network in \Cref{sec:eth-net}.  In \Cref{sec:discv4}, we present Discv4, the current service discovery protocol of Ethereum. Finally, we discuss the security and efficiency of DISCV4RANDOM in \Cref{sec:securityEfficiency}. 
 
 \subsection{Kademlia Primer}
 \label{sec:kademlia}
@@ -51,12 +51,14 @@ Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing n
 %Similar to vanilla Kademlia, Ethereum nodes use an iterative lookup procedure involving $\alpha$ parallel walks. 
 A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is that the initiating nodes specify the distance of an undisclosed target in their FIND\_NODE messages rather than the target key itself. Each peer responds to a FIND\_NODE message by returning up to $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket.
 
-In terms of node identities, each node uses the Keccak256 hash of (a marshaled version of) its public key as its identifier in a 256-bit keyspace. It is easy to generate many different identities but computationally infeasible to generate a specific one, although a node can exhaustively generate many IDs to position itself close to a target in the keyspace.
+\oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
+% In terms of node identities, each node uses the Keccak256 hash of (a marshaled version of) its public key as its identifier in a 256-bit keyspace. It is easy to generate many different identities but computationally infeasible to generate a specific one, although a node can exhaustively generate many IDs to position itself close to a target in the keyspace.
+
 
 \subsection{Service Discovery in Ethereum}
 \label{sec:discv4}
 
-In the current service discovery protocol, DISCV4RANDOM, a node performs \textit{random walks} through the DHT and establishes connections to encountered peers after verifying the supported protocols of the peers at the application level. In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained in Section~\ref{sec:eth-net}. Each node maintains a \textit{discovery table} whose sole purpose is to store a set of peers that the node has come across during its parallel random walks. %This table serves as a basis for establishing sub-protocol connections as we describe below.  
+In the current service discovery protocol, DISCV4RANDOM, a node performs \textit{random walks} through the DHT and establishes connections to encountered peers after verifying the supported protocols of the peers at the application level. In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained in \Cref{sec:eth-net}. Each node maintains a \textit{discovery table} whose sole purpose is to store a set of peers that the node has come across during its parallel random walks. %This table serves as a basis for establishing sub-protocol connections as we describe below.  
 
 %\dk{could mention DNS discovery\footnote{https://eips.ethereum.org/EIPS/eip-1459} as a means for discv5 bootstrap. We implemented this for Waku v2.}
 
@@ -76,7 +78,7 @@ Because eclipsing can apply to any peer discovery process, it concerns both the 
 
 %At the same time, the buckets of the routing table are well protected from eclipsing owing to the flexible (random) peer selection mechanism inherited from Kademlia (Section~\ref{sec:kademlia}). Random peer selection is effective because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
 
-On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). Table\ref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network~\footnote{Appendix contains the details of the calculations}. For applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
+On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). \Cref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network\footnote{Appendix contains the details of the calculations}. For applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
 
 %\dk{A math. estimation would be nice here.}
 
