@@ -48,8 +48,8 @@
 \title{Topic-based service discovery for the Ethereum P2P network}
 \author{}
 
-
 \begin{abstract}
+  \er{this needs a full rewrite imo. The focus on the difference between unstructured and structured is not the good one.}
 Peer-to-Peer (P2P) Networks  are being increasingly deployed in distributed systems. They are being used in blockchains (Ethereum, Bitcoin), storage systems (IPFS, Stor4j) and more. One of the main functionalities of P2P networks is the ability to collectively keep information in the form of a key-value store. However, the current implementations either trade security for efficiency (structured P2P networks) or vice-versa (unstructured P2P networks). 
 
 In this work, we propose \sysname - a P2P key/value store implementation which enables secure, efficient and robust information storage and retrieval. Our system can be deployed on any Distributed Hash Table (DHT). \sysname stores data on multiple nodes for increased security and allows discovering that data within a bounded amount of time guaranteeing high efficiency. We implement a robust admission mechanism limiting the resource usage by its participants and preventing a vast range of malicious behaviours. 
@@ -65,6 +65,18 @@ We present the design of \sysname and evaluate the system in multiple scenarios.
 
 \maketitle
 %\input{sections/new_introduction}
+
+\er{Suggestions for alternative titles:
+\begin{itemize}
+  \item \sysname: Robust and efficient topic discovery in Ethereum 2.0
+  \item \sysname: Scalable and resilient topic membership management in Ethereum 2.0
+  \item \sysname: A robust and scalable topic discovery protocol for the next Ethereum generation
+  \item Resilient topic discovery in Ethereum with \sysname
+  \item Scalable and resilient topic discovery in Ethereum with \sysname
+  \item \sysname: Efficient, decentralized topic discovery for the Ethereum P2P network
+\end{itemize}
+}
+
 \input{sections/intro}
 
 %\input{sections/background}
