@@ -70,6 +70,17 @@ To find ads, \sysname uses a process similar to the registration procedure.
 Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
 The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per buckets and sends them lookup requests. 
 
+\sergi{Criticial: How do you choose the registrars}
+\sergi{how do you fill up search table. 
+it is initialized from routing table but also nodes are added from registrations messages and find messages}
+\sergi{do we send find messages when empty buckets?}
+\sergi{how do you select registrars in each bucket}
+\sergi{Do we query all the registrars in a bucket or just a subset?}
+\sergi{How many queries per node/ how many parallel queries}
+\sergi{Where do we stop?}
+\sergi{Results filtering to produce results from more than X regsitrars}
+\sergi{Aggregate results from multiple registrars from multiple buckets?}
+
 The furthest buckets are also the largest. For instance, bucket 0 contains 50\% of all the honest registrars. An attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. Searchers progressively move towards smaller buckets near the topic hash guaranteeing successful discovery even for unpopular topics.
 Searchers stop the lookup procedure when they discover $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the topic hash, especially for popular topics. As a result, \sysname avoids hot-spots in the network and ensure fair load distribution. 
 Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
