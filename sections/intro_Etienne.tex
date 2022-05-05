@@ -43,25 +43,31 @@ On the other hand, the mechanism must remain efficient and scalable.
 It is not desirable, in particular, that it relies on a set of \emph{centralized} registry nodes maintaining the membership of each and every application, both for scalability and governance reasons.
 % \er{also the applications may want to hide themselves (but this clashes completely with our announcement approach)}
 
-The current service discovery mechanism used in the Ethereum platform is part of \texttt{discv4}, a set of protocols atop the global Kademlia DHT.
+The current service discovery mechanism used in the Ethereum platform is part of discv4, a set of protocols using the global Kademlia DHT.
 It employs a simple but robust \emph{random walk} approach.
 A node willing to join an application's sub network simply contacts in sequence a series of nodes collected from the DHT, asking for application membership until it has collected enough peers. % to join the sub-network.
 This approach offers good resilience to malicious behaviors
 % , and in particular against denial-of-service attacks, 
 but it suffers from very poor scalability and performance, in particular for small sub-networks.
-While using the Kademlia DHT to store membership information at a specific node would allow deterministic lookup of this information, regardless of the application's popularity, this solution would suffer from very poor robustness to attacks and would lead to hotspots and overload for nodes in charge of popular services.
+While using the Kademlia DHT as a key/value store to maintain membership information at a specific node or replica group would allow deterministic lookup of this information, regardless of the application's popularity, this solution would suffer from very poor robustness to attacks and would lead to hotspots and overload for nodes in charge of popular services.
 
 \smallskip
 \noindent
 \textbf{Contributions.}
 %
 We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to the Ethereum platform.
-\sysname 
+\sysname has been already integrated into the upcoming version of Ethereum, as part of the replacement of discv4 mechanisms ... \er{provide details here already. Why don't we call it discv5 anymore?}
 
-
-To be continued:
+Outline for the rest of the section, to be discussed
 \begin{itemize}
-  \item why using the DHT directly is also not acceptable as it is efficient and scalable but easily attacked (we need references for this)
-  \item our contributions
-  \item summary of evaluation and integration in Ethereum
+  \item \sysname does not keep membership information only at the nodes participating to the sub-networks, as in discv4, but allows these nodes to register their association with specific applications; the registrations are stored in a specific part of the global DHT overlay. However, in contrast with \emph{classical} DHT routing, these registrations are more widely spread to reduce the ability of attackers to delete or tamper with membership information
+  \item \sysname operates a bias between well-represented services and small ones such that the probability of finding peers for low-popularity applications remains sufficiently high (to be rephrased better) \er{side question: how do we prevent small applications for being easier to attack with eclipse attacks than large ones? Diversity is also a tool in the hand of the attacker allowing it to register more Sybils, isn't it?}
+  \item \sysname limits the amount of storage and state each node maintains and implements a novel admission protocol that ...
 \end{itemize}
+
+% To be continued:
+% \begin{itemize}
+%   \item why using the DHT directly is also not acceptable as it is efficient and scalable but easily attacked (we need references for this)
+%   \item our contributions
+%   \item summary of evaluation and integration in Ethereum
+% \end{itemize}
