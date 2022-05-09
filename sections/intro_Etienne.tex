@@ -11,10 +11,10 @@
 \end{itemize}
 }
 
-Ethereum is one of \er{or \textbf{the} largest?} the largest decentralized platform currently in operation. \er{see the official numbers, 27.000 nodes in total? Source?}
+Ethereum is one of \er{or \textbf{the} largest?}\mk{bitcoin is the largest with ~60k nodes} the largest decentralized platform currently in operation. \er{see the official numbers, 27.000 nodes in total? Source?}\mk{\cite{discv4-dns-lists}}
 While is is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet}), the Ethereum platform is also home to a number of additional decentralized applications.
-This includes blockchains used for test purposes (testnets such as \emph{Ropsted} or \emph{Rinkeby}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}). \er{maybe give more/more diversified examples? IPFS? Others? Why isn't IPFS on the plot btw?}
-In 2018, a study of the Ethereum ecosystem~\cite{kim2018measuring} indicated that the platform featured no less than 4,076 such applications, and that this number will keep growing in the future. \er{this really reads as if the paper was written in 2018, don't we have more recent numbers? Ideally we would like to have them for several years and show the trend.}
+This includes blockchains used for test purposes (testnets such as \emph{Ropsted} or \emph{Rinkeby}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}). \er{maybe give more/more diversified examples? IPFS? Others? Why isn't IPFS on the plot btw?}\mk{IPFS has its own DHT and is not part of the Ethereum DHT}
+Currently, an official Ethereum crawler ~\cite{discv4-dns-lists} indicates that the platform already features almost 500 applications, and this number will keep growing in the future. \er{this really reads as if the paper was written in 2018, don't we have more recent numbers? Ideally we would like to have them for several years and show the trend.}\mk{We'll use Ethereum crawler data from now - it's more consistent. We found several problems with the data from the IMC paper. We'll try to get historic data to show an increase in the application number over time.}
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
@@ -27,7 +27,7 @@ In 2018, a study of the Ethereum ecosystem~\cite{kim2018measuring} indicated tha
     \label{fig:ecosystem}
 \end{figure}
 
-Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}
+Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}\mk{~24k}
 % This global DHT is primarily used for periodic node discovery. % and not as a key-value store (i.e., lookup operations are never used).
 The initial entry in the DHT leverages \emph{bootstrap nodes} operated by the Ethereum foundation, that provide a set of initial contact points, but subsequent maintenance of each nodes' view rely on periodic collection of random peers through DHT lookups.
 
@@ -76,7 +76,7 @@ but it suffers from very poor scalability and performance, in particular for sma
 %
 We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to Ethereum.
 \sysname targets a balance between robustness, i.e., the ability to resist malicious behaviors and Sybil identities, and efficiency, i.e., fast service discovery even for small applications and good load-balance over participating nodes.
-\sysname is integrated into the upcoming version of Ethereum, as part of the replacement of discv4 mechanisms ... \er{provide details here already. Why don't we call it discv5 anymore?}
+\sysname is integrated into the upcoming version of Ethereum, as part of the replacement of discv4 mechanisms ... \er{provide details here already. Why don't we call it discv5 anymore?}\mk{\sysname will be a part of Discv5, which is a whole new p2p system. The same way as the random walk procedure is a part of Discv4}
 
 After providing background knowledge and reviewing the current service discovery mechanism of Ethereum in \Cref{sec:background}, we detail \sysname as follows.
 
