@@ -21,10 +21,24 @@ In order to execute the ad distribution process described below,  each advertise
  \end{figure}
 
 \para{Search Table}
+%The ad lookup process is supported by a \emph{search table}. 
+%Searchers maintain a separate table per topic they are currently looking for. 
+%\ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created. 
+%Similar to the \emph{registration table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash and buckets are initially filled from the local routing table organised by the distance from the topic hash.
+
 The ad lookup process is supported by a \emph{search table}. 
 Searchers maintain a separate table per topic they are currently looking for. 
 \ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created. 
 Similar to the \emph{registration table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash and buckets are initially filled from the local routing table organised by the distance from the topic hash.
+\emph{Search table} buckets are also filled with new nodes discovered during the registration process.
+The \emph{k} factor of the search table should be relatively large in order to make the search efficient. 
+By default we use \emph{k=16} similarly to the Kademlia DHT. 
+Also, different nodes using the same /24 domain IP address can not be added to the table to avoid sybil attacks.
+Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash. 
+There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. The default refresh time used is 100 seconds. 
+When an empty bucket is detected a random lookup can be performed to discover new nodes.
+Also, the last node in the bucket is pinged to check it is still alive. 
+In case it is not, it is removed from the table.
 
 %and a new 'search table' is created for each topic. 
 %The bucket size \texttt{k}  of the search table should be relatively large in order to make the search efficient. 
@@ -75,42 +89,44 @@ Similarly to the DHT routing, the registration procedure is guaranteed to find t
 
 
 \subsection{Lookup operation}\label{sec:lookup}
+
 To find ads, \sysname uses a process similar to the registration procedure. 
 %The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
-Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
-The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per buckets and sends them lookup requests. 
-
-\sergi{Criticial: How do you choose the registrars}
-\sergi{how do you fill up search table. 
-it is initialized from routing table but also nodes are added from registrations messages and find messages}
-\sergi{do we send find messages when empty buckets?}
-\sergi{how do you select registrars in each bucket}
-\sergi{Do we query all the registrars in a bucket or just a subset?}
-\sergi{How many queries per node/ how many parallel queries}
-\sergi{Where do we stop?}
-\sergi{Results filtering to produce results from more than X regsitrars}
-\sergi{Aggregate results from multiple registrars from multiple buckets?}
-
-The furthest buckets are also the largest. For instance, bucket 0 contains 50\% of all the honest registrars. An attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. Searchers progressively move towards smaller buckets near the topic hash guaranteeing successful discovery even for unpopular topics.
+%Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
+Each lookup requires a topic-specific \emph{search table} described in Section\Cref{sec:struct}
+The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $L_\textit{lookup}$ registrars per buckets and sends them parallel lookup requests. 
+Once received results from the first $L_\textit{lookup}$ selected registrars,  other $L_\textit{lookup}$ registrars are selected from the  following bucket with a smaller distance to the topic id.
+The queried nodes are removed from the bucket.
 Searchers stop the lookup procedure when they discover $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the topic hash, especially for popular topics. As a result, \sysname avoids hot-spots in the network and ensure fair load distribution. 
-Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
+In case all buckets have been queried without finding enough nodes, the lookup process continues starting with the furthest distance bucket again. 
+Once the lookup process is completed, the nodes are returned to the application.
+%  but only in case there are nodes  discovered from different nodes and different buckets,  otherwise no nodes are returned to the application to avoid sybil attacks.
+
+Since furthest buckets are also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. 
+Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
+Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. 
+While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
+\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
 There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
+By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) compared with the  ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. 
+We investigate the impact of both parameters in \Cref{sec:eval}.
+\sergi{Not sure there will be space in the evaluation for that,  in case not we can point to the github report}.
 
 \michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
 \michal{Consider renaming search/registration tables into search/registration caches}
-By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) and low amount of ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. We investigate the impact of both parameters in \Cref{sec:eval}.
+%\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
 \ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
 \michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
+\sergi{I think $N_\textit{return}$ shouldnt be configurable since it is limited by the maximum number of nodes returned in a message which i think is 15 or 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller that a value multiple of $N_\textit{return} max$}
 
-\michal{This is very vague and probably not something we should demand from the application. Either we provide a mixing/filtering feature ourselves, or we don't mention it.}
-Once ads are discovered,  the searcher can initiate topic-specific connections based on rules specified by the application. 
-Applications do not only receive a list of potential nodes to connect but also the registrar node source of the search response.
-In order to avoid eclipse attacks it is recommended not to start connections with nodes coming from the same registrar. 
-Therefore connections are initiated always trying to keep the maximum diversity of the  registrars nodes used.
-Once all nodes received have been used to try new connections,  a new search process is initiated. 
-\michal{Either we provide good results by ourselves or we don't talk about it}
+%\michal{This is very vague and probably not something we should demand from the application. Either we provide a mixing/filtering feature ourselves, or we don't mention it.}
+%Once ads are discovered,  the searcher can initiate topic-specific connections based on rules specified by the application. 
+%Applications do not only receive a list of potential nodes to connect but also the registrar node source of the search response.
+%In order to avoid eclipse attacks it is recommended not to start connections with nodes coming from the same registrar. 
+%Therefore connections are initiated always trying to keep the maximum diversity of the  registrars nodes used.
+%Once all nodes received have been used to try new connections,  a new search process is initiated. 
+%\michal{Either we provide good results by ourselves or we don't talk about it}
 
-\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
 
 %\subsubsection{Updating connections}
 %\michal{Didn't touch this subsection. Should it be here?}
