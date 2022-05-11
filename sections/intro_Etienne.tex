@@ -11,30 +11,30 @@
 \end{itemize}
 }
 
-Ethereum is one of \er{or \textbf{the} largest?}\mk{bitcoin is the largest with ~60k nodes} the largest decentralized platform currently in operation. \er{see the official numbers, 27.000 nodes in total? Source?}\mk{\cite{discv4-dns-lists}}
+With about 23,500 nodes~\cite{discv4-dns-lists}, Ethereum is one of the largest decentralized platform currently in operation.
 While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet}), the Ethereum platform is also home to a number of additional decentralized applications.
-This includes blockchains used for test purposes (testnets such as \emph{Ropsted} or \emph{Rinkeby}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}). \er{maybe give more/more diversified examples? IPFS? Others? Why isn't IPFS on the plot btw?}\mk{IPFS has its own DHT and is not part of the Ethereum DHT}
-Currently, an official Ethereum crawler ~\cite{discv4-dns-lists} indicates that the platform already features almost 500 applications, and this number will keep growing in the future. \er{this really reads as if the paper was written in 2018, don't we have more recent numbers? Ideally we would like to have them for several years and show the trend.}\mk{We'll use Ethereum crawler data from now - it's more consistent. We found several problems with the data from the IMC paper. We'll try to get historic data to show an increase in the application number over time.}
+This includes blockchains used for test purposes (testnets such as \emph{Ropsted}, \emph{Rinkeby}, or \emph{G\"orli}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), exchange markets (\emph{Binance}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}).
+An official Ethereum crawler~\cite{discv4-dns-lists} indicates that the platform already features almost 500 applications, and this number will keep growing in the future. \er{this really reads as if the paper was written in 2018, don't we have more recent numbers? Ideally we would like to have them for several years and show the trend.}\mk{We'll use Ethereum crawler data from now - it's more consistent. We found several problems with the data from the IMC paper. We'll try to get historic data to show an increase in the application number over time.}
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
     % \vspace{-2mm}
-    \caption{Number of different nodes identities witnessed in Ethereum's main applications, over an observation period of one year \protect\er{was it one year exactly?} (numbers reported by Kim et al.~\cite{kim2018measuring}).
-    \protect\er{maybe give the date when the snapshot was taken. Also, ``Other'' should be ``Others''. We can also consider using a split x axis in order to avoid the very small lines for everything else than the mainnet. The figure is also not giving a sense of the long tail with networks of a few hundreds/thousands of nodes (our focus)}
-    \protect\er{present relative numbers rather than absolute ones}
-    % \vspace{-2mm}
+    \caption{Distribution of the number of nodes in Ethereum's sub-networks, corresponding to different applications.
+    Data collected on May 11, 2022.
+    Sub-networks are sorted by decreasing popularity.
+    A Zipf distribution is given for reference.
+    \protect\er{fixme: zipf is Zipf, subnetworks should be sub-networks, there should be a title to the x axis (``Rank'')}
     }
     \label{fig:ecosystem}
 \end{figure}
 
-Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}\mk{~24k}
+All nodes in the Ethereum platform participate to a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}.
 % This global DHT is primarily used for periodic node discovery. % and not as a key-value store (i.e., lookup operations are never used).
-The initial entry in the DHT leverages \emph{bootstrap nodes} operated by the Ethereum foundation, that provide a set of initial contact points, but subsequent maintenance of each nodes' view rely on periodic collection of random peers through DHT lookups.
-
+% The initial entry in the DHT leverages \emph{bootstrap nodes} operated by the Ethereum foundation, that provide a set of initial contact points, but subsequent maintenance of each nodes' view rely on periodic collection of random peers through DHT lookups. \er{Felix prefers not to discuss this and this is arguably out of scope.}
 In addition to joining the global network, every node must connect to one \emph{sub-network} formed of peers participating to its application of interest.
 The size of these sub-networks can vary significantly.
-\Cref{fig:ecosystem} depicts the size distribution of Ethereum's main applications.
-This distribution features a \emph{long tail}, with a vast majority of applications formed of a few thousand nodes or less, much less than the mainnet or even than the testnets. \er{would be useful to give more precise quantiles, e.g., 80\% have less than 1.000 nodes, 90\% less than 200 nodes, etc.}
+\Cref{fig:ecosystem} depicts the size distribution of Ethereum's main sub-networks.
+This distribution features a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less, much less than the mainnet or even than any of the testnets.
 
 % Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating the Kademlia distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}
 % Bootstrapping membership to this general network is handled by a number of trusted \emph{bootstrap nodes} operated by the Ethereum foundation, who provide an initial list of contact peers to nodes entering the network.
@@ -62,9 +62,9 @@ On the other hand, the mechanism must remain efficient and scalable.
 It is not desirable, in particular, that it relies solely on a set of dedicated registry nodes maintaining the membership of each application, both for scalability and robustness reasons: Registry nodes for popular applications would quickly become overwhelmed, and attackers would have efficient strategies to place Sybils on the path to registry nodes, or act as such nodes themselves.
 % \er{also the applications may want to hide themselves (but this clashes completely with our announcement approach)}
 
-The current service discovery mechanism used in the Ethereum platform is part of discv4, a set of protocols leveraging the global DHT.
+The current service discovery mechanism used in the Ethe\-reum platform is part of \emph{discv4}, a set of protocols leveraging the global DHT.
 It employs a simple but robust \emph{random walk} approach.
-A node willing to join an application's sub network simply contacts individually a series of nodes collected from random lookups on the DHT, repeatedly checking application membership until it has collected enough peers. % to join the sub-network.
+A node willing to join an application's sub network simply contacts individually a series of nodes collected from random lookups on the DHT, repeatedly checking application membership until it has collected enough peers participating to the target application. % to join the sub-network.
 This approach offers good resilience to malicious behaviors
 % , and in particular against denial-of-service attacks, 
 but it suffers from very poor scalability and performance, in particular for small sub-networks.
@@ -76,7 +76,7 @@ but it suffers from very poor scalability and performance, in particular for sma
 %
 We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to Ethereum.
 \sysname targets a balance between robustness, i.e., the ability to resist malicious behaviors and Sybil identities, and efficiency, i.e., fast service discovery even for small applications and good load-balance over participating nodes.
-\sysname is integrated into the upcoming version of Ethereum, as part of the replacement of discv4 mechanisms ... \er{provide details here already. Why don't we call it discv5 anymore?}\mk{\sysname will be a part of Discv5, which is a whole new p2p system. The same way as the random walk procedure is a part of Discv4}
+\sysname is integrated \emph{discv5} a new set of P2P protocols aiming at replacing \emph{discv4} in future versions of Ethereum. \er{ideally add a reference or two here}
 
 After providing background knowledge and reviewing the current service discovery mechanism of Ethereum in \Cref{sec:background}, we detail \sysname as follows.
 
@@ -94,7 +94,7 @@ At the core our novel admission protocol lies the need for registrants to respec
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 We design a function that allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
-We implemented \sysname in a simulator as well as in the code base of the upcoming version of Ethereum.
+We implemented \sysname both in a simulator as well as in the code base of \emph{discv5}.
 We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Our results show ...
 
