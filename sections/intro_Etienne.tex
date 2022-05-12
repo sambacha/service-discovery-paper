@@ -76,7 +76,7 @@ but it suffers from very poor scalability and performance, in particular for sma
 %
 We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to Ethereum.
 \sysname targets a balance between robustness, i.e., the ability to resist malicious behaviors and Sybil identities, and efficiency, i.e., fast service discovery even for small applications and good load-balance over participating nodes.
-\sysname is integrated in \emph{discv5}~\cite{discv5} (Node Discovery protocol version 5) a new set of P2P protocols aiming at replacing \emph{discv4} in future versions of Ethereum. \er{ideally add a reference or two here}
+\sysname is integrated in \emph{discv5}~\cite{discv5} (\ie, Node Discovery protocol version 5) a new set of P2P protocols aiming at replacing \emph{discv4} in future versions of Ethereum. \er{ideally add a reference or two here}
 
 After providing background knowledge and reviewing the current service discovery mechanism of Ethereum in \Cref{sec:background}, we detail \sysname as follows.
 
@@ -94,7 +94,7 @@ At the core our novel admission protocol lies the need for registrants to respec
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 We design a function that allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
-We implemented \sysname both in a simulator as well as in the code base of \emph{discv5}.
+We implemented \sysname in a simulator as well as in the code base of \emph{discv5}.
 We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Our results show ...
 

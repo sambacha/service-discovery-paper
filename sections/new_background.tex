@@ -3,10 +3,74 @@
 
 %Background
 % -> I would present Kademlia directly rather than a generic DHT model (which we can assume is common knowledge for the readers) -- we only want to summarize what operations it supports and directly explain how Kademlia implements it.
-% -> The DHT description is both very general (concepts without explaining the graph structures) and very specific (names of the messages exchanged between the nodes).
+% -> The DHT description is both very general (concepts without explaining the graph structures) and very specific (names of the messages exchanged between the nodes).\include{sections/new_background.tex}
 % -> 2.2 why present the Ethereum network as similar to a DHT but not writing it is one? This is confusing imho
 % -> What is a subprotocol in the context of 2.2?
 % -> It seems to me that this background section should be remodeled into a problem statement that focuses on how Ethereum does service discovery and identifies clearly the issues with scalability and attacks.
+
+\section{Background}
+\label{sec:background}
+
+We start by detailing the operation of the Ethereum's global DHT, which is an evolution of the canonical Kademlia~\cite{maymounkov2002kademlia} DHT.
+Then, we present the current service discovery mechanism, part of Ethereum's \emph{discv4} series of protocol operating atop this DHT, and discuss its shortcomings.
+
+\subsection{The Ethereum global DHT}
+\label{sec:background:dht}
+
+All nodes in Ethereum participate to a global distributed hash table (DHT).
+A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}.
+\er{consider cutting the following two sentences?}
+A DHTs designed for wide-area networks and scalability typically limits the amount of peers each node knows and connect to, and rely on multi-hop routing algorithm to implement lookup operations.
+A plethora of DHT designs have been proposed in the past two decades~\cite{chord,rowstron2001pastry}, differing in various aspects such as the assignment of item keys to node(s) in the overlay, the structure of the overlay itself, or routing algorithms.
+
+Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
+Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items.
+Kademlia assigns a specific key $i$ to a group of $k$ nodes that are the closest to $i$ in that space.
+This distance $d$ between two keys $x$ and $y$ is their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = x \oplus y$.
+
+Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
+The routing table is partitioned into $m$ \textit{k-buckets}, \er{why k-buckets and not simply buckets? We use simply bucket after.} numbered zero through $m-1$, where $m$ is a global system parameter.
+Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $N$. \er{does this $k$ has to be the same as the group of nodes in charge of a specific key $i$?}
+% The last bucket (\ie, bucket $m-1$) additionally contains peers whose IDs share a prefix of length exceeding $m-1$ bits with the local node. \er{I do not see the point/interest of this precision, this is already covered by the previous sentence.}
+
+% A newly instantiated DHT node typically populates its routing table with a set of (hard-coded) bootstrap nodes\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}.
+
+\begin{figure}
+    \includegraphics[width=0.4\textwidth]{img/kademlia}
+    \caption{Organization of the DHT routing table.
+    \protect\er{This figure needs to change, as it is misleading (it presents the key space as a ring and gives the impression that the buckets will be the same from any node's viewpoint, whereas due to the use of the XOR metric the buckets are different for different source nodes). The classical way to present the buckets is to use a binary tree where you have a bucket as a child for the bit value that does not match the value of the corresponding bit in the node ID, and a sub-tree when it does. Also, the node itself is not really in a bucket on its own.}}
+    \label{fig:kademlia}
+ \end{figure}
+
+\smallskip
+\noindent
+\textbf{Lookups.}
+%
+The bucket partitioning scheme divides the key space from the point of view of $N$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $N$'s ID.
+As a result, a node's routing table provides a more detailed (\ie, fine grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
+This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
+It allows, in addition, a degree of flexibility as each each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
+
+Lookups in Kademlia rely on a number of concurrent routing operations (or \emph{walks}) towards the target key.
+\er{stopped here, need to merge/simplify the rest of the paragraph here}
+In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target.
+
+\er{need to simplify the following and make it a single paragraph as part of the lookup paragraph}
+
+Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing nodes to hide their target from other peers in the lookups. Specifically, the distance of a key to a node is the common prefix length of the key and the node's ID, which corresponds to the bucket number of the key where the node would insert the key, following the same bucket partitioning scheme with vanilla Kademlia.
+\michal{I'm not sure why we need the text above}
+
+\michal{I'd focus uniquely on differences, no need to say what's the same.}
+\onur{I shortened it a bit and removed similarities}
+%Similar to vanilla Kademlia, Ethereum nodes use an iterative lookup procedure involving $\alpha$ parallel walks. 
+A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is that the initiating nodes specify the distance of an undisclosed target in their FIND\_NODE messages rather than the target key itself. Each peer responds to a FIND\_NODE message by returning up to $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket.
+
+\oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
+
+\subsection{\emph{discv4} service discovery}
+\label{sec:background:dht}
+
+
 
 
 \section{Background}
@@ -26,11 +90,7 @@ A Kademlia routing table is partitioned across $m$ \textit{k-buckets}, numbered 
 %$i$ also holds peers whose distance from the node is in the range $[2^{m-i}, 2^{m-i+1})$.
 %\michal{Shouldn't buckets be number from 0? Or contain nodes that share $i-1$ bits?}
 
-\begin{figure}
-    \includegraphics[width=0.4\textwidth]{img/kademlia}
-    \caption{DHT routing table.}
-    \label{fig:kademlia}
- \end{figure}
+
 
 The resulting bucket partitioning scheme divides the keyspace into disjoint intervals halving in length with each bucket increment, as shown in \Cref{fig:kademlia} for $m=5$. As a result, a node's routing table provides a more detailed (\ie fine-grained) view of the closer parts of the network and a less detailed view of the parts of network located further away. This property is essential for efficient (\ie scaling logarithmically with the number of nodes) lookup operations. At the same time, the partitioning scheme allows for a flexible routing table structure, where each bucket can contain \textit{any peer sampled from those whose IDs fall within the corresponding interval of the bucket in the keyspace}.
 \onur{TODO: number the buckets from 0 to m-1 in the Fig.}
