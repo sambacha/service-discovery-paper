@@ -20,17 +20,17 @@ Then, we present the current service discovery mechanism, part of Ethereum's \em
 All nodes in Ethereum participate to a global distributed hash table (DHT).
 A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}.
 \er{consider cutting the following two sentences?}
-A DHTs designed for wide-area networks and scalability typically limits the amount of peers each node knows and connect to, and rely on multi-hop routing algorithm to implement lookup operations.
+The DHT design for wide-area networks and scalability typically limits the amount of peers each node knows and connect to, and rely on multi-hop routing algorithm to implement lookup operations.
 A plethora of DHT designs have been proposed in the past two decades~\cite{chord,rowstron2001pastry}, differing in various aspects such as the assignment of item keys to node(s) in the overlay, the structure of the overlay itself, or routing algorithms.
 
 Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
-Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items.
-Kademlia assigns a specific key $i$ to a group of $k$ nodes that are the closest to $i$ in that space.
-This distance $d$ between two keys $x$ and $y$ is their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = x \oplus y$.
+Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items.\mk{we haven't mention item storage before}
+Ethereum DHT assigns a specific key $i$ to a node that is the closest to $i$ in that space.
+This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of differing suffix in bits).
 
 Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
-The routing table is partitioned into $m$ \textit{k-buckets}, \er{why k-buckets and not simply buckets? We use simply bucket after.} numbered zero through $m-1$, where $m$ is a global system parameter.
-Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $N$. \er{does this $k$ has to be the same as the group of nodes in charge of a specific key $i$?}
+The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
+Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $N$.
 % The last bucket (\ie, bucket $m-1$) additionally contains peers whose IDs share a prefix of length exceeding $m-1$ bits with the local node. \er{I do not see the point/interest of this precision, this is already covered by the previous sentence.}
 
 % A newly instantiated DHT node typically populates its routing table with a set of (hard-coded) bootstrap nodes\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}.
