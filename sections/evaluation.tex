@@ -43,19 +43,19 @@ Plots for varying number of topics with 21,000 nodes (using DNS list records obt
 \begin{figure*}[!h]
 \centering
 \subfigure[{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for varying number of topics.}]{
-\includegraphics[width=0.32\textwidth]{results/efficiency/violin_topic_lookupMsgs}
+\includegraphics[width=0.32\textwidth]{results/efficiency/violin_topic_totalMsg.eps}
 \label{fig:lookupMsgsPerTopicSize}
 }
 \subfigure[{Y-axis: Distribution of the number of peers discovered during lookup operation for varying number of topics.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_discovered}
+\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \label{fig:askedNodesPerTopicSize}
 }
 \subfigure[{Y-axis: Distribution of the number of times a peer is discovered by others for varying number of topics.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_wasDiscovered}
+\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \label{fig:askedNodesPerTopicSize}
 }
 \caption{Efficiency performance for different topic number} 
-\label{fig:mptcp}
+\label{fig:efficiency_topic}
 \vspace{-0.05in}
 \end{figure*}
 
@@ -63,19 +63,19 @@ Plots for varying number of topics with 21,000 nodes (using DNS list records obt
 \begin{figure*}[!h]
 \centering
 \subfigure[{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size.}]{
-\includegraphics[width=0.32\textwidth]{results/efficiency/violin_size_lookupMsgs}
+\includegraphics[width=0.32\textwidth]{results/efficiency/violin_size_totalMsg.eps}
 \label{fig:lookupMsgsPerTopicSize}
 }
 \subfigure[{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_discovered}
+\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_discovered.eps}
 \label{fig:askedNodesPerTopicSize}
 }
 \subfigure[{Y-axis: Distribution of the number of times a peer is discovered by others for different network size.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_wasDiscovered}
+\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
 \label{fig:askedNodesPerTopicSize}
 }
 \caption{Efficiency performance for different network size} 
-\label{fig:mptcp}
+\label{fig:efficiency_size}
 \vspace{-0.05in}
 \end{figure*}
 
@@ -165,33 +165,55 @@ Plots for varying number of topics with 21,000 nodes (using DNS list records obt
 %%%%%%%%%%%%%%%%%%%% END PLACE HOLDER GRAPHS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Security}
-We evaluate \sysname resistance to two groups of malicious attacks:
-\begin{itemize}
-    \item \textbf{Eclipse Attack} - the attacker tries to make a target node discover and connect to peers under the attacker's control. The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers. 
-    \item \textbf{Denial of Service (DoS)} - the attacker tries to disturb protocol operations. The attack succeeds when service discovery is made impossible or significantly delayed for a group of benign nodes.  
-\end{itemize}
-The attacker may use a large but finite number of malicious nodes. Both attacks may target a single node or a group of nodes (\eg nodes participating in a specific application). 
+%We evaluate \sysname resistance to two groups of malicious attacks:
+%\begin{itemize}
+%    \item \textbf{Eclipse Attack} - the attacker tries to make a target node discover and connect to peers under the attacker's control. The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers. 
+%    \item \textbf{Denial of Service (DoS)} - the attacker tries to disturb protocol operations. The attack succeeds when service discovery is made impossible or significantly delayed for a group of benign nodes.  
+%\end{itemize}
+%The attacker may use a large but finite number of malicious nodes. Both attacks may target a single node or a group of nodes (\eg nodes participating in a specific application). 
+
+%\para{Eclipse Attack}
 
 \para{Eclipse Attack}
-
-\para{DoS Attack}
-We implement and evaluate two kind of DoS attacks:
+We implement and evaluate \sysname resistance against a hybrid eclipse attack targeted to a specific topic,  that  tries to make a searcher node discover and connect to peers under the attacker's control.  
+The attacker may be able to generate a large but finite number of sybil nodes,  with limited network resources,  such as different IP addresses.
+The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers.  The attack consists of the following:
 \begin{itemize}
     \item \textbf{Registration spam} - the attacker targets a registrars and sends a large number of registrations requests. If successful, the attacker exhaust registrar's resources and prevent benign nodes from registering. 
-    \item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that \textit{(i)} return maximum waiting times when asked for a ticket, \textit{(ii)} return an empty set when asked about a topic. If successful, the attacker prevents benign advertisers from registering \textit{(i)} and prevents benign searchers from discovering their peers \textit{(ii)}. 
+%    \item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that \textit{(i)} return maximum waiting times when asked for a ticket, \textit{(ii)} return an empty set when asked about a topic. If successful, the attacker prevents benign advertisers from registering \textit{(i)} and prevents benign searchers from discovering their peers \textit{(ii)}. 
+	\item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that only malicious sybils with the objective of preventing benign searchers from discovering valid peers and eclipsing all its connections. 
 \end{itemize}
 
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Compare only against DHT here I guess? Y-axis a ratio of popular malicious and benign ads in the table for spam attack and topic-targeted attack within a single registrar. X-axis: to avoid showing different graphs for multiple malicious IPs/IDs/nodes we can have a fix ratio between them i.e., each 5 Sybils (or requests/s) have 1 IP and 2 ID, and increase this "attacker strength".} 
-\label{fig:security_spam}
-\end{figure}
 
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{Compare only against DHT here I guess? Y-axis a  time to discovery/registration (do we care about registration if lookup works?) slowdown compared to a non-attack scenario?Do we consider different placements of Sybils here (i.e., only bucket 1? Or spread evenly across all the buckets?). X-axis: to avoid showing different graphs for multiple malicious IPs/IDs/nodes we can have a fix ratio between them i.e., each 5 Sybils have 1 IP and 2 ID, and increase this "attacker strength".} 
-\label{fig:security_spam}
-\end{figure}
+\begin{figure*}[!h]
+\centering
+\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
+\includegraphics[width=0.32\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups.eps}
+\label{fig:distribution}
+}
+\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
+\includegraphics[width=0.32\linewidth]{results/security/bar_percentEvilTopic_percentageEclipsedLookups.eps}
+\label{fig:percentEvil}
+}
+\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
+\includegraphics[width=0.32\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups.eps}
+\label{fig:sybilsize}
+}
+\caption{Resistance against eclipse attacks} 
+\label{fig:eclipse_attack}
+\vspace{-0.05in}
+\end{figure*}
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{img/placeholder}
+%\caption{Compare only against DHT here I guess? Y-axis a ratio of popular malicious and benign ads in the table for spam attack and topic-targeted attack within a single registrar. X-axis: to avoid showing different graphs for multiple malicious IPs/IDs/nodes we can have a fix ratio between them i.e., each 5 Sybils (or requests/s) have 1 IP and 2 ID, and increase this "attacker strength".} 
+%\label{fig:security_spam}
+%\end{figure}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{img/placeholder}
+%\caption{Compare only against DHT here I guess? Y-axis a  time to discovery/registration (do we care about registration if lookup works?) slowdown compared to a non-attack scenario?Do we consider different placements of Sybils here (i.e., only bucket 1? Or spread evenly across all the buckets?). X-axis: to avoid showing different graphs for multiple malicious IPs/IDs/nodes we can have a fix ratio between them i.e., each 5 Sybils have 1 IP and 2 ID, and increase this "attacker strength".} 
+%\label{fig:security_spam}
+%\end{figure}
 
 
 
