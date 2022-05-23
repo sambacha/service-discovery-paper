@@ -448,3 +448,57 @@ doi = {10.1109/TSC.2011.31}
   year={2020},
   publisher={ACM New York, NY, USA}
 }
+
+@inproceedings{ring,
+author = {Castro, Miguel and Druschel, Peter and Kermarrec, Anne-Marie and Rowstron, Antony},
+title = {One Ring to Rule Them All: Service Discovery and Binding in Structured Peer-to-Peer Overlay Networks},
+year = {2002},
+isbn = {9781450378062},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1133373.1133399},
+doi = {10.1145/1133373.1133399},
+abstract = {Self-organizing, structured peer-to-peer (p2p) overlay networks like CAN, Chord, Pastry and Tapestry offer a novel platform for a variety of scalable and decentralized distributed applications. These systems provide efficient and fault-tolerant routing, object location, and load balancing within a self-organizing overlay network.One major problem with these systems is how to bootstrap them. How do you decide which overlay to join? How do you find a contact node in the overlay to join? How do you obtain the code that you should run? Current systems require that each node that participates in a given overlay supports the same set of applications, and that these applications are pre-installed on each node.In this position paper, we sketch the design of an infrastructure that uses a universal overlay to provide a scalable infrastructure to bootstrap multiple service overlays providing different functionality. It provides mechanisms to advertise services and to discover services, contact nodes, and service code.},
+booktitle = {Proceedings of the 10th Workshop on ACM SIGOPS European Workshop},
+pages = {140–145},
+numpages = {6},
+location = {Saint-Emilion, France},
+series = {EW 10}
+}
+
+@inproceedings{10.1145/502034.502053,
+author = {Rowstron, Antony and Druschel, Peter},
+title = {Storage Management and Caching in PAST, a Large-Scale, Persistent Peer-to-Peer Storage Utility},
+year = {2001},
+isbn = {1581133898},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/502034.502053},
+doi = {10.1145/502034.502053},
+abstract = {This paper presents and evaluates the storage management and caching in PAST, a large-scale peer-to-peer persistent storage utility. PAST is based on a self-organizing, Internet-based overlay network of storage nodes that cooperatively route file queries, store multiple replicas of files, and cache additional copies of popular files.In the PAST system, storage nodes and files are each assigned uniformly distributed identifiers, and replicas of a file are stored at nodes whose identifier matches most closely the file's identifier. This statistical assignment of files to storage nodes approximately balances the number of files stored on each node. However, non-uniform storage node capacities and file sizes require more explicit storage load balancing to permit graceful behavior under high global storage utilization; likewise, non-uniform popularity of files requires caching to minimize fetch distance and to balance the query load.We present and evaluate PAST, with an emphasis on its storage management and caching system. Extensive trace-driven experiments show that the system minimizes fetch distance, that it balances the query load for popular files, and that it displays graceful degradation of performance as the global storage utilization increases beyond 95%.},
+booktitle = {Proceedings of the Eighteenth ACM Symposium on Operating Systems Principles},
+pages = {188–201},
+numpages = {14},
+location = {Banff, Alberta, Canada},
+series = {SOSP '01}
+}
+
+
+@article{past,
+author = {Rowstron, Antony and Druschel, Peter},
+title = {Storage Management and Caching in PAST, a Large-Scale, Persistent Peer-to-Peer Storage Utility},
+year = {2001},
+issue_date = {Dec. 2001},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {35},
+number = {5},
+issn = {0163-5980},
+url = {https://doi.org/10.1145/502059.502053},
+doi = {10.1145/502059.502053},
+abstract = {This paper presents and evaluates the storage management and caching in PAST, a large-scale peer-to-peer persistent storage utility. PAST is based on a self-organizing, Internet-based overlay network of storage nodes that cooperatively route file queries, store multiple replicas of files, and cache additional copies of popular files.In the PAST system, storage nodes and files are each assigned uniformly distributed identifiers, and replicas of a file are stored at nodes whose identifier matches most closely the file's identifier. This statistical assignment of files to storage nodes approximately balances the number of files stored on each node. However, non-uniform storage node capacities and file sizes require more explicit storage load balancing to permit graceful behavior under high global storage utilization; likewise, non-uniform popularity of files requires caching to minimize fetch distance and to balance the query load.We present and evaluate PAST, with an emphasis on its storage management and caching system. Extensive trace-driven experiments show that the system minimizes fetch distance, that it balances the query load for popular files, and that it displays graceful degradation of performance as the global storage utilization increases beyond 95%.},
+journal = {SIGOPS Oper. Syst. Rev.},
+month = {oct},
+pages = {188–201},
+numpages = {14}
+}

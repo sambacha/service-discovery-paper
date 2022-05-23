@@ -35,6 +35,14 @@ However, all these solutions have not been designed with Sybil-resistance in min
 
 %"Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
 
+In~\cite{ring}, the authors propose a  universal overlay to provide a scalable infrastructure to bootstrap multiple service overlays providing different functionality, \ie a p2p network to help bootstrapping any p2p network.
+The solution is based on pastry,  but could work with any structured p2p.  The solution assumes node ids are assigned by certification authority,  therefore its security depends on a centralised system.  It utilises three components:
+First, a file storage based on PAST~\cite{past}, a content storage solution using pastry, where content is stored by K users with nodeid closest to content id using the same namespace. It can be used to store p2p software necessary to join a specific network and  signed by the creator. 
+Second, a multicast tree using Scribe~\cite{scribe} to creates multicast groups on top of Pastry. Nodes with closest id to groupid are used as rendezvous points.  Join messages are routed towards groupid and crossed nodes join the multicast tree. Messages are delivered to rendezvous points and follows the distribution tree. 
+Third, a search engine that allows nodes to search for keys using a set of query keywords. An index associates a keyword with a list of service keys, stored to the closest node to the keyword hash. Multicast groups can be used for persistent service querys using specific keywords. When new services are created users subscribed receive the advertisement.
+Advertising and discovery is done by generating a service certificate by the creator that describes the service. Service certificate is stored using a service key. Keywords are associated with a service key for the search engine.
+Services can be discovered either finding the service certificate looking for the service key, or by subscribing to a multicast tree that matches a certain keyword. The service certificate includes service description plus code keys, that can be used to retrieve the software similarly.
+The solution can be very efficient in terms of routing and network load. However, in terms of security it generates lots of doubts. Not clear to me if there can be multiple creators for the same service, and how malicious nodes are avoided to create fake services. I think most of the security resides on the certification authority that issues nodeids certificates, and therefore its a sort of permissioned p2p network. 
 
 Another possible solution for service discovery in blockchain platforms is to incorporate a service discovery component to the blockchain. 
 In~\cite{manevich2019endorsement}, a new service discovery component is presented for  Hyperledger Fabric (HLF), a permissioned blockchain platform.
@@ -42,7 +50,7 @@ The service discovery component provides APIs that allow the client application 
 However, since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
 
 %"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. 
-Similalry, in~\cite{farmer2021decentralized} the authors propose decentralized identifiers for peer-to-peer service discovery.
+Similarly, in~\cite{farmer2021decentralized} the authors propose decentralized identifiers for peer-to-peer service discovery.
 %"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}:
 Besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
 
