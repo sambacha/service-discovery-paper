@@ -1,32 +1,27 @@
-\documentclass[sigplan,review,anonymous]{acmart}
-%\acmSubmissionID{<PAPER_ID>}
-% Optional: Remove the ACM reference between the abstract and the main text.
-%information in first column
-\settopmatter{printfolios=true,printacmref=false}
-% Optional: Comment out the CCS concepts and keywords.
+\documentclass[conference]{IEEEtran}
+\pagestyle{plain}
 
-% Remove this for camera-ready
-\settopmatter{printacmref=false} % Removes citation information below abstract
-\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference 
 
 \usepackage{times}
 \usepackage[utf8]{inputenc}
 \usepackage{url}
+\usepackage{amssymb}
+\usepackage{amsmath}
 \usepackage{array,multirow}
 \usepackage{xspace}
 \usepackage{xcolor}
 \usepackage{color, colortbl} 
 \usepackage{balance}
 \usepackage{paralist}
+\usepackage{hyperref}
 \usepackage{cleveref}
-%\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{pifont}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{tikz}
 \usepackage{bm}
-\usepackage{enumitem}
+%\usepackage{enumitem}%not compatible with IEEEtran it seems
 \setlength {\marginparwidth}{2cm}
 \usepackage{todonotes}
 \usepackage{arydshln}
@@ -51,7 +46,8 @@
 
 \title{Topic-based service discovery for the Ethereum P2P network}
 \title{\sysname: Robust, efficient, and decentralized service discovery for the Ethereum platform}
-\author{Anonymous authors, submission \#XXX}
+
+\maketitle
 
 \begin{abstract}
   Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -73,7 +69,7 @@
 %Our system enables nodes to associate themselves with a set of \emph{topics}. The association is collectively stored by the network, and can be later found by interested peers within a bounded amount of time. \sysname included a robust admission mechanism limiting the resource usage by its participants and preventing a vast range of malicious behaviours. 
 \end{abstract}
 
-\maketitle
+
 %\input{sections/new_introduction}
 
 % \er{Suggestions for alternative titles:

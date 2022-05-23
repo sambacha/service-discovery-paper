@@ -36,7 +36,7 @@
 \ifthenelse{\boolean{showcomments}}
 { \newcommand{\mynote}[3]{
     \protect\fbox{\bfseries\sffamily\scriptsize#1}
-    {\small$\blacktriangleright$\textsf{\emph{\color{#3}{#2}}}$\blacktriangleleft$}}}
+    {\small\textsf{\emph{\color{#3}{#2}}}}}}
 { \newcommand{\mynote}[3]{}}
 
 \newcommand{\er}[1]{\mynote{Etienne}{#1}{blue}}
