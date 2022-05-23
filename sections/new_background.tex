@@ -37,8 +37,7 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 
 \begin{figure}
     \includegraphics[width=0.4\textwidth]{img/kademlia}
-    \caption{Organization of the DHT routing table.
-    \protect\er{This figure needs to change, as it is misleading (it presents the key space as a ring and gives the impression that the buckets will be the same from any node's viewpoint, whereas due to the use of the XOR metric the buckets are different for different source nodes). The classical way to present the buckets is to use a binary tree where you have a bucket as a child for the bit value that does not match the value of the corresponding bit in the node ID, and a sub-tree when it does. Also, the node itself is not really in a bucket on its own.}}
+    \caption{Organization of the DHT routing table.}
     \label{fig:kademlia}
  \end{figure}
 
@@ -93,7 +92,6 @@ A Kademlia routing table is partitioned across $m$ \textit{k-buckets}, numbered 
 
 
 The resulting bucket partitioning scheme divides the keyspace into disjoint intervals halving in length with each bucket increment, as shown in \Cref{fig:kademlia} for $m=5$. As a result, a node's routing table provides a more detailed (\ie fine-grained) view of the closer parts of the network and a less detailed view of the parts of network located further away. This property is essential for efficient (\ie scaling logarithmically with the number of nodes) lookup operations. At the same time, the partitioning scheme allows for a flexible routing table structure, where each bucket can contain \textit{any peer sampled from those whose IDs fall within the corresponding interval of the bucket in the keyspace}.
-\onur{TODO: number the buckets from 0 to m-1 in the Fig.}
 
 In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target. %During each iteration of a walk, the protocol allows the initiating node to apply a selection policy to determine which peer to query next rather than choosing the closest peer. The selection policy can be based on criteria such as performance (\eg latency), fault tolerance and so on.
 
