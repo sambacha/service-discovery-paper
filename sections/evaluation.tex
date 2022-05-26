@@ -31,138 +31,69 @@ We evaluate the \sysname prototype and answer the following research questions:
      \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. It is expressed as a percentage of malicious node. We set its default value to \hl{20\%} meaning that every 5 malicious nodes will share a single, random IPv4 address.
  \end{itemize}
 
-Each simulation takes \hl{4h} of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time. For \sysname and DHT-based solution, we set the registration table capacity to \hl{500} to allign with the memory requirements from the official Ethereum DHT implementation. We set all the DHT-related parameters to the default values from the current Ethereum DHT: \hl{17} buckets and \hl{16} node in each bucket. \sysname parameters have the following values: number of registrations placed per bucket = \hl{3}, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
+Each simulation takes \hl{4h} of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time. For \sysname and DHT-based solution, we set the registration table capacity to \hl{500} to align with the memory requirements from the official Ethereum DHT implementation. We set all the DHT-related parameters to the default values from the current Ethereum DHT: \hl{17} buckets and \hl{16} node in each bucket. \sysname parameters have the following values: number of registrations placed per bucket = \hl{3}, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
 They were selected based on extensive simulations that we skip due to the space limitation but include in our Github repository~\cite{our_repo}. 
 
-
-\subsection{Efficiency}
-\michal{Do we just register here? Or also lookup? When a lookup is completed for all the solutions? Need to choose params for the Discv4}
-
-Plots for varying number of topics with 21,000 nodes (using DNS list records obtained from crawling the Ethereum DHT). 
-
-\begin{figure*}[!h]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Registration}
+\begin{figure}
 \centering
-\subfigure[{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for varying number of topics.}]{
-\includegraphics[width=0.32\textwidth]{results/efficiency/violin_topic_totalMsg.eps}
-\label{fig:lookupMsgsPerTopicSize}
-}
-\subfigure[{Y-axis: Distribution of the number of peers discovered during lookup operation for varying number of topics.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_discovered.eps}
-\label{fig:askedNodesPerTopicSize}
-}
-\subfigure[{Y-axis: Distribution of the number of times a peer is discovered by others for varying number of topics.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
-\label{fig:askedNodesPerTopicSize}
-}
-\caption{Efficiency performance for different topic number} 
-\label{fig:efficiency_topic}
-\vspace{-0.05in}
-\end{figure*}
+\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
+\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for varying number of topics.}
+\label{fig:msgsPerTopic}
+\end{figure}
+
+\michal{\Cref{fig:msgsPerTopic} I'm not sure this is relevant without splitting into lookup and registration. For instance, we can make discv4 look very bad or very good by simply increasing the frequency of lookups. }
 
 
-\begin{figure*}[!h]
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Lookup}
+\michal{Application is requesting 30 peers.}
+
+\begin{figure}[!h]
 \centering
-\subfigure[{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size.}]{
-\includegraphics[width=0.32\textwidth]{results/efficiency/violin_size_totalMsg.eps}
-\label{fig:lookupMsgsPerTopicSize}
-}
-\subfigure[{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_discovered.eps}
-\label{fig:askedNodesPerTopicSize}
-}
-\subfigure[{Y-axis: Distribution of the number of times a peer is discovered by others for different network size.}]{
-\includegraphics[width=0.32\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
-\label{fig:askedNodesPerTopicSize}
-}
-\caption{Efficiency performance for different network size} 
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
+\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size.}
+\label{fig:msgsPerSize}
+\end{figure}
+\michal{\Cref{fig:msgsPerSize}, same here - should split into registration and lookup}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
+\caption{Number of peers discovered during lookup operation.}
+\label{fig:discoveredPerTopic}
+\end{figure}
+\Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with increasing number of topics in the network. The discovery becomes more difficult, as the number of topics grows. Discv4 achieves a much lower number of discovered peers per operation, while \sysname and DHT-based solution efficiently discover the required amount of nodes. The rare cases where \sysname and DHT-based solution do not discover the required amount of peers are caused by small networks that consist of less than 30 nodes. 
+
+\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
+\caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
+\label{fig:discoveredPerSize}
+\end{figure}
+
+\Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with increasing size of the network. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes. However, discv4 suffers from poor performance for all the investigated network sizes. 
+
+\begin{figure}
+\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+\caption{Number of times a peer is discovered by others.}
+\label{fig:discoveredByPerTopic}
+\end{figure}
+
+
+
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+\caption{Y-axis: Distribution of the number of times a peer is discovered by others for different network size.} 
 \label{fig:efficiency_size}
-\vspace{-0.05in}
-\end{figure*}
-
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs}
-%\caption{Y-axis: Average and standard deviation of the number of lookup-related messages (received/sent) by peers for varying number of topics.} 
-%\label{fig:lookupMsgsPerTopicSize}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs}
-%\caption{Y-axis: Average and standard deviation of the number of lookup-related messages (received/sent) by peers for varying number of topics.} 
-%\label{fig:regMsgsPerTopicSize}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupAskedNodes}
-%\caption{Y-axis: Average and standard deviation of the number of peers contacted per lookup operation for varying number of topics.} 
-%\label{fig:askedNodesPerTopicSize}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered}
-%\caption{Y-axis: Average and standard deviation of the number of discovered peers per lookup operation for varying number of topics.} 
-%\label{fig:wasDiscoveredPerTopicSize}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.png}
-%\caption{Y-axis: Average and standard deviation of the number of times a peer is discovered by others for varying number of topics.} 
-%\label{fig:wasDiscoveredPerTopicSize}
-%\end{figure}
-
-%%%%%%%%%%%%%%%%%%%% PLACE HOLDER GRAPHS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\iffalse
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Messages sent/received per node (min, avg, max), X-axis: network size.} 
-\label{fig:efficiency_messages_size}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Messages sent/received per node (min, avg, max), X-axis: number of topics.} 
-\label{fig:efficiency_messages_topics}
 \end{figure}
 
 
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Messages sent/received per node (min, avg, max), X-axis: capacity of the table.} 
-\label{fig:efficiency_messages_capacity}
-\end{figure}
-
-
-\subsection{Fairness}
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Time to register in [s] per topic (min, avg, max), X-axis: network size.} 
-\label{fig:fairness_time_to_register_size}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Time to register in [s] per topic (min, avg, max), X-axis: number of topics.} 
-\label{fig:fairness_time_to_register_topics}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Time to discover in [s] per topic (min, avg, max), X-axis: network size.} 
-\label{fig:fairness_time_to_discover_size}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder_max_min}
-\caption{Y-axis: Time to discover in [s] per topic (min, avg, max), X-axis: number of topics.} 
-\label{fig:fairness_time_to_discover_topics}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{img/placeholder}
-\caption{How to show how many times each advertiser is being discovered?} 
-\label{fig:params_b}
-\end{figure}
-\fi
-%%%%%%%%%%%%%%%%%%%% END PLACE HOLDER GRAPHS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Security}
 %We evaluate \sysname resistance to two groups of malicious attacks:
