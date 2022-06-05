@@ -11,31 +11,77 @@ We evaluate the \sysname prototype and answer the following research questions:
     \item How do malicious nodes impact \sysname’s performance? How difficult is it to launch eclipse and DoS attacks against the system?
 \end{enumerate}
 
-\para{Setup} We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\hl{[?]} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. We compare our system against Discv4 service discovery (currently implemented in Ethereum) and a traditional key/value store implemented on top Ethereum DHT (currently implemented in IPFS\hl{[]}), where advertisements are stored on the node closest to the topic hash. Similarly to current implementations of these solutions (\hl{[]}), we implement Last Recently Used advertisement replacement policy and provide a DHT-based solution with our admission protocol (\Cref{sec:waitingTime}). 
+\para{Setup} We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\cite{peersim_kademlia} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. 
+We compare our system against Discv4 service discovery (currently implemented in Ethereum) and a traditional key/value store implemented on top Ethereum DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N closest nodes to the topic hash.  
+We evaluated the traditional key/value store implementation using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations, and also without any admission protocol were registrations are replaced using  Last Recently Used policy.
+
 
  The simulator reports the following performance metrics. 
  \begin{itemize}
      \item \textbf{Message Overhead} - the number of messages received by each node. We calculate separate values for both lookup and registration operations. Higher values mean larger strain put on each nodes and increased time to complete each operation. 
      \item \textbf{Discovered Peers} - the number of application-specific peers discovered by searchers during lookup operations. Each operation is finished after discovering 30 nodes. The metric allows to verify whether each searcher can discover its peers.
      \item \textbf{Discovered By} - the number of searchers each advertiser was discovered by. This metric allows us to verify whether each peer is being discovered and how the number of discoveries differs across peers.
-     \item \textbf{Placed Registrations} - the number of registration placed by each advertiser. 
-     \item \textbf{Accepted Registrations} - the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
+%     \item \textbf{Placed Registrations} - the number of registration placed by each advertiser. 
+%     \item \textbf{Accepted Registrations} - the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
  \end{itemize}
- We calculate per-node average for the metrics above and report their standard deviation. Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
+ %We calculate per-node average for the metrics above and report their standard deviation.  Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
- We verify the impact of the following parameters:
+In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to \hl{5000}, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to \hl{3\%} and increase it to \hl{4\%} to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we can justify focusing uniquely on IPv4.}
-     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT. We set its default value to \hl{4000}, as reported by an Ethereum measurement study from 2018~\cite{kim2018measuring}.\mk{can we justify a lower value here? E.g., by saying that we don't take a few nodes network in the account. } Each node in the network registers for and looks up a single topic. The topics are assigned to the nodes based on a zipf distribution with the exponent \hl{$\lambda = 0.7$}.
-     \item \textbf{Malicious nodes} - a number of malicious participants of the Ethereum DHT expressed as a percentage of the network size. We set its default value to \hl{20\%}. Each malicious node receives a distinct, randomly generated ID. 
-     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. It is expressed as a percentage of malicious node. We set its default value to \hl{20\%} meaning that every 5 malicious nodes will share a single, random IPv4 address.
+     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we can justify focusing uniquely on IPv4.}
+     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.
+     \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 1000 nodes.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
+     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.
  \end{itemize}
 
-Each simulation takes \hl{4h} of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time. For \sysname and DHT-based solution, we set the registration table capacity to \hl{500} to align with the memory requirements from the official Ethereum DHT implementation. We set all the DHT-related parameters to the default values from the current Ethereum DHT: \hl{17} buckets and \hl{16} node in each bucket. \sysname parameters have the following values: number of registrations placed per bucket = \hl{3}, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
+Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time.  For \sysname and DHT-based solution, we set the registration table capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
+We set all the DHT-related parameters to the default values from the current Ethereum DHT: 17 buckets and 16 node in each bucket.
+ \sysname parameters have the following values: number of registrations placed per bucket $K_{register}= 3$, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
 They were selected based on extensive simulations that we skip due to the space limitation but include in our Github repository~\cite{our_repo}. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Registration}
+\subsection{Message Overhead}
+
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
+\caption{Y-axis: Distribution of registration related messages received by peers for varying number of topics for the simulation time.}
+\label{fig:regMsgsPerTopic}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
+\caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
+\label{fig:regMsgsPerSize}
+\end{figure}
+
+In Figure~\ref{fig:regMsgsPerTopic}~and~\ref{fig:regMsgsPerSize}, we observe the number of messages related to the registration process, \ie registrations requests and replies, for different network sizes and different number of topics in the network. 
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
+\caption{Y-axis: Distribution of lookup messages received by peers for varying number of topics for the simulation time.}
+\label{fig:lookupMsgPerTopic}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
+\caption{Y-axis: Distribution of lookup messages received by peers for different network size for the simulation time.}
+\label{fig:lookupMsgPerSize}
+\end{figure}
+
+In Figure~\ref{fig:lookupMsgPerTopic}~and~\ref{fig:lookupMsgPerSize}, we observe the number of messages related to the registration process, \ie topic queries and replies for \sysname and the DHT key-values store systems and kademlia find/response messages for Discv4 protocol,  for different network sizes and different number of topics in the network. 
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
+\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size during a single advertisement period.}
+\label{fig:msgsPerSize}
+\end{figure}
+
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
@@ -43,30 +89,22 @@ They were selected based on extensive simulations that we skip due to the space 
 \label{fig:msgsPerTopic}
 \end{figure}
 
-\michal{\Cref{fig:msgsPerTopic} I'm not sure this is relevant without splitting into lookup and registration. For instance, we can make discv4 look very bad or very good by simply increasing the frequency of lookups. }
-\sergi{I added them into a single figure because the limit space. Moreover at the end the most important is the overall overhead generated by each solution and compare only lookups or only registrations i think is not completely fair with discv4, because there are not regs in discv4.  We can always make discv4 look very bad increasing lookups, but it is supposed we run same number of lookups for all.  But if you think is better we can show it separately.}
 
-
-
+In Figure~\ref{fig:msgsPerSize}~and~\ref{fig:msgsPerTopic}, we observe the total number of messages during the simulation but normalised per advertisement period. Therefore in the figures it is shown the messages related to a single lookup per node and a single registration process per node before advertisements start to expire and need to be refreshed.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Lookup}
-\michal{Application is requesting 30 peers.}
+\subsection{Lookup performance}
 
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
-\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size.}
-\label{fig:msgsPerSize}
-\end{figure}
-\michal{\Cref{fig:msgsPerSize}, same here - should split into registration and lookup}
+
+\michal{Application is requesting 30 peers.}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \caption{Number of peers discovered during lookup operation.}
 \label{fig:discoveredPerTopic}
 \end{figure}
+
 \Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with increasing number of topics in the network. The discovery becomes more difficult, as the number of topics grows. Discv4 achieves a much lower number of discovered peers per operation, while \sysname and DHT-based solution efficiently discover the required amount of nodes. The rare cases where \sysname and DHT-based solution do not discover the required amount of peers are caused by small networks that consist of less than 30 nodes. 
 
 \michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
@@ -85,8 +123,6 @@ They were selected based on extensive simulations that we skip due to the space 
 \caption{Number of times a peer is discovered by others.}
 \label{fig:discoveredByPerTopic}
 \end{figure}
-
-
 
 
 \begin{figure}[!h]
@@ -109,7 +145,7 @@ They were selected based on extensive simulations that we skip due to the space 
 
 \para{Eclipse Attack}
 We implement and evaluate \sysname resistance against a hybrid eclipse attack targeted to a specific topic,  that  tries to make a searcher node discover and connect to peers under the attacker's control.  
-The attacker may be able to generate a large but finite number of sybil nodes,  with limited network resources,  such as different IP addresses.
+The attacker may be able to generate a large but finite number of Sybil nodes,  with limited network resources (\ie limited IP addresses used by the Sybil nodes pool used in the attack).
 The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers.  The attack consists of the following:
 \begin{itemize}
     \item \textbf{Registration spam} - the attacker targets a registrars and sends a large number of registrations requests. If successful, the attacker exhaust registrar's resources and prevent benign nodes from registering. 
@@ -121,18 +157,37 @@ The attack succeeds when all the inbound and outbound connections of the target 
 \begin{figure*}[!h]
 \centering
 \subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
-\includegraphics[width=0.32\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups.eps}
+\includegraphics[width=0.31\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups_t0.eps}
 \label{fig:distribution}
 }
 \subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
-\includegraphics[width=0.32\linewidth]{results/security/bar_percentEvilTopic_percentageEclipsedLookups.eps}
+\includegraphics[width=0.31\linewidth]{results/security/bar_percentEvil_percentageEclipsedLookups_t0.eps}
 \label{fig:percentEvil}
 }
 \subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
-\includegraphics[width=0.32\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups.eps}
+\includegraphics[width=0.31\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups_t0.eps}
 \label{fig:sybilsize}
 }
-\caption{Resistance against eclipse attacks} 
+\caption{Resistance against eclipse attacks when attacking most popular topic (} 
+\label{fig:eclipse_attack}
+\vspace{-0.05in}
+\end{figure*}
+
+\begin{figure*}[!h]
+\centering
+\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
+\includegraphics[width=0.31\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups_t299.eps}
+\label{fig:distribution}
+}
+\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
+\includegraphics[width=0.31\linewidth]{results/security/bar_percentEvil_percentageEclipsedLookups_t299.eps}
+\label{fig:percentEvil}
+}
+\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
+\includegraphics[width=0.31\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups_t299.eps}
+\label{fig:sybilsize}
+}
+\caption{Resistance against eclipse attacks when attacking most popular topic} 
 \label{fig:eclipse_attack}
 \vspace{-0.05in}
 \end{figure*}
