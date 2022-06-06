@@ -13,8 +13,9 @@ We evaluate the \sysname prototype and answer the following research questions:
 
 \para{Setup} We implement \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. We use an existing vanilla Kademlia implementation~\cite{peersim_kademlia} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. 
 We compare our system against Discv4 service discovery (currently implemented in Ethereum) and a traditional key/value store implemented on top Ethereum DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N closest nodes to the topic hash.  
-We evaluated the traditional key/value store implementation using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations, and also without any admission protocol were registrations are replaced using  Last Recently Used policy.
-
+We evaluated the traditional key/value store implementation, that we named \altname, using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations, and also without any admission protocol were registrations are replaced using  Last Recently Used policy.
+When using \altname, there is no Registration table that keeps track of ongoing registrations and new registrations are issued every advertisement period.
+\sr{I think we should find a name for DHT solution and using consistently in the evaluation because i think can be confusing when we talk about DHT solution because all of them use a DHT.}
 
  The simulator reports the following performance metrics. 
  \begin{itemize}
@@ -28,13 +29,15 @@ We evaluated the traditional key/value store implementation using our admission 
  
 In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. \mk{Do we have any IPv6 addresses? If not we can justify focusing uniquely on IPv4.}
+     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. 
      \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.
      \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 1000 nodes.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.
+     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.  In the simulations we use only IPv4 addresses since \hl{\%} of Ethereum network nodes only use IPv4, as stated in \hl{[]}.
+  \mk{Do we have any IPv6 addresses? If not we can justify focusing uniquely on IPv4.}
+  \sr{Will the ipscore work with the same performance in case of IPv6 addresses?}
  \end{itemize}
 
-Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs \hl{3} lookup operations evenly spread across the simulation time.  For \sysname and DHT-based solution, we set the registration table capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
+Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the registration table capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
 We set all the DHT-related parameters to the default values from the current Ethereum DHT: 17 buckets and 16 node in each bucket.
  \sysname parameters have the following values: number of registrations placed per bucket $K_{register}= 3$, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $. 
 They were selected based on extensive simulations that we skip due to the space limitation but include in our Github repository~\cite{our_repo}. 
@@ -42,6 +45,8 @@ They were selected based on extensive simulations that we skip due to the space 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Message Overhead}
 
+In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
+Both figures show no values for Discv4 protocol, since Discv4 nodes do not receive any registration message because they do not participate to any topic-based registration process.  Discv4 can only find nodes doing random crawls in the DHT network without being able to do topic specific queries. 
 
 \begin{figure}
 \centering
@@ -50,14 +55,25 @@ They were selected based on extensive simulations that we skip due to the space 
 \label{fig:regMsgsPerTopic}
 \end{figure}
 
+In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe while most of \sysname nodes receive around 500 registration messages,  with just a few receiving up 5k messages in the worst case,  \altname solutions are more spread between 0 and 1000 received messages, but with some peaks up to 43k messages,  and order of magnitude higher than \sysname.
+This is caused by the fact that all nodes in \altname solutions try to put registrations starting by the closest nodes to the topic hash,  creating an uneven distributed nodes towards these nodes. 
+In \sysname, the use of Registration table to provide a good lookup efficiency provides a similar effect. 
+However this effect is diminished by the use of waiting times to regulate advertisement placement.  The increase of waiting time in the more congested nodes, causes that nodes starts more registrations in less congested nodes limiting the number of registrations placed on nodes close to topic hash.
+This effect is not seen when using \altname combined with tickets. 
+This is due to the fact that \altname is not using a Registration table to keep track of ongoing registrations.  Because of this,  registrants start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
+
+When increasing the number of topics in the network (\Cref{fig:regMsgsPerTopic}), it is not observed an increase of registration messages for any of the different protocols. 
+However,  when increasing the number of nodes participating in the network (\Cref{fig:regMsgsPerSize}),  also registrations messages received per nodes are increased, as expected.
+But this increase is very different between \sysname and \altname protocols.
+
+
+\sr{\Cref{fig:regMsgsPerSize} does not show max values. Fix}
 \begin{figure}[!h]
 \centering
 \includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
 \caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
 \label{fig:regMsgsPerSize}
 \end{figure}
-
-In Figure~\ref{fig:regMsgsPerTopic}~and~\ref{fig:regMsgsPerSize}, we observe the number of messages related to the registration process, \ie registrations requests and replies, for different network sizes and different number of topics in the network. 
 
 \begin{figure}
 \centering
@@ -73,7 +89,7 @@ In Figure~\ref{fig:regMsgsPerTopic}~and~\ref{fig:regMsgsPerSize}, we observe the
 \label{fig:lookupMsgPerSize}
 \end{figure}
 
-In Figure~\ref{fig:lookupMsgPerTopic}~and~\ref{fig:lookupMsgPerSize}, we observe the number of messages related to the registration process, \ie topic queries and replies for \sysname and the DHT key-values store systems and kademlia find/response messages for Discv4 protocol,  for different network sizes and different number of topics in the network. 
+In~\Cref{fig:lookupMsgPerTopic}~and~\Cref{fig:lookupMsgPerSize}, we observe the number of messages related to the lookup process, \ie topic queries and replies for \sysname and the DHT key-values store systems and kademlia find/response messages for Discv4 protocol,  for different network sizes and different number of topics in the network. 
 
 \begin{figure}[!h]
 \centering
@@ -89,8 +105,7 @@ In Figure~\ref{fig:lookupMsgPerTopic}~and~\ref{fig:lookupMsgPerSize}, we observe
 \label{fig:msgsPerTopic}
 \end{figure}
 
-
-In Figure~\ref{fig:msgsPerSize}~and~\ref{fig:msgsPerTopic}, we observe the total number of messages during the simulation but normalised per advertisement period. Therefore in the figures it is shown the messages related to a single lookup per node and a single registration process per node before advertisements start to expire and need to be refreshed.
+In~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic}, we observe the total number of messages during the simulation but normalised per advertisement period. Therefore in the figures it is shown the messages related to a single lookup per node and a single registration process per node before advertisements start to expire and need to be refreshed.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
