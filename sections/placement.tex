@@ -6,7 +6,7 @@
 In the following, we provide a description of distributing advertisement in the network and discuss the process of search and establishing sub-protocol connections. 
 
 
-\subsection{Data Structures}
+\subsection{Data Structures}\label{sec:struct}
 We start by describing data structures necessary for topic-specific registrations and lookups. 
 
 \para{Registration Table}
@@ -93,7 +93,7 @@ Similarly to the DHT routing, the registration procedure is guaranteed to find t
 To find ads, \sysname uses a process similar to the registration procedure. 
 %The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
 %Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
-Each lookup requires a topic-specific \emph{search table} described in Section\Cref{sec:struct}
+Each lookup requires a topic-specific \emph{search table} described in \Cref{sec:struct}
 The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $L_\textit{lookup}$ registrars per buckets and sends them parallel lookup requests. 
 Once received results from the first $L_\textit{lookup}$ selected registrars,  other $L_\textit{lookup}$ registrars are selected from the  following bucket with a smaller distance to the topic id.
 The queried nodes are removed from the bucket.
@@ -104,20 +104,22 @@ Once the lookup process is completed, the nodes are returned to the application.
 
 Since furthest buckets are also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. 
 Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
-Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. If the total number of topic-specific registrations is larger then $N_\textit{return}$, the registrar return a random subset. 
+Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. 
+If the total number of topic-specific registrations in the table is larger then $N_\textit{return}$, the registrar return a random subset. 
 While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
-\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
+%\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
 There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
-By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) compared with the  ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. 
-We investigate the impact of both parameters in \Cref{sec:eval}.
-\sergi{Not sure there will be space in the evaluation for that,  in case not we can point to the github report}.
+By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) compared with the  ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally,  low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. 
+However,  for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
+In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
+\sr{Future work: investigate the impact of search parameters}
 
-\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
+%\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
 \michal{Consider renaming search/registration tables into search/registration caches}
 %\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
 \ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
 \michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
-\sergi{I think $N_\textit{return}$ shouldnt be configurable since it is limited by the maximum number of nodes returned in a message which i think is 15 or 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller that a value multiple of $N_\textit{return} max$}
+\sergi{I think $N_\textit{return}$ shouldnt be configurable since it is limited by the maximum number of nodes returned in a message which i think is 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller than a value multiple of $N_\textit{return}$}
 
 %\michal{This is very vague and probably not something we should demand from the application. Either we provide a mixing/filtering feature ourselves, or we don't mention it.}
 %Once ads are discovered,  the searcher can initiate topic-specific connections based on rules specified by the application. 
