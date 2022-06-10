@@ -10,7 +10,7 @@ In the following, we provide a description of distributing advertisement in the 
 We start by describing data structures necessary for topic-specific registrations and lookups. 
 
 \para{Registration Table}
-In order to execute the ad distribution process described below,  each advertiser maintains a per-topic \emph{registration table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars.  The registration table is similar to the routing table used in Kademlia protocol (as described in \Cref{sec:background}). It stores advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. I.e. the registration table stores $K_\textit{register}$ potential registrars for every distance range (bucket) from the topic ID (\Cref{fig:ticket_table}). When created, the table is initialized with peers from the routing table. 
+In order to execute the ad distribution process described below,  each advertiser maintains a per-topic \emph{registration table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars.  The \emph{registration table} is similar to the routing table used in Kademlia protocol (as described in \Cref{sec:background}). It stores advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. I.e. the \emph{registration table} stores $K_\textit{register}$ potential registrars for every distance range (bucket) from the topic ID (\Cref{fig:ticket_table}). When created, the table is initialized with peers from the routing table. 
 
 \dk{Imo, it is not clear if there is a single topic table each node maintains, or if each node has one topic table for each Topic ID. Especially because the previous Section said there is a \emph{second} table for topics.}
 
@@ -47,7 +47,7 @@ In case it is not, it is removed from the table.
 
 \subsection{Distributing ads across registrars}\label{sec:registration_multi}
 When an advertiser wants to associate themselves with a topic, they start by creating a topic-specific \emph{registration table} (as described above). 
-Every peer present in the registration table is a potential registrar. 
+Every peer present in the \emph{registration table} is a potential registrar. 
 The objective of the ad placement process is to continuously maintain $K_\textit{register}$ active (\ie unexpired) registrations in every bucket. 
 Buckets located close to the topic hash cover less hash space than buckets located further away and, in turn, contain less potential registrars. 
 Placing a fixed amount of ads per bucket, make registrars close to a topic hash more likely to receive registrations for that specific topic. 
@@ -63,7 +63,7 @@ We describe details on the admission procedure in \Cref{sec:registration}.
 A successful registration places an ad on an advertiser for a fixed amount of time $t_\textit{lifetime}$.
 If a registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
 The advertisers always maintains $K_\textit{register}$ attempts and/or successful registrations per bucket unless less than $K_\textit{register}$ peers are present in a specific bucket. 
-The advertiser repeats the process for every bucket in the registration table. 
+The advertiser repeats the process for every bucket in the \emph{registration table}. 
 \michal{An algorithm here?}
 
  
@@ -79,7 +79,7 @@ The advertiser uses the returned information to populate its \emph{registration 
 As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus having a more detailed view of this part of the network. 
 Similarly to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network. 
 \ramin{Why not just use FIND\_NODE?}
-\michal{It's basically FIND\_NODE but based on a different table (registration table, rather than the routing table) and performing the registration on top of traversing the DHT. IMO it's easier to have a separate name here.}
+\michal{It's basically FIND\_NODE but based on a different table (\emph{registration table}, rather than the routing table) and performing the registration on top of traversing the DHT. IMO it's easier to have a separate name here.}
 
 %In addition to that, every time a node sends a ticket or registration request, the registrar replies with the closest nodes to 'the topic hash' that it knows. 
 %This helps filling up k-buckets without sending additional lookups. 

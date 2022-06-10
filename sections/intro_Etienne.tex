@@ -62,7 +62,7 @@ On the other hand, the mechanism must remain efficient and scalable.
 It is not desirable, in particular, that it relies solely on a fixed set of dedicated registrar nodes maintaining the membership of each application, both for scalability and robustness reasons: Registrar nodes for popular applications would quickly become overwhelmed, and attackers would have efficient strategies to place Sybils on the path to registrar nodes, or act as such nodes themselves.\oa{I would just say that a fixed set of registrar nodes would be an easy target for attackers}
 % \er{also the applications may want to hide themselves (but this clashes completely with our announcement approach)}
 
-The current service discovery mechanism used in the Ethereum platform is part of \emph{discv4}~\cite{discv4}, a set of protocols leveraging the global DHT.
+The current service discovery mechanism used in the Ethereum platform is part of \discv~\cite{discv4}, a set of protocols leveraging the global DHT.
 It employs a simple but robust \emph{random walk} approach.
 A node willing to join an application's sub network simply contacts individually a series of nodes collected from random lookups on the DHT, repeatedly checking application membership until it has collected enough peers participating to the target application. % to join the sub-network.
 This approach offers good resilience to malicious behaviors
