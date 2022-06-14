@@ -224,8 +224,12 @@ Remember that Sybil nodes are completely valid nodes from a network discovery po
 \label{fig:eclipse_distribution_t299}
 \end{figure}
 
-In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discovered for all lookups for all protocols using different using different number of Sybil nodes,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_distribution_t299} whe show the malicious nodes discovered for the least popular topic.
-
+In Figure~\ref{fig:eclipse_evil_t0} we show the malicious nodes discovered for all lookups for all protocols using different  number of Sybil nodes,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_evil_t299} we show the malicious nodes discovered for the least popular topic.  In both figures attackers identifiers are generated uniformly and attackers use a pool of 100 IP addresses. 
+In Figure~\ref{fig:eclipse_evil_t0} we observe \discv is the protocol with the lowest number of eclipses and with the best distribution of malicious nodes returned during lookups.  However \sysname performs very close to \discv, having only 2\% of eclipses when there are 2500 attackers in the network.
+\altname and \altnameticket has the worst performance,  having 79.7\% and 81.4\% of eclipses when when there are 2500 attackers.
+In Figure~\ref{fig:eclipse_evil_t299}, when attacking least popular topic, we observe \sysname is the more resistant to eclipsing.
+This is due to it is the protocol that is able to discover more nodes with a higher diversity and is the protocol that will find easier the any of the few valid nodes in the network, and therefore it will be not eclipsed.
+ 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the most popular topic (3978 nodes).}
@@ -237,6 +241,9 @@ In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discover
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the least popular topic (19 nodes).}
 \label{fig:eclipse_evil_t299}
 \end{figure}
+
+
+In Figure~\ref{fig:eclipse_sybil_t0} we show the malicious nodes discovered for different number of IP addresses available to the attacker,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_sybil_t299} we show the malicious nodes discovered when attacking the least popular topic.
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
