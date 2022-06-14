@@ -15,12 +15,17 @@ We evaluate the \sysname prototype and answer the following research questions:
 We used an existing vanilla Kademlia implementation~\cite{peersim_kademlia} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. 
 Firstly,  we compare our system against the current Ethereum \discv discovery service\footnote{https://github.com/ethereum/devp2p/blob/master/discv4.md}.
 In \discv, the DHT is not used as a key/value store but just a way to discover other nodes in the P2P network. 
-\discv issues 3 lookups to random destinations and stores all found nodes during the  \emph{random walk} in a buffer. 
+\discv issues 3 lookups to random destinations using a simple Kademlia lookup,  and it stores all found nodes during the  \emph{random walk} in a buffer. 
 Nodes are consumed from the buffer by upper-layers of the Ethereum protocol (RLPx~\footnote{https://github.com/ethereum/devp2p/blob/master/rlpx.md})
 when trying connections to new nodes, and when the buffer is empty new lookups are started to other 3 random nodes.
-We also compared \sysname against  a traditional key/value store implemented on top of the DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N closest nodes to the topic hash.  
+We also compared \sysname against  a traditional key/value store implemented on top of the DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N nodes with identifiers with a smallest distance  to the topic hash.  
 We evaluated the traditional key/value store implementation, using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations,  naming it \altnameticket, and also without any admission protocol were registrations are replaced using  Last Recently Used policy, named \altname.
 When using \altname and \altnameticket, there is no \emph{registration table} that keeps track of ongoing registrations and new registrations are periodically issued by nodes every advertisement period.
+The topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 16 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
+In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
+The known nodes for the specific topic are stored in the lookup buffer. 
+The known nodes with the same distance to the topic id are added to the list of 16 closest nodes,  which is reordered and keeps only the 16 closest.
+The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
 
 
  The simulator reports the following performance metrics. 
@@ -37,11 +42,12 @@ In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
      \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. 
      \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.  Each node only participates in a single topic.
-     \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 1000 nodes.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.  
+     \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 2500 nodes,  using 1000 for the default value.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
+     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000,  using 100 for the default value.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.  
 In the simulations we use only IPv4 addresses since, at the moment of writing this paper,  we analysed  Ethereum DHT and we found out 99\% of the nodes use IPv4.
  \end{itemize}
-
+\sr{To add $N_\textit{lookup}$  and $N_\textit{returned}$ used}
+ 
 Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
 We set all the DHT-related parameters to the default values from the current Ethereum DHT: 17 buckets and 16 node in each bucket.
  \sysname parameters have the following values: number of registrations placed per bucket $K_{register}= 3$, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $,  $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$. 
@@ -179,16 +185,46 @@ The attack succeeds when all the inbound and outbound connections of the target 
 	\item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that only malicious sybils with the objective of preventing benign searchers from discovering valid peers and eclipsing all its connections.  We consider a coordinated eclipsing attack and any malicious registrar replies with a subset of the identifiers of the Sybil nodes controlled by the attacker.
 \end{itemize}
 
-We evaluated the resistance against eclipse attacks using the same default parameters than in \cref{sec:eval}, that is 25000 nodes in the simulation and 300 topics by default, distributed using zipf function of exponent 1.0.  The simulation runs for 1 hour and there is a single lookup per node for the topic it participates.
+We evaluated the resistance against eclipse attacks using the same default parameters used in the performance evaluation, that is 25000 nodes in the simulation and 300 topics by default, distributed using zipf function of exponent 1.0.  The simulation runs for 1 hour and there is a single lookup per node for the topic it participates.
 Nodes get eclipsed when all nodes discovered during a lookup are malicious nodes controlled by the attacker, and therefore they only can connect to the attacker and get the view of the network from the attacker only. 
 
-In the following figures we show violin plots representing the number of malicious nodes returned per lookup using different parameters for the same protocols evaluated in the simulation in \cref{sec:eval}.  On top of each violin plot we specify the percentage of nodes eclipsed after a lookup (\ie percentage of lookups where all nodes returned are malicious nodes).
+In the following figures we show violin plots representing the number of malicious nodes returned per lookup using different parameters for the same protocols evaluated in the performance simulations.  On top of each violin plot we specify the percentage of nodes eclipsed after a lookup (\ie percentage of lookups where all nodes returned are malicious nodes).
+We evaluated the eclipse attacks targeting two specific topis, the most popular topic and the least popular topic.
+The most popular topics has 3978 nodes registering for this topic and the least popular has only 19 nodes.
+We evaluated the attacks for the most popular and least popular 
+
+\sr{TODO: show protocols in the same order for all figures}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the most popular topic (3978 nodes).}
 \label{fig:eclipse_distribution_t0}
 \end{figure}
+
+In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discovered for all lookups for all protocols using different distribution of the identifiers of the malicious nodes,  when attacking the most popular topic (with 3978 nodes).  In the first option the malicious nodes ids are artificially generated with a small distance to the topic hash id.  In the second option malicious nodes identifiers are uniformly distributed.  In the figure we can observe that for \altname and \altnameticket the percentage of eclipses are superior to 90\% because most of the nodes close to topics identifiers are nodes controlled by the attacker.  
+For \altname and \altnameticket, the lookup process is similar to Kademlia lookup process and,  placing all malicious nodes close the topic hash,  it makes very likely to query only malicious nodes during the process, since it only queries the closest known nodes to the topic identifier.
+When attackers are uniformly distributed in the network, eclipses are reduced to close to 50\% of the lookups.
+Even though it is much less likely to hit malicious nodes during the lookup in this case (remember the default number of malicious are 1000 -4\% of the network-), when hitting a malicious nodes, the nodes returned by them are used to continue the  query and it may happen it continues querying malicious nodes only during the process.
+When the least popular topic is attacked (only 19 nodes),  Figure~\ref{fig:eclipse_distribution_t199},  for  \altname and \altnameticket the eclipses are even higher, reaching a 100\% of eclipses when placing malicious nodes close to the topic id, and reaching a 94.7\% when distributing malicious nodes uniformly.  
+Remember the number of attackers is 1000,  against the 19 valid nodes.
+For \discv, the number of malicious nodes returned is very low for the most popular topic when attackers are placed close to the topic hash.  When Sybil nodes are uniformly distributed the number of malicious nodes returned increases,  however the eclipses only reach a 0.1\%.
+This is caused by the fact that \discv does not target lookups to any specific identifier,  but completely random identifiers,  so it is very difficult for the attackers to place Sybil nodes where they will be queried.  Moreover it is difficult by the attackers to send identifiers where the lookup process will be likely to continue to,  because in the FIND node for the Ethereum DHT the lookup identifier is not disclosed,  but only the distance to it.
+When attacking the least popular topic, \discv is the more resistant for non uniform malicious nodes identifiers with only 21.1\% of eclipses, but when using  malicious nodes identifiers  uniformly distributed the resistance using \discv is worse than \sysname with  78.9\%.
+The resistance of \discv to Sybil attacks is obtained with the important trade-off of very low efficiency when finding nodes for specific topics, specially for low popular topics.  It is very likely that, when doing lookups using \discv for very low popular topics, no nodes are found or just a few of them.  However, this means when hitting a malicious node during lookup,  even if it is difficult to find it, it is likely with a single query to a malicious node, the node querying will be eclipsed.
+For \sysname, the number of eclipses are very low for the most popular topic. 
+The eclipses are 0\% when Sybil nodes are placed close to topic id and 0.5\% when are uniformly distributed. 
+However when attacking the least popular topic the eclipses increase to 52.6\% and 59.9\% respectively.
+This is due to the very low number of valid nodes (19),  that will be more difficult to find than the attackers (1000 nodes, reusing 100 IP addresses).  
+But event he high number of attackers in almost half the cases valid nodes are also found along the evil nodes.
+Remember that Sybil nodes are completely valid nodes from a network discovery point of view when using different network addresses.
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t299.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the least popular topic (19 nodes).}
+\label{fig:eclipse_distribution_t299}
+\end{figure}
+
+In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discovered for all lookups for all protocols using different using different number of Sybil nodes,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_distribution_t299} whe show the malicious nodes discovered for the least popular topic.
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
@@ -197,22 +233,18 @@ In the following figures we show violin plots representing the number of malicio
 \end{figure}
 
 \begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the least popular topic (19 nodes).}
+\label{fig:eclipse_evil_t299}
+\end{figure}
+
+\begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number IP addresses used in the attack,  when attacking the most popular topic (3978 nodes).}
 \label{fig:eclipse_sybil_t0}
 \end{figure}
 
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the least popular topic (19 nodes).}
-\label{fig:eclipse_distribution_t299}
-\end{figure}
 
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the least popular topic (19 nodes).}
-\label{fig:eclipse_evil_t299}
-\end{figure}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
