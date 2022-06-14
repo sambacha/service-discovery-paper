@@ -36,7 +36,7 @@ When using \altname and \altnameticket, there is no \emph{registration table} th
 In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
      \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. 
-     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.
+     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.  Each node only participates in a single topic.
      \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 1000 nodes.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
      \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.  
 In the simulations we use only IPv4 addresses since, at the moment of writing this paper,  we analysed  Ethereum DHT and we found out 99\% of the nodes use IPv4.
@@ -49,6 +49,8 @@ They were selected based on extensive simulations that we skip due to the space 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Message Overhead}
+
+\sr{TODO: detail what violin plot represents exactly}
 
 In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
 Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
@@ -168,53 +170,101 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 %\para{Eclipse Attack}
 
 \para{Eclipse Attack}
-We implement and evaluate \sysname resistance against a hybrid eclipse attack targeted to a specific topic,  that  tries to make a searcher node discover and connect to peers under the attacker's control.  
+We implemented and evaluated \sysname resistance against a hybrid eclipse attack targeted to a specific topic,  that  tries to make a searcher node discover and connect to peers under the attacker's control.  
 The attacker may be able to generate a large but finite number of Sybil nodes,  with limited network resources (\ie limited IP addresses used by the Sybil nodes pool used in the attack).
 The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers.  The attack consists of the following:
 \begin{itemize}
     \item \textbf{Registration spam} - the attacker targets a registrars and sends a large number of registrations requests. If successful, the attacker exhaust registrar's resources and prevent benign nodes from registering. 
 %    \item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that \textit{(i)} return maximum waiting times when asked for a ticket, \textit{(ii)} return an empty set when asked about a topic. If successful, the attacker prevents benign advertisers from registering \textit{(i)} and prevents benign searchers from discovering their peers \textit{(ii)}. 
-	\item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that only malicious sybils with the objective of preventing benign searchers from discovering valid peers and eclipsing all its connections. 
+	\item \textbf{Malicious registrar} - the attacker deploys its nodes playing the role of registrars that only malicious sybils with the objective of preventing benign searchers from discovering valid peers and eclipsing all its connections.  We consider a coordinated eclipsing attack and any malicious registrar replies with a subset of the identifiers of the Sybil nodes controlled by the attacker.
 \end{itemize}
 
+We evaluated the resistance against eclipse attacks using the same default parameters than in \cref{sec:eval}, that is 25000 nodes in the simulation and 300 topics by default, distributed using zipf function of exponent 1.0.  The simulation runs for 1 hour and there is a single lookup per node for the topic it participates.
+Nodes get eclipsed when all nodes discovered during a lookup are malicious nodes controlled by the attacker, and therefore they only can connect to the attacker and get the view of the network from the attacker only. 
 
-\begin{figure*}[!h]
-\centering
-\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
-\includegraphics[width=0.31\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups_t0.eps}
-\label{fig:distribution}
-}
-\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
-\includegraphics[width=0.31\linewidth]{results/security/bar_percentEvil_percentageEclipsedLookups_t0.eps}
-\label{fig:percentEvil}
-}
-\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
-\includegraphics[width=0.31\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups_t0.eps}
-\label{fig:sybilsize}
-}
-\caption{Resistance against eclipse attacks when attacking most popular topic (} 
-\label{fig:eclipse_attack}
-\vspace{-0.05in}
-\end{figure*}
+In the following figures we show violin plots representing the number of malicious nodes returned per lookup using different parameters for the same protocols evaluated in the simulation in \cref{sec:eval}.  On top of each violin plot we specify the percentage of nodes eclipsed after a lookup (\ie percentage of lookups where all nodes returned are malicious nodes).
 
-\begin{figure*}[!h]
-\centering
-\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
-\includegraphics[width=0.31\textwidth]{results/security/bar_idDistribution_percentageEclipsedLookups_t299.eps}
-\label{fig:distribution}
-}
-\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
-\includegraphics[width=0.31\linewidth]{results/security/bar_percentEvil_percentageEclipsedLookups_t299.eps}
-\label{fig:percentEvil}
-}
-\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
-\includegraphics[width=0.31\linewidth]{results/security/bar_sybilSize_percentageEclipsedLookups_t299.eps}
-\label{fig:sybilsize}
-}
-\caption{Resistance against eclipse attacks when attacking most popular topic} 
-\label{fig:eclipse_attack}
-\vspace{-0.05in}
-\end{figure*}
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t0.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the most popular topic (3978 nodes).}
+\label{fig:eclipse_distribution_t0}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the most popular topic (3978 nodes).}
+\label{fig:eclipse_evil_t0}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number IP addresses used in the attack,  when attacking the most popular topic (3978 nodes).}
+\label{fig:eclipse_sybil_t0}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t299.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the least popular topic (19 nodes).}
+\label{fig:eclipse_distribution_t299}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number of sybil nodes used in the attack,  when attacking the least popular topic (19 nodes).}
+\label{fig:eclipse_evil_t299}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different number IP addresses used in the attack,  when attacking the least popular topic (19 nodes).}
+\label{fig:eclipse_sybil_t299}
+\end{figure}
+
+
+
+%\begin{figure*}[!h]
+%\centering
+%\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
+%\includegraphics[width=0.31\textwidth]{results/security/%bar_idDistribution_percentageEclipsedLookups_t0.eps}
+%violin_idDistribution_percentageMaliciousDiscovered_t0.eps}
+%\label{fig:distribution}
+%}
+%\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
+%\includegraphics[width=0.31\linewidth]{results/security/%bar_percentEvil_percentageEclipsedLookups_t0.eps}
+%violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
+%\label{fig:percentEvil}
+%}
+%\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
+%\includegraphics[width=0.31\linewidth]{results/security/%bar_sybilSize_percentageEclipsedLookups_t0.eps}
+%violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
+%\label{fig:sybilsize}
+%}
+%\caption{Resistance against eclipse attacks when attacking most popular topic (t0)} 
+%\label{fig:eclipse_attack}
+%\vspace{-0.05in}
+%\end{figure*}
+%
+%\begin{figure*}[!h]
+%\centering
+%\subfigure[{Y-axis: Percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id}]{
+%\includegraphics[width=0.31\textwidth]{results/security/%bar_idDistribution_percentageEclipsedLookups_t299.eps}
+%violin_idDistribution_percentageMaliciousDiscovered_t299.eps}
+%\label{fig:distribution}
+%}
+%\subfigure[{Y-axis: Percentage eclipsed nodes for different number of sybil nodes in the attack.}]{
+%\includegraphics[width=0.31\linewidth]{results/security/%bar_percentEvil_percentageEclipsedLookups_t299.eps}
+%violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
+%\label{fig:percentEvil}
+%}
+%\subfigure[{Y-axis: Percentage eclipsed nodes for different number IP addresses used in the attack.}]{
+%\includegraphics[width=0.31\linewidth]{results/security/%bar_sybilSize_percentageEclipsedLookups_t299.eps}
+%violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
+%\label{fig:sybilsize}
+%}
+%\caption{Resistance against eclipse attacks when attacking least popular topic (t299)} 
+%\label{fig:eclipse_attack}
+%\vspace{-0.05in}
+%\end{figure*}
 %\begin{figure}[!h]
 %\includegraphics[width=\linewidth]{img/placeholder}
 %\caption{Compare only against DHT here I guess? Y-axis a ratio of popular malicious and benign ads in the table for spam attack and topic-targeted attack within a single registrar. X-axis: to avoid showing different graphs for multiple malicious IPs/IDs/nodes we can have a fix ratio between them i.e., each 5 Sybils (or requests/s) have 1 IP and 2 ID, and increase this "attacker strength".} 
