@@ -193,7 +193,7 @@ We evaluated the eclipse attacks targeting two specific topis, the most popular 
 The most popular topics has 3978 nodes registering for this topic and the least popular has only 19 nodes.
 We evaluated the attacks for the most popular and least popular 
 
-\sr{TODO: show protocols in the same order for all figures}
+\sr{TODO: show protocols in the same order for all figures. redo all figures to fix it and fix also max values text}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t0.eps}
@@ -205,17 +205,19 @@ In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discover
 For \altname and \altnameticket, the lookup process is similar to Kademlia lookup process and,  placing all malicious nodes close the topic hash,  it makes very likely to query only malicious nodes during the process, since it only queries the closest known nodes to the topic identifier.
 When attackers are uniformly distributed in the network, eclipses are reduced to close to 50\% of the lookups.
 Even though it is much less likely to hit malicious nodes during the lookup in this case (remember the default number of malicious are 1000 -4\% of the network-), when hitting a malicious nodes, the nodes returned by them are used to continue the  query and it may happen it continues querying malicious nodes only during the process.
-When the least popular topic is attacked (only 19 nodes),  Figure~\ref{fig:eclipse_distribution_t199},  for  \altname and \altnameticket the eclipses are even higher, reaching a 100\% of eclipses when placing malicious nodes close to the topic id, and reaching a 94.7\% when distributing malicious nodes uniformly.  
+When the least popular topic is attacked (with only 19 nodes),  as shown in Figure~\ref{fig:eclipse_distribution_t299},  for  \altname and \altnameticket the eclipses are even higher, reaching a 100\% of eclipses when placing malicious nodes close to the topic id, and reaching a 94.7\% when distributing malicious nodes uniformly.  
 Remember the number of attackers is 1000,  against the 19 valid nodes.
-For \discv, the number of malicious nodes returned is very low for the most popular topic when attackers are placed close to the topic hash.  When Sybil nodes are uniformly distributed the number of malicious nodes returned increases,  however the eclipses only reach a 0.1\%.
+
+For \discv,  the number of eclipses reach is 0\% for the most popular topic when attackers are placed close to the topic hash.  When Sybil nodes are uniformly distributed the number of malicious nodes returned increases,  but to a very low 1\%.
 This is caused by the fact that \discv does not target lookups to any specific identifier,  but completely random identifiers,  so it is very difficult for the attackers to place Sybil nodes where they will be queried.  Moreover it is difficult by the attackers to send identifiers where the lookup process will be likely to continue to,  because in the FIND node for the Ethereum DHT the lookup identifier is not disclosed,  but only the distance to it.
-When attacking the least popular topic, \discv is the more resistant for non uniform malicious nodes identifiers with only 21.1\% of eclipses, but when using  malicious nodes identifiers  uniformly distributed the resistance using \discv is worse than \sysname with  78.9\%.
-The resistance of \discv to Sybil attacks is obtained with the important trade-off of very low efficiency when finding nodes for specific topics, specially for low popular topics.  It is very likely that, when doing lookups using \discv for very low popular topics, no nodes are found or just a few of them.  However, this means when hitting a malicious node during lookup,  even if it is difficult to find it, it is likely with a single query to a malicious node, the node querying will be eclipsed.
+The number of eclipses reach 80\% for the least popular topic when attackers are placed close to the topic hash.  When Sybil nodes are uniformly distributed the number of malicious nodes returned increases,  however the eclipses  reach a 78.9\%.
+The resistance of \discv to Sybil attacks is obtained with the important trade-off of very low efficiency when finding nodes for specific topics, specially for low popular topics.  It is very likely that, when doing lookups using \discv for very low popular topics, no nodes are found or just a few of them.   This means when hitting a malicious node during lookup,  it is likely with a single query to a malicious node, the node querying will be eclipsed.
+
 For \sysname, the number of eclipses are very low for the most popular topic. 
-The eclipses are 0\% when Sybil nodes are placed close to topic id and 0.5\% when are uniformly distributed. 
-However when attacking the least popular topic the eclipses increase to 52.6\% and 59.9\% respectively.
+The eclipses are 0\% when Sybil nodes are placed close to topic id and 0.5\% when are uniformly distributed, with similar distribution to the malicious nodes returned compared with \discv.
+However when attacking the least popular topic the eclipses increase to 52.6\% and 57.9\% respectively.
 This is due to the very low number of valid nodes (19),  that will be more difficult to find than the attackers (1000 nodes, reusing 100 IP addresses).  
-But event he high number of attackers in almost half the cases valid nodes are also found along the evil nodes.
+But event the high number of attackers in almost half the cases valid nodes are also found along the evil nodes.
 Remember that Sybil nodes are completely valid nodes from a network discovery point of view when using different network addresses.
 
 \begin{figure}[!h]
