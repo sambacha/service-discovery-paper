@@ -20,12 +20,12 @@ Then, we present the current service discovery mechanism, part of Ethereum's \em
 All nodes in Ethereum participate to a global distributed hash table (DHT).
 A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}.
 \er{consider cutting the following two sentences?}
-The DHT design for wide-area networks and scalability typically limits the amount of peers each node knows and connect to, and rely on multi-hop routing algorithm to implement lookup operations.
+A DHT designed for wide-area networks typically targets scalability and limits the amount of peers each node knows and connect to, and relies on multi-hop routing algorithm to implement lookup operations.
 A plethora of DHT designs have been proposed in the past two decades~\cite{chord,rowstron2001pastry}, differing in various aspects such as the assignment of item keys to node(s) in the overlay, the structure of the overlay itself, or routing algorithms.
 
 Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
-Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items.\mk{we haven't mention item storage before}
-Ethereum DHT assigns a specific key $i$ to a node that is the closest to $i$ in that space.
+Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT. %\mk{we haven't mention item storage before}
+Ethereum DHT assigns a specific key $i$ to the node that is the \emph{closest} to $i$ in that space.
 This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of differing suffix in bits).
 
 Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
@@ -50,8 +50,11 @@ As a result, a node's routing table provides a more detailed (\ie, fine grained)
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
 
-Lookups in Kademlia rely on a number of concurrent routing operations (or \emph{walks}) towards the target key.
-\er{stopped here, need to merge/simplify the rest of the paragraph here}
+Lookups rely on a number $\alpha$ of concurrent routing operations (or \emph{walks}) towards the target key.
+In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key, and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
+The process stops when up to $k$ nodes closest to the target are found. \er{seems contradictory when the goal is to find the exact one that is the closest?}
+The Ethereum DHT 
+\er{stopped here, not sure what level of detail we need to the new dht lookup of ethereum dht we need.}
 In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target.
 
 \er{need to simplify the following and make it a single paragraph as part of the lookup paragraph}
@@ -67,7 +70,7 @@ A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is t
 \oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
 
 \subsection{\emph{discv4} service discovery}
-\label{sec:background:dht}
+\label{sec:background:discv4}
 
 
 
