@@ -201,7 +201,7 @@ We evaluated the attacks for the most popular and least popular
 \label{fig:eclipse_distribution_t0}
 \end{figure}
 
-\sr{TODO:fix fig ~ref{fig:eclipse_distribution_t0} x axis, labels are wrong.}
+\sr{TODO:fix fig \ref{fig:eclipse_distribution_t0} x axis, labels are wrong.}
 
 In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discovered for all lookups for all protocols using different distribution of the identifiers of the malicious nodes,  when attacking the most popular topic (with 3978 nodes).  In the first option, the malicious nodes ids are artificially generated with a small distance to the topic hash id.  In the second option, malicious nodes identifiers are uniformly distributed.  In the figure we can observe that for \altname and \altnameticket the percentage of eclipses are superior to 80\% because most of the nodes close to topics identifiers are nodes controlled by the attacker.  
 For \altname and \altnameticket, the lookup process is similar to Kademlia lookup process and,  placing all malicious nodes close the topic hash,  it makes very likely to query only malicious nodes during the process, since it only queries the closest known nodes to the topic identifier.
