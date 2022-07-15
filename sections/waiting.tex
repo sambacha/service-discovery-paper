@@ -5,7 +5,10 @@ The function directly shapes the structure of the topic table,  determines its d
 It also protects against attacks, where a malicious actor tries to dominate the topic table and exhaust resources of the registrar. 
 
 Each request is given a waiting time based on the IP address of the registrar, the ID of the registrar, the topic of the request and the current state of the topic table. 
-The waiting time function is divided into three parts: \emph{const} (constant for all the requests), \emph{occupancy score} (ranging from $0$ to $\infty$) and  \emph{similarity score} (ranging from $0$ to $3$). The final result is a product of both scores: 
+The waiting time function is divided into three parts: \emph{const} (constant
+for all the requests), \emph{occupancy score} (ranging from $0$ to $\infty$)
+and  \emph{similarity score} (ranging from $0$ to $3$). The final result is a
+product of all three:
 \begin{equation}
 \label{eq:global}
 w = \emph{const} \times \textit{occupancy score} \times \textit{similarity score}. 
@@ -16,7 +19,10 @@ The \emph{const} part determines the absolute values of the returned waiting tim
 \label{eq:const}
     \textit{const} = ba
 \end{equation}
-where $a$ is the \emph{ad lifetime} (the amount of time each ad spend in the topic table), and $b$ is a system parameter. Higher values of $b$ result in higher returned waiting times and lower average occupancy of the topic table. Furthermore, a right value of $b$ allows to protect against admitting similar advertisements when the \emph{similarity score} is low (\ie when the table is almost empty). 
+where $a$ is the \emph{ad lifetime} (the amount of time each ad spends in the
+topic table), and $b$ is a system parameter. Higher values of $b$ result in
+higher returned waiting times and lower average occupancy of the topic table.
+Furthermore, a good value of $b$ allows protection against admitting similar advertisements when the \emph{similarity score} is low (\ie when the table is almost empty).
 
 The \emph{occupancy score} is based uniquely on the number of the ads already in the table.
 Its role is to progressively increase the waiting time as the topic table fills up and to limit the memory used by a registrar.
@@ -36,7 +42,7 @@ The role of the \emph{similarity score} is to determine how similar is the incom
 Requests significantly different from the current content of the table receive lower similarity score resulting in lower overall waiting time. 
 Such an approach promotes fairness across topics (it is easier for less popular topics to get into the table) and protects against attempts to fill the topic table by a small number of advertisers (as identified by their IP addresses and IDs). The similarity score is defined as a sum of similarity score for IP, ID and the topic of the request: $\textit{similarity score} = \textit{similarity score(IP)} + \textit{similarity score(ID)} + \textit{similarity score(topic)}$. 
 
-The similarity score for ID and topics is the same given by the equation~\ref{eq:similarity}:
+The similarity score for ID and topics is the same, and is given by equation~\ref{eq:similarity}:
 \begin{equation}
 \label{eq:similarity}
     \textit{similarity score(topic)}= (\frac{d(topic)}{d})^{P_{topic}} 
@@ -50,7 +56,7 @@ Lower values of parameter $P_{topic}$ cause the similarity score to converge to 
 However,  for calculating the IP address diversity we use a different similarity score. 
 A simple similarity score used for IDs and topics cannot be applied for IP addresses. 
 An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}. 
-Go Ethereum client~\footnote{https://github.com/ethereum/go-ethereum} limits the number of IP addresses coming from the same (\eg /24 IPv4 address) network. 
+The Go Ethereum client~\footnote{https://github.com/ethereum/go-ethereum} limits the number of IP addresses coming from the same (\eg /24 IPv4 address) network.
 However,  it is impossible to reliably set those limits without knowledge about the network size or NAT configuration of honest nodes. 
 Instead, we propose an approach that directly captures the similarity level across different IPs and translates it into a numerical score. 
 
@@ -73,7 +79,7 @@ Removing an IP from the \emph{tree} follows the analogical procedure but decreas
 
 After each addition of an address to the \emph{tree} a score is generated.
 The score is a sum of counter values of visited nodes raised to the power of the node level. 
-$$score(IP)=\sum_{i=1}^{32} p_{\geq i}$$
+$$score(IP)=\sum_{i=1}^{32} p_{\geq i}^i $$
 where $p_{\geq i}$ is the number of IP addresses in the table sharing a prefix with $IP$ with a length of at least $i$
 
 The counter values are taken \emph{before} the increment caused by adding the address\footnote{The first added address will thus always have a score of $0$}. 
@@ -84,7 +90,7 @@ Finally,  the similarity score for an IP is defined by:
 The divisor of the equation represents the maximum possible score, where all the IPs in the tree are the same as the newly inserted address. 
 
 
-Similarly to ID and topic score,  the IP similarity score range from $0$ to $1$ and returns values closer to 1 for different addresses sharing the same prefix (the longer the shared prefix, the higher the score).
+Similarly to ID and topic score,  the IP similarity score ranges from $0$ to $1$ and returns values closer to 1 for different addresses sharing the same prefix (the longer the shared prefix, the higher the score).
 
 The final formula for the waiting time function can be represented with  the following formula,  adding all \emph{similarity scores} and multiplying by the \emph{occupancy score}:
 
@@ -115,7 +121,7 @@ Therefore,  an advertiser receiving waiting time $w(t_1)$ at time $t_1$, may get
 As a result,  advertisers willing to minimize their waiting time can be incentivized to keep checking the waiting time as frequently as possible hoping for a better one.
 However, this can be a problem. 
 Registration ticket requests should be kept to the minimum and an incentive for constantly spamming ticket requests to get a better waiting time can overload a network and can lead to some nodes getting better performance than the rest.
-Thus we designed a mechanism to avoid that any node that is already in possession of a ticket with a determined waiting time,   can get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by issuing new ticket requests.
+Thus, we have designed a mechanism to avoid the case that any node who is already in possession of a ticket with a determined waiting time, can get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by issuing new ticket requests.
 One solution to this problem is to take into account all the expiration times when calculating the waiting time. 
 However, such a solution is computationally expensive (\eg $O(n)$) and unfeasable in practice.
 
@@ -125,8 +131,14 @@ However, such a solution is computationally expensive (\eg $O(n)$) and unfeasabl
     \label{fig:lower_bound}
 \end{figure}
 
-When asking for a new waiting time before the previously obtained one elapses, an advertiser loses its already accumulated waiting time. It means that asking for a new waiting at time $t_2$ can lower the overall waiting only if the new waiting time $w(t_2)$ is smaller than $w(t_1)$ by more than $t2 - t1$: $w(t_1) - w(t_2) < t_2 - t_1$.
-To make sure it is not the case,  our protocol enforces a lower bound on the waiting time. \Ie we make sure that a advertiser's waiting time received at $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than $t2 - t1$ (\Cref{fig:lower_bound}). 
+When asking for a new waiting time before the previously obtained one elapses,
+an advertiser loses its already accumulated waiting time. This means that
+asking for a new waiting at time $t_2$ can lower the overall waiting only if
+the new waiting time $w(t_2)$ is smaller than $w(t_1)$ by more than $t_2 - t_1$: $w(t_1) - w(t_2) < t_2 - t_1$.
+To make sure this is not the case, our protocol enforces a lower bound on the
+waiting time. \Ie we make sure that an advertiser's waiting time received at
+$t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than
+$t_2 - t_1$ (\Cref{fig:lower_bound}).
 However, holding such a bound for every request (\ie every combination of IP/ID/topic) would cause significant memory overhead ($O(|IPs|\times|IDs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create state at the registrar. 
 
 To store the lower bound in a more efficient way, we rewrite the waiting formula as a sum of topic/IP/ID distinctive parts:
@@ -137,8 +149,14 @@ To store the lower bound in a more efficient way, we rewrite the waiting formula
     \textit{ss(ID)}\textit{os()} + 
     \textit{ss(topic)}\textit{os()}
 \end{equation}
-Ensuring that the lower bound is enforced for each of the three components makes sure that the total waiting will respect the lower bound as well. At the same time, it only requires storing lower bound for every IP/ID/topic and not all their combinations. This approach reduces the memory overhead to $O(|IPs|+|IDs|+|topics|) = O(d)$.
+Ensuring that the lower bound is enforced for each of the three components
+makes sure that the total waiting will respect the lower bound as well. At the
+same time, it only requires storing the lower bound for every IP/ID/topic and not all their combinations. This approach reduces the memory overhead to $O(|IPs|+|IDs|+|topics|) = O(d)$.
 
-For each of the components above IP, ID, and topic present in the table, we keep a bound. When a specific IP enters the table for the first time, bound(IP) is set to 0 and a timestamp(IP) is set to the current time. When a ticket request arrives from the same IP, we calculate the IP waiting time $w_{IP}$ and return the higher value among $w_{IP} = max(w_{IP}, bound(IP) - timestamp(IP))$. It makes sure that advertisers never receive a better time by frequently requesting new tickets. The bound and the timestamp are updated when a new ticket is issued and $w_{IP} > (bound(IP) - timestamp(IP))$. The same holds for IDs and topics.
+For each of the components above IP, ID, and topic present in the table, we
+keep a bound. When a specific IP enters the table for the first time, bound(IP)
+is set to 0 and a timestamp(IP) is set to the current time. When a ticket
+request arrives from the same IP, we calculate the IP waiting time $w_{IP}$ and
+return the value, $w_{IP} = max(w_{IP}, bound(IP) - timestamp(IP))$. It makes sure that advertisers never receive a better time by frequently requesting new tickets. The bound and the timestamp are updated when a new ticket is issued and $w_{IP} > (bound(IP) - timestamp(IP))$. The same holds for IDs and topics.
 
 

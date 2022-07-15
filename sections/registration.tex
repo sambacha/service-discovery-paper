@@ -6,7 +6,9 @@ When advertisers send a registration request, they send an \emph{advertisement} 
 
 \para{Topic Table}
 Registrars store received ads locally in a data structure called a \emph{topic table}. Each ad stored in the topic table has an associated expiry time, after which the ad is automatically removed. Once an ad is added to the table, the expiry time is set to a fixed value $a$. The topic table acts as a \emph{first in, first out} queue for ads. The total size of the topic table is limited by $C_\textit{topic\_table}$. \sysname does not impose topic/IP/ID-specific limits on the content of the \emph{topic table}. 
-A single advertiser may place at most one ad for a specific topic in the topic table (registration requests for ads already in the table are ignored). However, advertiser may attempt to place ads for multiple topics at the same registrar.
+A single advertiser may place at most one ad for a specific topic in the topic
+table (registration requests for ads already in the table are ignored).
+However, an advertiser may attempt to place ads for multiple topics at the same registrar.
 
 \para{Ticket}
 Tickets are immutable objects issued by registrars to advertisers when receiving a registration request. Each ticket contains:
@@ -18,19 +20,28 @@ Tickets are immutable objects issued by registrars to advertisers when receiving
 The tickets are digitally signed by the issuing advertiser. 
 
 \subsubsection{Registration Procedure}
-An advertiser willing to register an ad at a registrar starts by sending an initial request containing uniquely its \emph{advertisement}. Based on the content of the topic table and the registration, the registrar calculates an ad-specific waiting time. The advertiser then issues a ticket including the calculated waiting time and the time of receiving the initial request and send it back to the advertiser. 
+An advertiser willing to register an ad at a registrar starts by sending an
+initial request uniquely containing its \emph{advertisement}. Based on the
+content of the topic table and the registration, the registrar calculates an
+ad-specific waiting time. The advertiser then issues a ticket including the
+calculated waiting time and the time of receiving the initial request and sends it back to the advertiser.
 
 The advertiser waits for the indicated time and attempts to register again. The consecutive registration request must include the last ticket issued by the registrar. Tickets can be used uniquely during a registration window:
+% I dont think this equation is correct, surely not two $t_{init}$'s.
 \begin{equation}\label{eq:registration_window}
     t_\textit{window} = [t_\textit{init} + t_\textit{waiting}, t_\textit{init} + t_\textit{waiting} + t_\textit{init} + \delta t_\textit{window}]
 \end{equation}
 All the registration requests outside the registration window are ignored by the advertiser. The registrar calculates the registration windows based on the content of the ticket. $\delta t_\textit{window}$ should be chosen to accommodate for the maximum delay between the advertiser and the registrar. 
 
-The advertiser calculates a new waiting time, based on the current content of the topic table, every time it receives a registration request (with or without ticket). The waiting time in the ticket is used only to calculate the registration windows and prevent advertisers from trying register continuously. The ticket also allows to calculate an accumulated waiting time:
+The advertiser calculates a new waiting time, based on the current content of
+the topic table, every time it receives a registration request (with or without
+ticket). The waiting time in the ticket is used only to calculate the
+registration windows and prevent advertisers from trying to register
+continuously. The ticket also allows the calculation of an accumulated waiting time:
 \begin{equation}
     t_\textit{cumulative} = \textit{now} - t_\textit{init}
 \end{equation}
-An ad is admitted iff the accumulated waiting time is equal or larger than the calculated waiting time $t_\textit{cumulative} \ge t_\textit{waiting}$\footnote{Note that a registration request without a ticket may be admitted directly if $t_\textit{waiting}=0$.}. For registration requests without a ticket $t_\textit{cumulative} = 0$. An advertiser that misses its registration windows (as specified by the most recent ticket), loses all its cumulative waiting time and must attempt to re-register without a ticket (\Cref{fig:ticket_validity}). Once an ad is admitted, the registrar confirms the registration to the advertiser. 
+An ad is admitted iff the accumulated waiting time is equal or larger than the calculated waiting time $t_\textit{cumulative} \ge t_\textit{waiting}$\footnote{Note that a registration request without a ticket may be admitted directly if $t_\textit{waiting}=0$.}. For registration requests without a ticket $t_\textit{cumulative} = 0$. An advertiser that misses its registration window (as specified by the most recent ticket), loses all its cumulative waiting time and must attempt to re-register without a ticket (\Cref{fig:ticket_validity}). Once an ad is admitted, the registrar confirms the registration to the advertiser.
 
 If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{waiting}$, the registrar issues a new ticket and the advertiser repeats the whole procedure. With consecutive registration attempts, advertisers increase their cumulative waiting time $t_\textit{cumulative}$ and eventually will be admitted. 
 
@@ -42,7 +53,12 @@ If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{wa
     \label{fig:registration}
 \end{figure}
 
-The inclusion of issue-time allows the registrars to prioritise advertisers that have been waiting the most as we explain later. Because the tickets are immutable (i.e., tampering with the ticket is detectable by the registrars that originally issued the ticket), when a registrar issues a new ticket (in case a registration is not immediately successful) to an advertiser, the registrar simply copies the issue-time from the last issued ticket and use that as the issue-time of the new ticket. This means that the registrars are not required to maintain any state for each on-going ticket request given that they can simply verify the authenticity of the ticket in the incoming registration requests. 
+The inclusion of issue-time allows the registrars to prioritise advertisers
+that have been waiting the longest, as we explain later. Because the tickets
+are immutable (i.e., tampering with the ticket is detectable by the registrars
+that originally issued the ticket), when a registrar issues a new ticket (in
+case a registration is not immediately successful) to an advertiser, the
+registrar simply copies the issue-time from the last issued ticket and uses that as the issue-time of the new ticket. This means that the registrars are not required to maintain any state for each on-going ticket request given that they can simply verify the authenticity of the ticket in the incoming registration requests.
 
 
     
@@ -52,7 +68,9 @@ The inclusion of issue-time allows the registrars to prioritise advertisers that
     \label{fig:ticket_validity}
 \end{figure}
 
-An advertiser gives up and stops the registration process with a registrar upon either $r$ unsuccessful registration attempts (i.e., after being issued $r$ tickets without being admitted. In that case, the advertiser removes the registrar from its registration table and selects a new node located in the same bucket and attempts a new registration procedure. 
+An advertiser gives up and stops the registration process with a registrar when
+it receives $r$ unsuccessful registration attempts (i.e., after being issued $r$
+tickets without being admitted). In this case, the advertiser removes the registrar from its registration table and selects a new node located in the same bucket and attempts a new registration procedure.
 %\michal{Is the below true? Shouldn't we try to register at the same node?}
 %\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
 Similarly,  after the expiration of a previously placed ad the node is removed from the ticket table and the process is restarted with a new node picked from the local table.

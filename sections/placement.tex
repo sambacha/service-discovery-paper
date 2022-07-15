@@ -58,11 +58,13 @@ Increasing $K_\textit{register}$, makes the advertiser easier to find at the cos
 \end{equation}
 
 
-For every bucket in the \emph{registration table}, the advertiser selects $K_register$ random peers and attempts to perform a registration. 
+For every bucket in the \emph{registration table}, the advertiser selects
+$K_{register}$ random peers and attempts to perform a registration.
 We describe details on the admission procedure in \Cref{sec:registration}. 
 A successful registration places an ad on an advertiser for a fixed amount of time $t_\textit{lifetime}$.
 If a registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
-The advertisers always maintains $K_\textit{register}$ attempts and/or successful registrations per bucket unless less than $K_\textit{register}$ peers are present in a specific bucket. 
+The advertisers always maintain $K_\textit{register}$ attempts and/or
+successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
 The advertiser repeats the process for every bucket in the \emph{registration table}. 
 \michal{An algorithm here?}
 
@@ -105,11 +107,17 @@ Once the lookup process is completed, the nodes are returned to the application.
 Since furthest buckets are also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. 
 Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
 Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar know of. 
-If the total number of topic-specific registrations in the table is larger then $N_\textit{return}$, the registrar return a random subset. 
-While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters, the amount of ads returned by a single registrar must be lower than the total number of ads searchers are aiming to find $N_\textit{return} < N_\textit{lookup}$. It allows to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searchers from contacting other nodes.
+If the total number of topic-specific registrations in the table is larger then
+$N_\textit{return}$, the registrar should return a random subset.
+While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
+the amount of ads returned by a single registrar must be lower than the total
+number of ads searchers are aiming to find $N_\textit{return} <
+N_\textit{lookup}$. This is to diversify sources of ads received by the searcher. I.e., a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
 %\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
 There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
-By requiring a large amount of total ads to stop the search ($N_\textit{lookup}$) compared with the  ads returned by registrar $N_\textit{return}$ a higher diversity of data sources is achieved by the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally,  low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread. 
+By requiring a large amount of total ads to stop the search
+($N_\textit{lookup}$) compared with the  ads returned by registrar
+$N_\textit{return}$ a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally,  low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread.
 However,  for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
 In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
 \sr{Future work: investigate the impact of search parameters}
