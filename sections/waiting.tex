@@ -1,5 +1,8 @@
 \section{Waiting Time}
 \label{sec:waitingTime}
+
+\mk{To consider - also add a challenge subsection here?}
+
 The waiting time function is used to calculate the total time advertisers have to wait before being admitted to the topic table. 
 The function directly shapes the structure of the topic table,  determines its diversity and performs flow control. 
 It also protects against attacks, where a malicious actor tries to dominate the topic table and exhaust resources of the registrar. 
@@ -22,7 +25,7 @@ The \emph{const} part determines the absolute values of the returned waiting tim
 where $a$ is the \emph{ad lifetime} (the amount of time each ad spends in the
 topic table), and $b$ is a system parameter. Higher values of $b$ result in
 higher returned waiting times and lower average occupancy of the topic table.
-Furthermore, a good value of $b$ allows protection against admitting similar advertisements when the \emph{similarity score} is low (\ie when the table is almost empty).
+Furthermore, a good value of $b$ allows protection against admitting similar advertisements when the \emph{similarity score} is low (\ie when the table is almost empty).\mk{Maybe we should signal we do determine "the good value" later on?}
 
 The \emph{occupancy score} is based uniquely on the number of the ads already in the table.
 Its role is to progressively increase the waiting time as the topic table fills up and to limit the memory used by a registrar.
@@ -77,6 +80,7 @@ Counters of all the visited nodes are increased by $1$.
 As a result, the root counter stores the number of all the IP addresses in the topic table, its $0$ successor stores the number of the IP addresses starting with $0$, its $1$ successor stores the number of the IP addresses starting with $1$ and so on. 
 Removing an IP from the \emph{tree} follows the analogical procedure but decreases all the counters on the path. 
 
+\mk{The following is out of date - need to describe the current approach}
 After each addition of an address to the \emph{tree} a score is generated.
 The score is a sum of counter values of visited nodes raised to the power of the node level. 
 $$score(IP)=\sum_{i=1}^{32} p_{\geq i}^i $$

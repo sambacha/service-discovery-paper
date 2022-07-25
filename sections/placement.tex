@@ -3,42 +3,42 @@
 
 \section{Ads placement}
 \label{sec:placement}
-In the following, we provide a description of distributing advertisement in the network and discuss the process of search and establishing sub-protocol connections. 
+In the following, we provide a description of distributing advertisement in the network and discuss the process of search and establishing sub-protocol connections. We start by discussing the challenges related to the problem and explain data structures used by \sysname. 
 
+\subsection{Challenges}
+The first challenge of a robust service discovery platform is the questions of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic. It is possible to deterministically choose a group of nodes based on the topic itself using put and get operations of the DHT. Such a solutions makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach results is \emph{not fair} causing unequal load across registrars, especially when the popularity of the topics vary significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities taking control over the entire topic-specific traffic. 
+
+Alternatively, advertisers could place their ads on random registrars across the entire network. This approach is \emph{secure} and difficult to attack as an attacker would need to take control over the entire network to control a single topic. Furthermore, random placement is \emph{fair} and achieves good load balance across registrars regardless of the topic popularity distribution. However, random placement is not \emph{efficient}, as it makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+
+\sysname implements an alternative method of placing ads combining both the deterministic and pseudo-random approach. Advertisers starts the registrations process from nodes located far away from the topic hash and traverse the DHT towards nodes close to the topic hash. On their way, advertisers place ads on encountered registrars with an increasing density. So that the closer to the topic hash, the higher number of ads is placed. The searchers mimic the process and ask encountered registrars for topic-specific ads. The lookup process stop, when enough ads are found.
 
 \subsection{Data Structures}\label{sec:struct}
-We start by describing data structures necessary for topic-specific registrations and lookups. 
+\sysname uses two data structures necessary for topic-specific registrations and lookups. 
 
 \para{Registration Table}
 In order to execute the ad distribution process described below,  each advertiser maintains a per-topic \emph{registration table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars.  The \emph{registration table} is similar to the routing table used in Kademlia protocol (as described in \Cref{sec:background}). It stores advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. I.e. the \emph{registration table} stores $K_\textit{register}$ potential registrars for every distance range (bucket) from the topic ID (\Cref{fig:ticket_table}). When created, the table is initialized with peers from the routing table. 
 
-\dk{Imo, it is not clear if there is a single topic table each node maintains, or if each node has one topic table for each Topic ID. Especially because the previous Section said there is a \emph{second} table for topics.}
-
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/ticket_table}
-    \caption{Creation of ticket table from the routing table.}
+    \caption{Creation of ticket table from the routing table.\mk{To be reworked and make it consistent with other figures. E.g., we shouldn't use a circle to represent the hash space. We can maybe also try to illustrate here the mechanism of placing a fixed amount of ads in each bucket.}}
     \label{fig:ticket_table}
  \end{figure}
 
 \para{Search Table}
-%The ad lookup process is supported by a \emph{search table}. 
-%Searchers maintain a separate table per topic they are currently looking for. 
-%\ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created. 
-%Similar to the \emph{registration table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash and buckets are initially filled from the local routing table organised by the distance from the topic hash.
-
 The ad lookup process is supported by a \emph{search table}. 
 Searchers maintain a separate table per topic they are currently looking for. 
 \ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created. 
 Similar to the \emph{registration table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash and buckets are initially filled from the local routing table organised by the distance from the topic hash.
 \emph{Search table} buckets are also filled with new nodes discovered during the registration process.
 The \emph{k} factor of the search table should be relatively large in order to make the search efficient. 
-By default we use \emph{k=16} similarly to the Kademlia DHT. 
-Also, different nodes using the same /24 domain IP address can not be added to the table to avoid sybil attacks.
-Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash. 
-There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. The default refresh time used is 100 seconds. 
-When an empty bucket is detected a random lookup can be performed to discover new nodes.
-Also, the last node in the bucket is pinged to check it is still alive. 
-In case it is not, it is removed from the table.
+%\mk{the below seems like implementaion details - probably don't belong here, so I comented it out}
+%By default we use \emph{k=16} similarly to the Kademlia DHT. 
+%Also, different nodes using the same /24 domain IP address can not be added to the table to avoid sybil attacks.
+%Ideally, all k-buckets should be constantly full, making it possible to query any distance to the topic hash. 
+%There is also a refresh process, similar to the Kademlia DHT table, where periodically a random bucket is checked for empty buckets. The default refresh time used is 100 seconds. 
+%When an empty bucket is detected a random lookup can be performed to discover new nodes.
+%Also, the last node in the bucket is pinged to check it is still alive. 
+%In case it is not, it is removed from the table.
 
 %and a new 'search table' is created for each topic. 
 %The bucket size \texttt{k}  of the search table should be relatively large in order to make the search efficient. 
@@ -56,22 +56,16 @@ Increasing $K_\textit{register}$, makes the advertiser easier to find at the cos
 \begin{equation}
     P_\textit{have ad} = 1-(1 - \frac{K_\textit{register}}{N_\textit{nodes}})^{N_\textit{advertisers}}
 \end{equation}
-
+\michal{TODO: Need to decide what to do with the equation above.}
 
 For every bucket in the \emph{registration table}, the advertiser selects
 $K_{register}$ random peers and attempts to perform a registration.
-We describe details on the admission procedure in \Cref{sec:registration}. 
+We describe details on the admission procedure in \Cref{sec:admission}. 
 A successful registration places an ad on an advertiser for a fixed amount of time $t_\textit{lifetime}$.
 If a registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
 The advertisers always maintain $K_\textit{register}$ attempts and/or
 successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
 The advertiser repeats the process for every bucket in the \emph{registration table}. 
-\michal{An algorithm here?}
-
- 
-
-
-
 
 The \emph{registration table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser will not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
 To fill the empty buckets, the advertiser asks potential registrars to return $N$ closest peers to the topic hash they know of. 
@@ -83,15 +77,8 @@ Similarly to the DHT routing, the registration procedure is guaranteed to find t
 \ramin{Why not just use FIND\_NODE?}
 \michal{It's basically FIND\_NODE but based on a different table (\emph{registration table}, rather than the routing table) and performing the registration on top of traversing the DHT. IMO it's easier to have a separate name here.}
 
-%In addition to that, every time a node sends a ticket or registration request, the registrar replies with the closest nodes to 'the topic hash' that it knows. 
-%This helps filling up k-buckets without sending additional lookups. 
-%Also, when performing topic search (sending lookups for specific topics),  closest known nodes to 'the topic hash' are attached by the registrar node in the response.
-
-
-
 
 \subsection{Lookup operation}\label{sec:lookup}
-
 To find ads, \sysname uses a process similar to the registration procedure. 
 %The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
 %Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
@@ -119,11 +106,11 @@ By requiring a large amount of total ads to stop the search
 ($N_\textit{lookup}$) compared with the  ads returned by registrar
 $N_\textit{return}$ a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand,  similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally,  low values of $N_\textit{lookup}$ stop the search operation early,  before reaching registrars close to the topic hash, contributing to more equal load spread.
 However,  for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
-In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
-\sr{Future work: investigate the impact of search parameters}
+%In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
+%\sr{Future work: investigate the impact of search parameters}
 
 %\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
-\michal{Consider renaming search/registration tables into search/registration caches}
+%\michal{Consider renaming search/registration tables into search/registration caches}
 %\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
 \ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
 \michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
