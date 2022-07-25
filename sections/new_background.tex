@@ -18,12 +18,7 @@ Then, we present the current service discovery mechanism, part of Ethereum's \em
 \label{sec:background:dht}
 
 All nodes in Ethereum participate to a global distributed hash table (DHT).
-A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}.
-\er{consider cutting the following two sentences?}
-A DHT designed for wide-area networks typically targets scalability and limits the amount of peers each node knows and connect to, and relies on multi-hop routing algorithm to implement lookup operations.
-A plethora of DHT designs have been proposed in the past two decades~\cite{chord,rowstron2001pastry}, differing in various aspects such as the assignment of item keys to node(s) in the overlay, the structure of the overlay itself, or routing algorithms.
-
-Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
+A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}~\cite{chord,rowstron2001pastry}. Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
 Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT. %\mk{we haven't mention item storage before}
 Ethereum DHT assigns a specific key $i$ to the node that is the \emph{closest} to $i$ in that space.
 This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of differing suffix in bits).
@@ -48,7 +43,7 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 The bucket partitioning scheme divides the key space from the point of view of $N$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $N$'s ID.
 As a result, a node's routing table provides a more detailed (\ie, fine grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
-It allows, in addition, a degree of flexibility as each each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
+It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
 
 Lookups rely on a number $\alpha$ of concurrent routing operations (or \emph{walks}) towards the target key.
 In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key, and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
@@ -60,77 +55,22 @@ In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', 
 \er{need to simplify the following and make it a single paragraph as part of the lookup paragraph}
 
 Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing nodes to hide their target from other peers in the lookups. Specifically, the distance of a key to a node is the common prefix length of the key and the node's ID, which corresponds to the bucket number of the key where the node would insert the key, following the same bucket partitioning scheme with vanilla Kademlia.
-\michal{I'm not sure why we need the text above}
 
-\michal{I'd focus uniquely on differences, no need to say what's the same.}
-\onur{I shortened it a bit and removed similarities}
-%Similar to vanilla Kademlia, Ethereum nodes use an iterative lookup procedure involving $\alpha$ parallel walks. 
 A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is that the initiating nodes specify the distance of an undisclosed target in their FIND\_NODE messages rather than the target key itself. Each peer responds to a FIND\_NODE message by returning up to $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket.
 
 \oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
 
 \subsection{\emph{discv4} service discovery}
 \label{sec:background:discv4}
-
-
-
-
-\section{Background}
-\label{sec:background}
-
-In this section, we first provide background on the Kademlia~\cite{maymounkov2002kademlia} DHT in \Cref{sec:kademlia} followed by a description of the Ethereum P2P network in \Cref{sec:eth-net}.  In \Cref{sec:discv4}, we present Discv4, the current service discovery protocol of Ethereum. Finally, we discuss the security and efficiency of DISCV4RANDOM in \Cref{sec:securityEfficiency}. 
-
-\subsection{Kademlia Primer}
-\label{sec:kademlia}
-
-\para{DHT} A DHT is a distributed data (\ie key-value) store supporting put and get operations. In a DHT,
- both the data item keys and node identifiers (\ie IDs) are drawn from an abstract \textit{keyspace}. Different DHT implementations vary in various aspects such as the assignment of item keys to node(s) responsible for storing them, the algorithm to lookup a key to locate the responsible node(s) for storing that key, to name a few.
-
-\para{Kademlia} In Kademlia, a data item with key $i$ is assigned to the $k$ nodes whose IDs are ``closest'' to $i$ in the keyspace. Kademlia defines the closeness of two keys x and y as their bitwise exclusive (XOR) interpreted as an integer distance, \ie $d(x,y) = x \oplus y$. A Kademlia node maintains a local \textit{routing table} storing a set of ``known peers'', each with its \textit{node ID} and reachability information \ie IP address and port numbers. A newly instantiated DHT node typically populates its routing table with a set of (hard-coded) bootstrap nodes initially\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}. 
-
-A Kademlia routing table is partitioned across $m$ \textit{k-buckets}, numbered zero through $m-1$, where $m$ is a system parameter. The bucket $i$ of a node contains a list of up to $k$ peers whose IDs share a common prefix of length $i$ with itself. The last bucket of a node (\ie bucket $m-1$) additionally contains peers whose IDs share a common prefix length exceeding $m-1$ with itself. %This partitioning scheme allows nodes to flexibly populate their buckets with any peer from their corresponding intervals in the keyspace.
-%$i$ also holds peers whose distance from the node is in the range $[2^{m-i}, 2^{m-i+1})$.
-%\michal{Shouldn't buckets be number from 0? Or contain nodes that share $i-1$ bits?}
-
-
-
-The resulting bucket partitioning scheme divides the keyspace into disjoint intervals halving in length with each bucket increment, as shown in \Cref{fig:kademlia} for $m=5$. As a result, a node's routing table provides a more detailed (\ie fine-grained) view of the closer parts of the network and a less detailed view of the parts of network located further away. This property is essential for efficient (\ie scaling logarithmically with the number of nodes) lookup operations. At the same time, the partitioning scheme allows for a flexible routing table structure, where each bucket can contain \textit{any peer sampled from those whose IDs fall within the corresponding interval of the bucket in the keyspace}.
-
-In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target. %During each iteration of a walk, the protocol allows the initiating node to apply a selection policy to determine which peer to query next rather than choosing the closest peer. The selection policy can be based on criteria such as performance (\eg latency), fault tolerance and so on.
-
-\textbf{Summary.} Kademlia offers a flexible routing table structure, allowing each bucket to store multiple nodes that are sampled from the peers located within the bucket's distance interval in the keyspace. The lookups can proceed in parallel along disjoint paths, each searching for a target independently. These properties make the Kademlia DHT more tolerant to faults and churn compared to earlier DHT implementations (such as Chord~\cite{chord}) with rather rigid routing tables and sequential lookup procedures.
-
-\subsection{Ethereum Network}
-\label{sec:eth-net}
-
-The Ethereum discv4 network is a DHT based on Kademlia~\cite{maymounkov2002kademlia}. %Ethereum's Kademlia implementation. % is not optimised for locating the $k$ closest peers to a target key, because the DHT is only used for secure, random sampling of peers for a target application, as we discuss in Section~\ref{sec:discv4}.  %This is because such a fine-grained assignment of keys to $k$ closest nodes does not allow for a secure lookup operation in the presence of malicious parties. 
-Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing nodes to hide their target from other peers in the lookups. Specifically, the distance of a key to a node is the common prefix length of the key and the node's ID, which corresponds to the bucket number of the key where the node would insert the key, following the same bucket partitioning scheme with vanilla Kademlia.
-\michal{I'm not sure why we need the text above}
-
-\michal{I'd focus uniquely on differences, no need to say what's the same.}
-\onur{I shortened it a bit and removed similarities}
-%Similar to vanilla Kademlia, Ethereum nodes use an iterative lookup procedure involving $\alpha$ parallel walks. 
-A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is that the initiating nodes specify the distance of an undisclosed target in their FIND\_NODE messages rather than the target key itself. Each peer responds to a FIND\_NODE message by returning up to $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket.
-
-\oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
-% In terms of node identities, each node uses the Keccak256 hash of (a marshaled version of) its public key as its identifier in a 256-bit keyspace. It is easy to generate many different identities but computationally infeasible to generate a specific one, although a node can exhaustively generate many IDs to position itself close to a target in the keyspace.
-
-
-\subsection{Service Discovery in Ethereum}
-\label{sec:discv4}
-
-In the current service discovery protocol, DISCV4RANDOM, a node performs \textit{random walks} through the DHT and establishes connections to encountered peers after verifying the supported protocols of the peers at the application level. In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained in \Cref{sec:eth-net}. Each node maintains a \textit{discovery table} whose sole purpose is to store a set of peers that the node has come across during its parallel random walks. %This table serves as a basis for establishing sub-protocol connections as we describe below.  
+In the current service discovery protocol, DISCV4RANDOM, a node performs \textit{random walks} through the DHT and establishes connections to encountered peers after verifying the supported protocols of the peers at the application level. In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained above. Each node maintains a \textit{discovery table} whose sole purpose is to store a set of peers that the node has come across during its parallel random walks.\mk{The discovery table seems like a implementation detail. Maybe just say that we initiate handshakes with encountered/returned peers?} %This table serves as a basis for establishing sub-protocol connections as we describe below.  
 
 %\dk{could mention DNS discovery\footnote{https://eips.ethereum.org/EIPS/eip-1459} as a means for discv5 bootstrap. We implemented this for Waku v2.}
 
 A node starts establishing application-level sessions (\ie handshake) with the peers in its discovery table in order to identify their applications, \ie the sub-network(s) they are part of. A handshake involves a secure channel establishment between the initiator node and its discovered peer and therefore incurs some overhead to both endpoints. When the node discovers during the handshake that the discovered peer is part of a target application, the initiator node can follow up with a connection request to the peer to establish an application-level connection. The objective of a node is to fill up a number of \textit{application-level connection slots} with outbound (\ie initiated by the node) connections. The process of node discovery is suspended when a node has filled up all outbound slots. Nodes also reserve a number of inbound connection slots that can be filled with connections initiated by other nodes. 
 
-%DEVp2p is responsible for managing the connections to other peers which form the overlay P2P network. For instance,  the Go-ethereum client by default establishes a total of 50  connections to other Ethereum nodes.  Of these 50 slots, around two-thirds (\ie 34) are reserved for inbound connections,  while the remaining 16 are allocated for outbound connections. Inbound connections are initiated by remote peers of a node with a connection request, and the node can decide whether to accept or reject the request. When all the incoming connection slots of a node are full, the node rejects the incoming connection. If a slot is free, a node is free to accept a connection request, although, it is not recommended for simply accepting any request for security reasons as we explain below.
-%The process of looking for peers is suspended when a node establishes a sufficient number of outbound connections.
-
 \subsection{Security and Efficiency of DISCV4RANDOM}
 \label{sec:securityEfficiency}
-
+\mk{The below is too long. I also don't think it's a good place to discuss in more details potential attacks.}
 In the context of blockchains and cryptocurrency, security is a key requirement for a service discovery protocol. A potential attack on any peer discovery protocol is the eclipse attack, where an adversary monopolises all the connections of a victim node with its Sybils, effectively separating the victim from the rest of the network. In blockchain systems, eclipse attacks are typically a pre-cursor to financially-motivated attacks such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
 
 Because eclipsing can apply to any peer discovery process, it concerns both the DHT-level (\ie Kademlia routing table) and application-level peer selection. Peer selection through random sampling, as used in Kademlia and DISCV4RANDOM, is reasonably resilient against eclipse attacks, because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
@@ -139,32 +79,30 @@ Because eclipsing can apply to any peer discovery process, it concerns both the 
 
 %At the same time, the buckets of the routing table are well protected from eclipsing owing to the flexible (random) peer selection mechanism inherited from Kademlia (Section~\ref{sec:kademlia}). Random peer selection is effective because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
 
-On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). \Cref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network\footnote{Appendix contains the details of the calculations}. For applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
+On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). %\Cref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network\footnote{Appendix contains the details of the calculations}. %
+For applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
 
 %\dk{A math. estimation would be nice here.}
 
-\begin{table} [!hbt]
-\caption{Average number of wasteful handshakes until one successful peer discovery for a given popularity of the target application}
-\label{tab:discv4Overhead}
-\renewcommand{\arraystretch}{1.5}
-\renewcommand{\tabcolsep}{0.5em}
-\centering
-\scriptsize{
-\begin{tabular} {c|c}
-\textbf{Popularity (in \% of population)} & \textbf{Number of Handshakes} \\
-\hline
-0.01 & 6944 \\ 
-\hline
-0.05 & 1392 \\
-\hline
-0.1 & 704 \\
-\hline
-1 & 64 \\
-\bottomrule
-\end{tabular}
-}
-\vspace{-0.2in}
-\end{table}
-
-% add some final remarks for transitioning to the next section
-
+%\begin{table} [!hbt]
+%\caption{Average number of wasteful handshakes until one successful peer discovery for a given popularity of the target application }
+%\label{tab:discv4Overhead}
+%\renewcommand{\arraystretch}{1.5}
+%\renewcommand{\tabcolsep}{0.5em}
+%\centering
+%\scriptsize{
+%\begin{tabular} {c|c}
+%\textbf{Popularity (in \% of population)} & \textbf{Number of Handshakes} \\
+%\hline
+%0.01 & 6944 \\ 
+%\hline
+%0.05 & 1392 \\
+%\hline
+%0.1 & 704 \\
+%\hline
+%1 & 64 \\
+%\bottomrule
+%\end{tabular}
+%}
+%\vspace{-0.2in}
+%\end{table}
