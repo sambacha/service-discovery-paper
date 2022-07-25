@@ -2,8 +2,26 @@
 
 \subsection{Analysis plan}
 Ideally, we should prove efficiency, fairness and security by equations here. 
+
+\subsubsection{Efficiency}
 \begin{enumerate}
+    \item Calculate the average number of requests received/ads in the table?
+    \item prove that we cannot go above a specific memory usage (same as below?)
     \item just the occupancy score parameters ($b$ and $P_\textit{occupancy}$) by using the maximum bandwidth and memory usage. So that even with maximum possible bandwidth, the capacity doesn't go above 100\%.
+    \item prove that an attacker (or anyone else) cannot create additional state on the registrar 
+\end{enumerate}
+
+\subsubsection{Fairness}
+\begin{enumerate}
+    \item we could assume one topic (or zipf distribution?) and calculate the load on each node for registrations and lookups. Assume a specific number of nodes in the network, calculate how many registration requests each node will get in each bucket, based on that we can calculate the average waiting time and calculate a requests per lifetime ratio. 
+    \item the same for lookup, (zipf distribution again?) and calculate the average number of request each node can expect. It might be however tricky to calculate values for different buckets and assuming that they are close to a topic with a given popularity.
+\end{enumerate}
+
+\subsubsection{Security}
+\begin{enumerate}
+    \item Calculate the probability of a lookup operation being eclipsed
+    \item Prove that a node cannot place more ads on a single registrar by deviating from the protocol (with the lower bound). Here, we can just reason about it without equations IMO. 
+    \item Can we do something for the DoS mathematically?
 \end{enumerate}
 
 \subsection{IP Score}
