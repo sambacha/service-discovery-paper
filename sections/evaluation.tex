@@ -33,8 +33,7 @@ The lookup process is ended when all 16 closest nodes are queried or when enough
      \item \textbf{Message Overhead} - the number of messages received by each node. We calculate separate values for both lookup and registration operations. Higher values mean larger strain put on each nodes and increased time to complete each operation. 
      \item \textbf{Discovered Peers} - the number of application-specific peers discovered by searchers during lookup operations. Each operation is finished after discovering 30 nodes. The metric allows to verify whether each searcher can discover its peers.
      \item \textbf{Discovered By} - the number of searchers each advertiser was discovered by. This metric allows us to verify whether each peer is being discovered and how the number of discoveries differs across peers.
-%     \item \textbf{Placed Registrations} - the number of registration placed by each advertiser. 
-%     \item \textbf{Accepted Registrations} - the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
+     \item \textbf{Registrations} - the number of registration placed by each advertiser and the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
  \end{itemize}
  %We calculate per-node average for the metrics above and report their standard deviation.  Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
@@ -63,7 +62,8 @@ Both figures show no values for \discv protocol,  since  \discv nodes do not rec
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
+\includegraphics[width=\linewidth]{results/split/topic_registrationMsgs.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
 \caption{Y-axis: Distribution of registration related messages received by peers for varying number of topics for the simulation time.}
 \label{fig:regMsgsPerTopic}
 \end{figure}
@@ -83,21 +83,24 @@ But this increase is very different between \sysname and \altname protocols.
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
+\includegraphics[width=\linewidth]{results/split/size_registrationMsgs.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
 \caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
 \label{fig:regMsgsPerSize}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
+\includegraphics[width=\linewidth]{results/split/topic_lookupMsgs.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
 \caption{Y-axis: Distribution of lookup messages received by peers for varying number of topics for the simulation time.}
 \label{fig:lookupMsgPerTopic}
 \end{figure}
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
+\includegraphics[width=\linewidth]{results/split/size_lookupMsgs.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
 \caption{Y-axis: Distribution of lookup messages received by peers for different network size for the simulation time.}
 \label{fig:lookupMsgPerSize}
 \end{figure}
@@ -111,14 +114,16 @@ In the figures we can observe there is a big different between topic-aware proto
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
+\includegraphics[width=\linewidth]{results/split/size_totalMsg.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size during a single advertisement period.}
 \label{fig:msgsPerSize}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
+\includegraphics[width=\linewidth]{results/split/topic_totalMsg.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different number of topics during a single advertisement period.}
 \label{fig:msgsPerTopic}
 \end{figure}
@@ -135,7 +140,8 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 \subsection{Lookup performance}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
+\includegraphics[width=\linewidth]{results/split/topic_discovered.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different number of topics.}
 \label{fig:discoveredPerTopic}
 \end{figure}
@@ -146,7 +152,8 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 \sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
+\includegraphics[width=\linewidth]{results/split/size_discovered.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
 \label{fig:discoveredPerSize}
 \end{figure}
@@ -154,15 +161,48 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 \Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with increasing size of the network. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes. However, discv4 suffers from poor performance for all the investigated network sizes. 
 
 \begin{figure}
-\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+\includegraphics[width=\linewidth]{results/split/topic_wasDiscovered.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for number of topics in the network for the simulation time.}
 \label{fig:discoveredByPerTopic}
 \end{figure}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+\includegraphics[width=\linewidth]{results/split/size_wasDiscovered.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for different network size for the simulation time.}
 \label{fig:efficiency_size}
+\end{figure}
+
+\subsection{Registrations}
+
+
+\begin{figure}
+\includegraphics[width=\linewidth]{results/split/topic_regsPlaced.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+\caption{Y-axis: .}
+\label{fig:regsPlacedPerTopic}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/split/size_regsPlaced.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+\caption{Y-axis: .}
+\label{fig:regsPlacedPerSize}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{results/split/topic_regsAccepted.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+\caption{Y-axis: .}
+\label{fig:regsAcceptedTopic}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{results/split/size_regsAccepted.eps}
+%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+\caption{Y-axis: .}
+\label{fig:regsAcceptedSize}
 \end{figure}
 
 \subsection{Security}
@@ -193,15 +233,12 @@ We evaluated the eclipse attacks targeting two specific topis, the most popular 
 The most popular topic has 3978 nodes registering for this topic and the low popularity has only 33 nodes.
 We evaluated the attacks for the most popular and least popular 
 
-\sr{TODO: show protocols in the same order for all figures. redo all figures to fix it and fix also max values text}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_idDistribution_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the most popular topic (3978 nodes).}
 \label{fig:eclipse_distribution_t0}
 \end{figure}
-
-\sr{TODO:fix fig \ref{fig:eclipse_distribution_t0} x axis, labels are wrong.}
 
 In Figure~\ref{fig:eclipse_distribution_t0} we show the malicious nodes discovered for all lookups for all protocols using different distribution of the identifiers of the malicious nodes,  when attacking the most popular topic (with 3978 nodes).  In the first option, the malicious nodes ids are artificially generated with a small distance to the topic hash id.  In the second option, malicious nodes identifiers are uniformly distributed.  In the figure we can observe that for \altname and \altnameticket the percentage of eclipses are superior to 80\% because most of the nodes close to topics identifiers are nodes controlled by the attacker.  
 For \altname and \altnameticket, the lookup process is similar to Kademlia lookup process and,  placing all malicious nodes close the topic hash,  it makes very likely to query only malicious nodes during the process, since it only queries the closest known nodes to the topic identifier.
@@ -227,8 +264,6 @@ Remember that Sybil nodes are completely valid nodes from a network discovery po
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes using uniform distributed sybil identities vs generating node ids close to topic id,   when attacking the low popularity topic (33 nodes).}
 \label{fig:eclipse_distribution_t299}
 \end{figure}
-
-\sr{replace x axis for \ref{fig:eclipse_evil_t0}}
 
 In Figure~\ref{fig:eclipse_evil_t0} we show the malicious nodes discovered for all lookups for all protocols, using different number of Sybil nodes in the network,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_evil_t299} we show the malicious nodes discovered for the least popular topic.  In both figures attackers identifiers are generated uniformly and attackers use a pool of 100 IP addresses. 
 In Figure~\ref{fig:eclipse_evil_t0}, we observe \discv is the protocol with the lowest number of eclipses and with the best distribution of malicious nodes returned during lookups.  However \sysname performs very close to \discv, having only 0.2\% of eclipses when there are 1000 attackers in the network.
