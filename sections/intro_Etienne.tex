@@ -11,7 +11,7 @@
 %\end{itemize}
 %}
 
-With about 23,500 nodes~\cite{discv4-dns-lists}, \oa{this is the number of discoverable nodes, not necessarily the size of the network.} Ethereum is one of the largest decentralized platform currently in operation.
+With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, Ethereum is one of the largest decentralized platform currently in operation.
 While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet}), the Ethereum platform is also home to a number of additional decentralized applications.
 This includes blockchains used for test purposes (testnets such as \emph{Ropsted}, \emph{Rinkeby}, or \emph{G\"orli}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), exchange markets (\emph{Binance}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}).
 An official Ethereum crawler~\cite{discv4-dns-lists} indicates that the platform already features almost 500 applications, and this number will keep growing in the future.
@@ -31,12 +31,11 @@ An official Ethereum crawler~\cite{discv4-dns-lists} indicates that the platform
 All nodes in the Ethereum platform participate to a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}.
 % This global DHT is primarily used for periodic node discovery. % and not as a key-value store (i.e., lookup operations are never used).
 % The initial entry in the DHT leverages \emph{bootstrap nodes} operated by the Ethereum foundation, that provide a set of initial contact points, but subsequent maintenance of each nodes' view rely on periodic collection of random peers through DHT lookups. \er{Felix prefers not to discuss this and this is arguably out of scope.}
-In addition to joining the global network, every node connects to at least one \emph{sub-network} formed of peers participating to its application(s) of interest. \oa{A node could join more than one sub-networks at a time.}
-The size of these sub-networks can vary significantly.
-\Cref{fig:ecosystem} depicts the size distribution of Ethereum's main sub-networks.
-This distribution features a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less, much less than the mainnet or even than any of the testnets.
+In addition to joining the global network, every node connects to at least one \emph{sub-network} formed of peers participating to its application(s) of interest.
+The size of these sub-networks can vary significantly (\Cref{fig:ecosystem}).
+This size distribution features a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less, much less than the mainnet or even than any of the testnets.
 \mk{We might add some more exciting claims here - "this can become a backbone of the new decentralised Internet/Web3"? From the current description the problem doesn't seem that important.}
-In the future, we expect the number of applications to grow significantly, as the Ethereum platform will be selected as the base operation layer by emerging decentralized Internet (web3) projects, amongst other applications.
+In the future, we expect the number of applications to grow significantly, as the Ethereum platform will be selected as the base operation layer by emerging decentralized Internet (web3) projects, amongst other applications.\mk{This is a repetition from the previous paragraph. Maybe we should merge both paragraph?}
 % Every node in the Ethereum platform participates to a \emph{global} peer-to-peer (P2P) network operating the Kademlia distributed hash table (DHT)~\cite{maymounkov2002kademlia}. \er{how many nodes in this global network?}
 % Bootstrapping membership to this general network is handled by a number of trusted \emph{bootstrap nodes} operated by the Ethereum foundation, who provide an initial list of contact peers to nodes entering the network.
 % Once joined, every node must connect to one or more sub-network(s) formed of peers participating to its application(s) of interest.
@@ -56,7 +55,7 @@ This mechanism returns a set of peers that are used as entry points to the P2P o
 \end{figure}
 
 Service discovery is a particularly sensitive mechanism in the Ethereum platform.
-Its implementation must ensure that malicious participants to this open network are unable to bias its execution against a victim node or sub-network--and that, despite the ability of these adversaries to operate multiple Sybil identities.
+It must ensure that malicious participants to this open network are unable to bias its execution against a victim node or sub-network--and that, despite the ability of these adversaries to operate multiple Sybil identities.
 Of particular importance is the protection against \emph{eclipse} attacks, where an adversary would lure its victim(s) into a sub-network formed of only nodes under its control. %, i.e., by returning only such nodes to a service discovery request.
 Similarly, an adversary may run \emph{denial-of-service} attacks against a specific application, preventing other nodes from discovering peers from the associated sub-network.
 On the other hand, the mechanism must remain efficient and scalable.
@@ -81,15 +80,14 @@ As more applications join the DHT, the inefficiency of the random discovery proc
 %
 We detail in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to Ethereum.
 \sysname targets a balance between robustness, i.e., the ability to resist malicious behaviors and Sybil identities, efficiency, i.e., fast service discovery even for small applications, and good load-balance over participating nodes.
-\sysname is integrated in \emph{discv5}~\cite{discv5} (\ie, Node Discovery protocol version 5) a new set of P2P protocols replacing \emph{discv4} in future versions of Ethereum. \er{ideally add a reference or two here}
+We overcome multiple practical challenges and integrate out system in \emph{discv5}~\cite{discv5} (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. As a result, \sysname is scheduled for deployment in the future versions of Ethereum.
 
 After providing background knowledge and reviewing the current service discovery mechanism of Ethereum in \Cref{sec:background}, and detailing our system and thread models in \Cref{sec:model}, we detail \sysname as follows.
 
 In \Cref{sec:placement}, we present how this new protocol enables nodes, members of application sub-networks, to \emph{advertise} their membership to these applications in the form of \emph{service advertisements}.
 Any node can act as a \emph{registrar} and store advertisements for any topic.
 In contrast with a direct use of the DHT as a key-value store, however, in \sysname service advertisements propagate to a pseudo-random subset of all nodes in the global network.
-The density of advertisements for an application increases as a DHT lookup approaches its associated key in the DHT overlay structure.\mk{We don't cover lookup. The description may be also downplaying the contribution.}\er{I am not sure to understand this comment, might need to discuss it.}
-% As such, \sysname enables efficient lookup of advertisements for any given service.
+The density of advertisements for an application increases as a DHT lookup approaches its associated key in the DHT overlay structure.
 
 Robustness, load balancing, and efficiency for the discovery of smaller sub-networks all rely on a novel \emph{admission protocol}, by which registrars accept or reject incoming service advertisements.
 This mechanism is detailed in \Cref{sec:registration}.
@@ -99,7 +97,7 @@ At the core our novel admission protocol lies the need for registrants to respec
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 The function allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
-We implemented \sysname in a simulator as well as in the code base of \emph{discv5}. \michal{Mentioned it's schedule to be included in discv5.}
+We implemented \sysname in a simulator as well as in the code base of \emph{discv5}. 
 We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Our results show ...
 
