@@ -33,7 +33,7 @@ The lookup process is ended when all 16 closest nodes are queried or when enough
      \item \textbf{Message Overhead} - the number of messages received by each node. We calculate separate values for both lookup and registration operations. Higher values mean larger strain put on each nodes and increased time to complete each operation. 
      \item \textbf{Discovered Peers} - the number of application-specific peers discovered by searchers during lookup operations. Each operation is finished after discovering 30 nodes. The metric allows to verify whether each searcher can discover its peers.
      \item \textbf{Discovered By} - the number of searchers each advertiser was discovered by. This metric allows us to verify whether each peer is being discovered and how the number of discoveries differs across peers.
-     \item \textbf{Registrations} - the number of registration placed by each advertiser and the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
+%     \item \textbf{Registrations} - the number of registration placed by each advertiser and the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
  \end{itemize}
  %We calculate per-node average for the metrics above and report their standard deviation.  Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
@@ -57,60 +57,60 @@ They were selected based on extensive simulations that we skip due to the space 
 
 \sr{TODO: detail what violin plot represents exactly}
 
-In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
-Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
+%In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
+%Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=\linewidth]{results/split/topic_registrationMsgs.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
+%\caption{Y-axis: Distribution of registration related messages received by peers for varying number of topics for the simulation time.}
+%\label{fig:regMsgsPerTopic}
+%\end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{results/split/topic_registrationMsgs.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
-\caption{Y-axis: Distribution of registration related messages received by peers for varying number of topics for the simulation time.}
-\label{fig:regMsgsPerTopic}
-\end{figure}
+%In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe while most of \sysname nodes receive around 500 registration messages,  with just a few receiving up to 5k messages in the worst case,  \altname solutions are more spread between 0 and 1000 received messages, but with some peaks up to 43k messages,  an order of magnitude higher than \sysname.
+%This is caused by the fact that all nodes in \altname solutions try to put registrations starting by the closest nodes to the topic hash,  creating an uneven distribution  towards these nodes. 
+%In \sysname, the use of \emph{registration table} for advertisement placement provides a similar effect. 
+%However this effect is diminished by the use of waiting times to regulate advertisement placement.  The increase of waiting time in the more congested nodes, causes that nodes starts more registrations in less congested nodes limiting the number of registrations placed on nodes close to topic hash.
+%This effect is not seen when using \altname combined with tickets. 
+%This is due to the fact that \altname is not using a \emph{registration table} to keep track of ongoing registrations.  Because of this,  advertisers start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
+%Therefore using tickets in the \altnameticket, maybe useful to increase the diversity in the \emph{registration tables} but not for load balancing between nodes.
+%
+%When increasing the number of topics in the network (\Cref{fig:regMsgsPerTopic}), it is not observed an increase of registration messages for any of the different protocols. 
+%However,  when increasing the number of nodes participating in the network (\Cref{fig:regMsgsPerSize}),  also registrations messages received per nodes are increased, as expected.
+%But this increase is very different between \sysname and \altname protocols.
+%\sr{tbc with specific values}
 
-In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe while most of \sysname nodes receive around 500 registration messages,  with just a few receiving up to 5k messages in the worst case,  \altname solutions are more spread between 0 and 1000 received messages, but with some peaks up to 43k messages,  an order of magnitude higher than \sysname.
-This is caused by the fact that all nodes in \altname solutions try to put registrations starting by the closest nodes to the topic hash,  creating an uneven distribution  towards these nodes. 
-In \sysname, the use of \emph{registration table} for advertisement placement provides a similar effect. 
-However this effect is diminished by the use of waiting times to regulate advertisement placement.  The increase of waiting time in the more congested nodes, causes that nodes starts more registrations in less congested nodes limiting the number of registrations placed on nodes close to topic hash.
-This effect is not seen when using \altname combined with tickets. 
-This is due to the fact that \altname is not using a \emph{registration table} to keep track of ongoing registrations.  Because of this,  advertisers start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
-Therefore using tickets in the \altnameticket, maybe useful to increase the diversity in the \emph{registration tables} but not for load balancing between nodes.
+%\begin{figure}[!h]
+%\centering
+%\includegraphics[width=\linewidth]{results/split/size_registrationMsgs.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
+%\caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
+%\label{fig:regMsgsPerSize}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=\linewidth]{results/split/topic_lookupMsgs.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
+%\caption{Y-axis: Distribution of lookup messages received by peers for varying number of topics for the simulation time.}
+%\label{fig:lookupMsgPerTopic}
+%\end{figure}
+%
+%\begin{figure}[!h]
+%\centering
+%\includegraphics[width=\linewidth]{results/split/size_lookupMsgs.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
+%\caption{Y-axis: Distribution of lookup messages received by peers for different network size for the simulation time.}
+%\label{fig:lookupMsgPerSize}
+%\end{figure}
 
-When increasing the number of topics in the network (\Cref{fig:regMsgsPerTopic}), it is not observed an increase of registration messages for any of the different protocols. 
-However,  when increasing the number of nodes participating in the network (\Cref{fig:regMsgsPerSize}),  also registrations messages received per nodes are increased, as expected.
-But this increase is very different between \sysname and \altname protocols.
-\sr{tbc with specific values}
-
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\linewidth]{results/split/size_registrationMsgs.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
-\caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
-\label{fig:regMsgsPerSize}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{results/split/topic_lookupMsgs.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
-\caption{Y-axis: Distribution of lookup messages received by peers for varying number of topics for the simulation time.}
-\label{fig:lookupMsgPerTopic}
-\end{figure}
-
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\linewidth]{results/split/size_lookupMsgs.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
-\caption{Y-axis: Distribution of lookup messages received by peers for different network size for the simulation time.}
-\label{fig:lookupMsgPerSize}
-\end{figure}
-
-In~\Cref{fig:lookupMsgPerTopic}~and~\Cref{fig:lookupMsgPerSize}, we observe the number of messages related to the lookup process, \ie topic queries and replies for \sysname, \altname and \altnameticket, and kademlia find/response messages for \discv. We evaluated using  different network sizes and different number of topics in the network. 
-There is a single lookup in the simulation per node, and the $N_\textit{lookup}$ parameter used is equal to 30.  Therefore nodes stop the lookup process when found 30 different nodes in the network for the intended topic.
-In the figures we can observe there is a big different between topic-aware protocols (\sysname, \altname and \altnameticket) and \discv. 
-
-\sr{why there is an increase for \discv with the number of nodes in the simulation and not the number of topics??? shouldn't be the opposite? I guess is because even if there are topics with less nodes there is just a single lookup with the same nodes contacted}
-\sr{why the peak is bigger for DHT for 600 than 300? Is it because of topic hash ids colliding?}
+%In~\Cref{fig:lookupMsgPerTopic}~and~\Cref{fig:lookupMsgPerSize}, we observe the number of messages related to the lookup process, \ie topic queries and replies for \sysname, \altname and \altnameticket, and kademlia find/response messages for \discv. We evaluated using  different network sizes and different number of topics in the network. 
+%There is a single lookup in the simulation per node, and the $N_\textit{lookup}$ parameter used is equal to 30.  Therefore nodes stop the lookup process when found 30 different nodes in the network for the intended topic.
+%In the figures we can observe there is a big different between topic-aware protocols (\sysname, \altname and \altnameticket) and \discv. 
+%
+%\sr{why there is an increase for \discv with the number of nodes in the simulation and not the number of topics??? shouldn't be the opposite? I guess is because even if there are topics with less nodes there is just a single lookup with the same nodes contacted}
+%\sr{why the peak is bigger for DHT for 600 than 300? Is it because of topic hash ids colliding?}
 
 \begin{figure}[!h]
 \centering
@@ -174,36 +174,36 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 \label{fig:efficiency_size}
 \end{figure}
 
-\subsection{Registrations}
-
-
-\begin{figure}
-\includegraphics[width=\linewidth]{results/split/topic_regsPlaced.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
-\caption{Y-axis: .}
-\label{fig:regsPlacedPerTopic}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/split/size_regsPlaced.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
-\caption{Y-axis: .}
-\label{fig:regsPlacedPerSize}
-\end{figure}
-
-\begin{figure}
-\includegraphics[width=\linewidth]{results/split/topic_regsAccepted.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
-\caption{Y-axis: .}
-\label{fig:regsAcceptedTopic}
-\end{figure}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/split/size_regsAccepted.eps}
-%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
-\caption{Y-axis: .}
-\label{fig:regsAcceptedSize}
-\end{figure}
+%\subsection{Registrations}
+%
+%
+%\begin{figure}
+%\includegraphics[width=\linewidth]{results/split/topic_regsPlaced.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+%\caption{Y-axis: .}
+%\label{fig:regsPlacedPerTopic}
+%\end{figure}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/split/size_regsPlaced.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+%\caption{Y-axis: .}
+%\label{fig:regsPlacedPerSize}
+%\end{figure}
+%
+%\begin{figure}
+%\includegraphics[width=\linewidth]{results/split/topic_regsAccepted.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
+%\caption{Y-axis: .}
+%\label{fig:regsAcceptedTopic}
+%\end{figure}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/split/size_regsAccepted.eps}
+%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
+%\caption{Y-axis: .}
+%\label{fig:regsAcceptedSize}
+%\end{figure}
 
 \subsection{Security}
 %We evaluate \sysname resistance to two groups of malicious attacks:
