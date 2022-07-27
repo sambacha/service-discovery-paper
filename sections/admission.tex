@@ -6,18 +6,13 @@ Registrars have a limited amount memory and can store only a finite number of ad
 
 \sysname solves this problems by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate an amount of time the advertisers needs to wait before being admitted (\ie the waiting time). We explain the waiting time calculations in \Cref{sec:waitingTime}. The advertiser will have to wait a reported waiting time by the registrar and only then the advertiser will be able to place a registration that will be admitted by the registrar. The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and space left in the registry. 
 
-\mk{Shall we drop the ID part for simplicity? We can uniquely focus on topics/IPs. It should not influence the results.}
-
-\mk{Shall we rename the table to: searcher, advertisers and registrar tables? Currently "register table" might be confusing. The current topic table, maybe should be also renamed to something else than table? It's pretty different from the other tables that are routing tables, rather than an array/matrix.}
-
 \subsection{Data Structures}
 \para{Advertisement}
 When advertisers send a registration request, they send an \emph{advertisement} (\emph{ad} in short). The ad contains the IP address of the advertiser, the ID of the advertiser, the topic the ad is for and additional information needed to later contact the advertiser (\eg an application-specific port number). In the remaining part of the paper, we omit the additional information for brevity. 
 
-\para{Topic Table}
-Registrars store received ads locally in a data structure called a \emph{topic table}. Each ad stored in the topic table has an associated expiry time, after which the ad is automatically removed. Once an ad is added to the table, the expiry time is set to a fixed value $a$\mk{TODO:make sure we're consistent with ad lifetime, expire time etc. + use the same symbols}. The topic table acts as a \emph{first in, first out} queue for ads. The total size of the topic table is limited by $C_\textit{topic\_table}$. \sysname does not impose topic/IP/ID-specific limits on the content of the \emph{topic table}. \mk{Explain why?}
-A single advertiser may place at most one ad for a specific topic in the topic
-table (registration requests for ads already in the table are ignored).
+\para{Ad cache}
+Registrars store received ads locally in a data structure called a \emph{ad cache}. Each ad stored in the ad cache has an associated expiry time, after which the ad is automatically removed. Once an ad is added to the cache, the expiry time is set to a fixed value $a$\mk{TODO:make sure we're consistent with ad lifetime, expire time etc. + use the same symbols}. The ad cache acts as a \emph{first in, first out} queue for ads. The total size of the ad cache is limited by $C_\textit{ad\_cache}$. \sysname does not impose topic/IP/ID-specific limits on the content of the \emph{ad cache}. \mk{Explain why?}
+A single advertiser may place at most one ad for a specific topic in the ad cache (registration requests for ads already in the cache are ignored).
 However, an advertiser may attempt to place ads for multiple topics at the same registrar.
 
 \para{Ticket}
@@ -32,7 +27,7 @@ The tickets are digitally signed by the issuing advertiser.
 \subsection{Registration Procedure}
 An advertiser willing to register an ad at a registrar starts by sending an
 initial request uniquely containing the ad itself. Based on the
-content of the topic table and the registration, the registrar calculates an
+content of the ad cache and the registration, the registrar calculates an
 ad-specific waiting time. The advertiser then issues a ticket including the
 calculated waiting time and the time of receiving the initial request and sends it back to the advertiser.
 
@@ -43,7 +38,7 @@ The advertiser waits for the indicated time and attempts to register again. The 
 All the registration requests outside the registration window are ignored by the advertiser. The registrar calculates the registration windows based on the content of the ticket. $\delta t_\textit{window}$ should be chosen to accommodate for the maximum delay between the advertiser and the registrar. 
 
 The advertiser calculates a new waiting time, based on the current content of
-the topic table, every time it receives a registration request (with or without
+the ad cache, every time it receives a registration request (with or without
 ticket). The waiting time in the ticket is used only to calculate the
 registration windows and prevent advertisers from trying to register
 continuously. The ticket also allows the calculation of an accumulated waiting time:
@@ -72,7 +67,7 @@ registrar simply copies the issue-time from the last issued ticket and uses that
 
 An advertiser gives up and stops the registration process with a registrar when
 it receives $r$ unsuccessful registration attempts (i.e., after being issued $r$
-tickets without being admitted). In this case, the advertiser removes the registrar from its registration table and selects a new node located in the same bucket and attempts a new registration procedure.
+tickets without being admitted). In this case, the advertiser removes the registrar from its advertise table and selects a new node located in the same bucket and attempts a new registration procedure.
 %\michal{Is the below true? Shouldn't we try to register at the same node?}
 %\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
-Similarly,  after the expiration of a previously placed ad the node is removed from the ticket table and the process is restarted with a new node picked from the local table\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
+Similarly,  after the expiration of a previously placed ad the node is removed from the advertise table and the process is restarted with a new node picked from the local route table\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
