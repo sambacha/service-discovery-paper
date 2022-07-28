@@ -2,8 +2,8 @@
 
 \subsection{Efficiency}
 
-\para{\sysname memory usage is bounded by the capacity of the ad cache} 
-The amount of ads in the cache is given by $d = xa/(a + w(x))$, where $x$ is the number of requests constantly trying to get into the table, $a$ is ad lifetime and $w(x)$ is the average waiting time received by requests $x$.
+\para{Memory usage is bounded by the capacity of the ad cache} 
+We focus uniquely on registrars, as advertisers and searchers require a fixed amount of memory for their operations. The amount of ads in the cache is given by $d = xa/(a + w(x))$, where $x$ is the number of requests constantly trying to get into the table, $a$ is ad lifetime and $w(x)$ is the average waiting time received by requests $x$.
 In the worst case scenario, when requests $x$ are able to achieve 0 similarity score for both the topic and the IP addresses, the waiting time formula is given by: $w(x) = ba/(1 - \frac{d}{n})^{P_\textit{occupancy}}$.
 
 The possibility of the cache going above the capacity is determined by the constant $b$ and the exponent $P_\textit{occupancy}$. $b$ should be set to a small value to limit its influence on the waiting time (where IP and topic similarity scores should play the dominant role). $P_\textit{occupancy}$ should be large enough to prevent overflowing of the cache and small enough to enable usage of large portions of the cache under normal traffic conditions. 
@@ -13,11 +13,14 @@ In consultation with Geth developers, we assume the capacity of the cache $n = 1
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/cache_size_limit}
     % \vspace{-2mm}
-    \caption{Hello
+    \caption{Ad cache space usage for different request rates.
     }
     \label{fig:cache_size_limit}
 \end{figure}
+The pending requests (\ie not in the cache) do not create any state (apart from the lower bound) at the registrar (\ie the registrar uniquely calculates the waiting time and return a signed ticket). The lower bound state create by registrars is bounded by the number of distinct IPs and topic in the cash and is thus bounded by the capacity of the cache $O(n)$.
 
+\para{Register and lookup operations finish within $O(log(N))$ steps}
+In spite of some nondeterministic behaviour, both operations tightly follow the number of steps of the regular DHT $MSG_FIND$ operations and thus finish within $O(log(N))$ steps.
 
 \subsection{Fairness}
 
