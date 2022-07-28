@@ -7,9 +7,9 @@
 \er{Maybe discuss the byzantine-resilient peer sampling system Brahms, that also uses a blocking mechanism when more than a threshold number of view updates (pushes) are received in a certain amount of time (not sure if this is overall or for a specific node though)~\cite{}}
 
 There exists several protocols aimed at discovery devices providing network services for local area networks.
-For instance, the Simple Service Discovery Protocol (SSDP)~\hl{missing ref}, basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref}, or the DNS-based service discovery~\cite{RFC6763}, are used to advertise services that other devices provide, such as printers, webcams, HTTPS servers, and other mobile devices, usually using multicasting or broadcasting techniques.
+For instance, the Simple Service Discovery Protocol (SSDP)~\cite{helal2002standards}, basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref}, or the DNS-based service discovery~\cite{RFC6763}, are used to advertise services that other devices provide, such as printers, webcams, HTTPS servers, and other mobile devices, usually using multicasting or broadcasting techniques.
 However for service discovery in Internet-wide environments, since it is not possible to broadcast, centralized setups are commonly used to provide service discovery with good performance.
-UDDI~\hl{missing ref} has been recognized as the most popular discovery mechanism for Web services.
+UDDI~\cite{zhang2002aggregate} has been recognized as the most popular discovery mechanism for Web services.
 
 But when focusing on decentralized architectures, service discovery has been addressed from different perspectives. 
 Most of the solutions use Distributed Hash Table (DHT) based protocols using key-based routing to discover other peers. 
@@ -106,6 +106,8 @@ Security lessons learned from literature:
 
 \sergi{I haven't read these papers yet. To be included}
 "A Sybil-proof one-hop DHT"~\cite{lesniewski2008sybil}
+
+
 
 "Sybilinfer: Detecting sybil nodes using social networks."~\cite{danezis2009sybilinfer}
 SybilInfer is an algorithm aimed at detecting Sybil attacks in social networks using e Bayesian inference approach.  It  labels which nodes are honest and which are dishonest with a degree of certainty. The decision is based on an analysis of social connections. However, it requires a social network that we do not have in our setup. 

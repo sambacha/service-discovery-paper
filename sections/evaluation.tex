@@ -20,7 +20,7 @@ Nodes are consumed from the buffer by upper-layers of the Ethereum protocol (RLP
 when trying connections to new nodes, and when the buffer is empty new lookups are started to other 3 random nodes.
 We also compared \sysname against  a traditional key/value store implemented on top of the DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N nodes with identifiers with a smallest distance  to the topic hash.  
 We evaluated the traditional key/value store implementation, using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations,  naming it \altnameticket, and also without any admission protocol were registrations are replaced using  Last Recently Used policy, named \altname.
-When using \altname and \altnameticket, there is no \emph{registration table} that keeps track of ongoing registrations and new registrations are periodically issued by nodes every advertisement period.
+When using \altname and \altnameticket, there is no \emph{advertise table} that keeps track of ongoing registrations and new registrations are periodically issued by nodes every advertisement period.
 The topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 16 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
 In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
 The known nodes for the specific topic are stored in the lookup buffer. 
@@ -47,7 +47,7 @@ In the simulations we use only IPv4 addresses since, at the moment of writing th
  \end{itemize}
 \sr{To add $N_\textit{lookup}$  and $N_\textit{returned}$ used - 30 and 10}
  
-Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
+Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{advertise table} capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
 We set all the DHT-related parameters to the default values from the current Ethereum DHT: 17 buckets and 16 node in each bucket.
  \sysname parameters have the following values: number of registrations placed per bucket $K_{register}= 3$, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $,  $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$. 
 They were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
@@ -70,11 +70,11 @@ They were selected based on extensive simulations that we skip due to the space 
 
 %In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe while most of \sysname nodes receive around 500 registration messages,  with just a few receiving up to 5k messages in the worst case,  \altname solutions are more spread between 0 and 1000 received messages, but with some peaks up to 43k messages,  an order of magnitude higher than \sysname.
 %This is caused by the fact that all nodes in \altname solutions try to put registrations starting by the closest nodes to the topic hash,  creating an uneven distribution  towards these nodes. 
-%In \sysname, the use of \emph{registration table} for advertisement placement provides a similar effect. 
+%In \sysname, the use of \emph{advertise table} for advertisement placement provides a similar effect. 
 %However this effect is diminished by the use of waiting times to regulate advertisement placement.  The increase of waiting time in the more congested nodes, causes that nodes starts more registrations in less congested nodes limiting the number of registrations placed on nodes close to topic hash.
 %This effect is not seen when using \altname combined with tickets. 
-%This is due to the fact that \altname is not using a \emph{registration table} to keep track of ongoing registrations.  Because of this,  advertisers start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
-%Therefore using tickets in the \altnameticket, maybe useful to increase the diversity in the \emph{registration tables} but not for load balancing between nodes.
+%This is due to the fact that \altname is not using a \emph{advertise table} to keep track of ongoing registrations.  Because of this,  advertisers start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
+%Therefore using tickets in the \altnameticket, maybe useful to increase the diversity in the \emph{advertise tables} but not for load balancing between nodes.
 %
 %When increasing the number of topics in the network (\Cref{fig:regMsgsPerTopic}), it is not observed an increase of registration messages for any of the different protocols. 
 %However,  when increasing the number of nodes participating in the network (\Cref{fig:regMsgsPerSize}),  also registrations messages received per nodes are increased, as expected.
@@ -510,7 +510,7 @@ Malicious nodes also act as evil 'advertisers' trying to place as many registrat
 
 We implemented and evaluated two kind of DoS attacks.  
 The first attack consists in a topic spam attack where a big number of sybil identities generated try to register for non-existing random topics.
-By registering for non-existing topics,  evil nodes try to harm valid topics registrations, overflowing topic tables.
+By registering for non-existing topics,  evil nodes try to harm valid topics registrations, overflowing ad caches.
 The second DoS attack consists on generating sybil identities that keep without replying when receiving valid nodes ticket requests or return very long waiting times. 
 This way an attacker can try to backlog valid nodes ticket registrations.
 
