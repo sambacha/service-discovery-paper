@@ -9,7 +9,7 @@ We evaluate the performance of \sysname prototype and answer the following resea
     \item What is the overhead introduced by \sysname's register and lookup operations? %How does it compare to the current \discv system and vanilla DHT-based solutions?
     What is the load distribution across network participants?
     \item Does \sysname provide high performance for all the topics regardless of their popularity? 
-    \item How do malicious nodes impact \sysname’s performance? How difficult is it to launch eclipse and DoS attacks against the system?
+    \item How do malicious nodes impact \sysname's performance? How difficult is it to launch eclipse and DoS attacks against the system?
 \end{enumerate}
 
 %We evaluate a prototype of \sysname to address the following research questions:
@@ -20,7 +20,7 @@ We evaluate the performance of \sysname prototype and answer the following resea
 %\end{enumerate}
 
 
-\para{Setup} We implemented a prototype of \sysname in PeerSim~\cite{p2p09-peersim}, a scalable P2P network simulator. To that end, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+\para{Setup} We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
@@ -35,7 +35,7 @@ In this approach, peers store their ads under desired topics at the N closest (b
 
 
 Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
-As similarly done in the IPFS system, we use N=20 peers (that are closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
+As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
 
 On the other hand, the topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
 
@@ -62,13 +62,12 @@ In the simulations, we verify the impact of the following parameters:
      \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records. We observe an average network churn of 3\% across daily crawls equal and therefore we use this value in our simulations to simulate nodes joining and leaving. 
      \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data, as shown in \Cref{fig:ecosystem}). 
      \item \textbf{Malicious nodes} - the number of attackers targeting the peers in the discovery system. We experiment with values ranging from 250 and 2500 nodes,  using 1000 for the default value. \oa{These values need to be checked} Each malicious node receives a distinct ID (\ie hash of its public key) generated following either uniformly at random or non-uniformly, \ie pick identifiers that are closer to the hash of the target topic than any honest node. The latter can be achieved in practice through ``brute-force'' generation of public keys until one with a suitable hash is found.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to all the attackers. We set its value between 10 and 1000, using 100 for the default value.  In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
+     \item \textbf{Malicious IPs} - the number of IP addresses available to all the attackers. We set its value between 10 and 1000, using 100 for the default value. \oa{Can we justify the choice of 100 IPs - maybe mention the cost of allocating 100 IPs in AWS} In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
 
 %Meaning that every 25 malicious nodes will share a single, random IP address in the best case or every malicious node will use a different IP address in the worst case.  
  \end{itemize}
-\sr{To add $N_\textit{lookup}$  and $N_\textit{returned}$ used}
  
-Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
+Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and nodes each perform a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
 
 We set all the DHT-related parameters to the ones currently used by Ethereum DHT, \ie there are 17 buckets and upto 16 peers stored in each bucket. \oa{Mention the replacement policy for a bucket}. 
 Based on formal analysis (see Appendix), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing application such as Geth.
