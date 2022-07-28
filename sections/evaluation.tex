@@ -4,34 +4,54 @@
 \section{Performance Evaluation}
 \label{sec:eval}
 
-We evaluate the \sysname prototype and answer the following research questions:
-\begin{enumerate}
-    \item What is the overhead introduced by \sysname's register and lookup operations? How does it compare to the current Discv4 system and vanilla DHT-based solutions?
-    \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
+We evaluate the performance of \sysname prototype and answer the following research questions:
+\begin{enumerate} 
+    \item What is the overhead introduced by \sysname's register and lookup operations? %How does it compare to the current \discv system and vanilla DHT-based solutions?
+    What is the load distribution across network participants?
+    \item Does \sysname provide high performance for all the topics regardless of their popularity? 
     \item How do malicious nodes impact \sysname’s performance? How difficult is it to launch eclipse and DoS attacks against the system?
 \end{enumerate}
 
-\para{Setup} We implemented \sysname in PeerSim~\cite{p2p09-peersim}, a large-scale peer-to-peer network simulator. 
-We used an existing vanilla Kademlia implementation~\cite{peersim_kademlia} as a starting point, extend it to make it equivalent to the existing Ethereum DHT (as described in \Cref{sec:background}) and build \sysname on top of it. 
-Firstly,  we compare our system against the current Ethereum \discv discovery service\footnote{https://github.com/ethereum/devp2p/blob/master/discv4.md}.
-In \discv, the DHT is not used as a key/value store but just a way to discover other nodes in the P2P network. 
-\discv issues 3 lookups to random destinations using a simple Kademlia lookup,  and it stores all found nodes during the  \emph{random walk} in a buffer. 
-Nodes are consumed from the buffer by upper-layers of the Ethereum protocol (RLPx~\footnote{https://github.com/ethereum/devp2p/blob/master/rlpx.md})
-when trying connections to new nodes, and when the buffer is empty new lookups are started to other 3 random nodes.
-We also compared \sysname against  a traditional key/value store implemented on top of the DHT (similar to the content routing system that IPFS is currently using by default~\cite{libp2p_kaddht} to find providers for a specific content),  where advertisements are stored on the N nodes with identifiers with a smallest distance  to the topic hash.  
-We evaluated the traditional key/value store implementation, using our admission protocol (\Cref{sec:waitingTime}) to accept incoming registrations,  naming it \altnameticket, and also without any admission protocol were registrations are replaced using  Last Recently Used policy, named \altname.
-When using \altname and \altnameticket, there is no \emph{advertise table} that keeps track of ongoing registrations and new registrations are periodically issued by nodes every advertisement period.
-The topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 16 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
-In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
-The known nodes for the specific topic are stored in the lookup buffer. 
-The known nodes with the same distance to the topic id are added to the list of 16 closest nodes,  which is reordered and keeps only the 16 closest.
-The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
+%We evaluate a prototype of \sysname to address the following research questions:
+%\begin{enumerate} 
+%    \item What is the overhead introduced by \sysname's register and lookup operations? How does the overhead of \sysname compare to the current \discv system and vanilla DHT-based solutions?
+%    \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
+%    \item What is the impact of malicious nodes on \sysname’s performance? How difficult is it to launch various (\eg eclipse, DoS, \etc) attacks against the system?
+%\end{enumerate}
 
 
- The simulator reports the following performance metrics. 
+\para{Setup} We implemented a prototype of \sysname in PeerSim~\cite{p2p09-peersim}, a scalable P2P network simulator. To that end, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+
+We compare \sysname against the following approaches:
+\begin{enumerate}
+\item \discv is the current discovery service\footnote{https://github.com/ethereum/devp2p/blob/master/discv4.md} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. 
+In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\footnote{https://github.com/ethereum/devp2p/blob/master/rlpx.md}) to make new connections, and when the buffer is empty new lookups are initiated to other three random nodes.
+\item \altname is a traditional key/value store implementation using vanilla Kademlia DHT. 
+In this approach, peers store their ads under desired topics at the N closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie no waiting time) and uses a simple Last Recently Used (LRU) as a replacement policy.
+\item \altnameticket is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) to regulate the storage of incoming registrations. 
+\end{enumerate}
+
+%Both \altname and \altnameticket do not make use of a \emph{registration table} to keep track of on-going registrations and new registrations are periodically issued by nodes every advertisement period.
+
+
+Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
+As similarly done in the IPFS system, we use N=20 peers (that are closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
+
+On the other hand, the topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
+
+%On the other hand, the topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 20 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
+%In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
+%The known nodes for the specific topic are stored in the lookup buffer. 
+%The known nodes with the same distance to the topic id are added to the list of 20 closest nodes,  which is reordered and keeps only the 16 closest.
+%The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
+
+\para{Metrics} The simulator reports the following performance metrics. 
  \begin{itemize}
-     \item \textbf{Message Overhead} - the number of messages received by each node. We calculate separate values for both lookup and registration operations. Higher values mean larger strain put on each nodes and increased time to complete each operation. 
-     \item \textbf{Discovered Peers} - the number of application-specific peers discovered by searchers during lookup operations. Each operation is finished after discovering 30 nodes. The metric allows to verify whether each searcher can discover its peers.
+     \item \textbf{Message Overhead} - the total number of messages received by each node. 
+%We calculate separate values for both lookup and registration operations. 
+Higher values mean larger strain put on each node. 
+     \item \textbf{Discovered Peers} - the number of application-specific peers discovered by the searchers during lookup operations. This metric is a measure of the topic search performance by the peers.
+%Each operation is finished after discovering 30 nodes. 
      \item \textbf{Discovered By} - the number of searchers each advertiser was discovered by. This metric allows us to verify whether each peer is being discovered and how the number of discoveries differs across peers.
 %     \item \textbf{Registrations} - the number of registration placed by each advertiser and the number of registrations each  registrar accepted. It allows to verify the load on each registrar and analyse the their load distribution.
  \end{itemize}
@@ -39,23 +59,27 @@ The lookup process is ended when all 16 closest nodes are queried or when enough
  
 In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the number of all the nodes being part of the application-agnostic Ethereum DHT. We set the default value to 25000, as reported by the official Ethereum crawler~\cite{discv4-dns-lists}. Each nodes receives an IP address and ID as reported in the crawled ENS records. We calculate an average network churn between daily crawls equal to 3\% with the same increase to accommodate for nodes going off and back online between the scans. 
-     \item \textbf{Topic Number} - the number of distinct applications using the Ethereum DHT evaluated are between 50 and 600. We set its default value to 300, similarly to the data collected from the Ethereum DHT and shown in Figure~\ref{fig:ecosystem}, using a Zipf distribution with an exponent 1.0.  Each node only participates in a single topic.
-     \item \textbf{Malicious nodes} - the number of malicious participants of the Ethereum DHT to evaluate the resistance against sybil attacks are between 250 and 2500 nodes,  using 1000 for the default value.  Each malicious node receives a distinct identifier, that can be generated following either a random uniform distribution,  or generated to obtain identifiers with the minimum distance to the topic hash that is targeted in the attack.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to the attacker to be shared between the malicious nodes. We set its value between 10 and 1000,  using 100 for the default value.  Meaning that every 25 malicious nodes will share a single, random IPv4 address in the best case or every malicious node will use a different IP address in the worst case.  
-In the simulations we use only IPv4 addresses since, at the moment of writing this paper,  we analysed  Ethereum DHT and we found out 99\% of the nodes use IPv4.
+     \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records. We observe an average network churn of 3\% across daily crawls equal and therefore we use this value in our simulations to simulate nodes joining and leaving. 
+     \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data, as shown in \Cref{fig:ecosystem}). 
+     \item \textbf{Malicious nodes} - the number of attackers targeting the peers in the discovery system. We experiment with values ranging from 250 and 2500 nodes,  using 1000 for the default value. \oa{These values need to be checked} Each malicious node receives a distinct ID (\ie hash of its public key) generated following either uniformly at random or non-uniformly, \ie pick identifiers that are closer to the hash of the target topic than any honest node. The latter can be achieved in practice through ``brute-force'' generation of public keys until one with a suitable hash is found.
+     \item \textbf{Malicious IPs} - the number of IP addresses available to all the attackers. We set its value between 10 and 1000, using 100 for the default value.  In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
+
+%Meaning that every 25 malicious nodes will share a single, random IP address in the best case or every malicious node will use a different IP address in the worst case.  
  \end{itemize}
-\sr{To add $N_\textit{lookup}$  and $N_\textit{returned}$ used - 30 and 10}
+\sr{To add $N_\textit{lookup}$  and $N_\textit{returned}$ used}
  
-Each simulation takes 1h of simulated time during which each advertiser tries to constantly maintains its registration and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{advertise table} capacity to 500  to align with the memory requirements from the official Ethereum DHT implementation, and the advertisement period is set to 15 min, \ie every 15 min registration expires in the registrars. 
-We set all the DHT-related parameters to the default values from the current Ethereum DHT: 17 buckets and 16 node in each bucket.
- \sysname parameters have the following values: number of registrations placed per bucket $K_{register}= 3$, $P_{IP} = $, , $P_{ID} = $, $P_{topic} = $, $P_{occupancy} = $,  $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$. 
-They were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
+Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and performs a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
+
+We set all the DHT-related parameters to the ones currently used by Ethereum DHT, \ie there are 17 buckets and upto 16 peers stored in each bucket. \oa{Mention the replacement policy for a bucket}. 
+Based on formal analysis (see Appendix), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing application such as Geth.
+
+%The values of these parameters were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Message Overhead}
 
-\sr{TODO: detail what violin plot represents exactly}
+In the rest of this section, we use violin plots for a compact illustration of both the distribution and the density of data points for each performance metric. For each plot, we limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
+
 
 %In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
 %Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
