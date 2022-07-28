@@ -1,0 +1,157 @@
+\appendix
+
+\subsection{Analysis plan}
+Ideally, we should prove efficiency, fairness and security by equations here. 
+
+\subsubsection{Efficiency}
+\begin{enumerate}
+    \item Calculate the average number of requests received/ads in the table?
+    \item prove that we cannot go above a specific memory usage (same as below?)
+    \item just the occupancy score parameters ($b$ and $P_\textit{occupancy}$) by using the maximum bandwidth and memory usage. So that even with maximum possible bandwidth, the capacity doesn't go above 100\%.
+    \item prove that an attacker (or anyone else) cannot create additional state on the registrar 
+\end{enumerate}
+
+\subsubsection{Fairness}
+\begin{enumerate}
+    \item we could assume one topic (or zipf distribution?) and calculate the load on each node for registrations and lookups. Assume a specific number of nodes in the network, calculate how many registration requests each node will get in each bucket, based on that we can calculate the average waiting time and calculate a requests per lifetime ratio. 
+    \item the same for lookup, (zipf distribution again?) and calculate the average number of request each node can expect. It might be however tricky to calculate values for different buckets and assuming that they are close to a topic with a given popularity.
+\end{enumerate}
+
+\subsubsection{Security}
+\begin{enumerate}
+    \item Calculate the probability of a lookup operation being eclipsed
+    \item Prove that a node cannot place more ads on a single registrar by deviating from the protocol (with the lower bound). Here, we can just reason about it without equations IMO. 
+    \item Can we do something for the DoS mathematically?
+\end{enumerate}
+
+\subsection{IP Score}
+\textbf{Situation 1: There are already} \(\mathbf{n}\) \textbf{random
+addresses in the tree. What score will a new random IP address get?}
+
+\emph{Note: We assume completely random addresses. That means it can
+happen with a certain probability that some of the random addresses are
+identical.}
+
+First level: With probability 0.5, the new address goes to the 0-branch
+and the probability that branch contains more than \(\frac{n}{2}\) of
+the entries is
+\(P(\# 0 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1)\). Also with
+probability 0.5, the new address goes to the 1-branch and the
+probability that branch contains more than \(\frac{n}{2}\) of the
+entries is\(\ P(\# 1 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1).\)
+Since the binomial distribution is symmetric,
+\(P\left( \# 0 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1 \right) = \ P(\# 1 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1)\).
+The average score for the first level is:
+
+\[\text{NatScor}e_{\text{level}}(n) = \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} = 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}}\]
+
+This will introduce an error if n is not an integer and multiple of two.
+The best seems to be to take the average of the two approximations:
+
+\[\text{NatScor}e_{\text{level}}(n) = \frac{1}{2}\left( 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}} + \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} \right)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*)\]
+
+We assume that the levels are independent and that we will have, on
+average, \(\frac{n}{2^{i - 1}}\) entries in each subtree of level \(i\).
+Using the above equation on each level gives
+
+\[\text{Scor}e_{\text{random}}(n) = \sum_{i = 1}^{32}{\text{NatScor}e_{\text{level}}\left( \frac{n}{2^{i - 1}} \right)}\]
+
+\textbf{\hfill\break
+}
+
+\textbf{Situation 2: There are already} \(\mathbf{n + k}\)
+\textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
+random and} \(\mathbf{k}\) \textbf{are identical. What score will a new
+random IP address get?}
+
+\emph{Note: We assume completely random addresses. That means it can
+happen with a certain probability that one of the random addresses is
+identical to another random address or even to the} \(k\)
+\emph{identical ones.}
+
+Let's first define the probability that at least \(\text{b\ }\)out of
+\(m\) fair coin tosses are head:
+
+\[p(m,b) = \sum_{i = b}^{m}\frac{\left( \frac{m}{i} \right)}{2^{m}}\]
+
+Again, errors will be introduced if \(m\) is not a natural number.
+Better results are obtained with the approximation in equation (*) from
+situation 1.
+
+First level (``level 0''): With probability 0.5, the new IP address is
+in the same branch as the \(k\) identical addresses. The probability
+that more than half of the entries are in this branch knowing that
+the\(\text{\ k}\) identical are in this branch is:
+
+\[p\left( n,\ \left\lfloor \frac{n + k}{2} \right\rfloor + 1 - k \right)\]
+
+With probability 0.5, the new IP address is in the branch that only
+contains random addresses. The probability to have the majority of the
+entries in this branch knowing that \(k\) are definitely not in this
+branch is:
+
+\[p\left( n,\ \left\lfloor \frac{n + k}{2} \right\rfloor + 1 \right)\]
+
+In total, the score for the first level is
+
+\[\frac{1}{2}p\left( n,\ \left\lfloor \frac{n + k}{2} \right\rfloor + 1 - k \right) + \frac{1}{2}p\left( n,\ \left\lfloor \frac{n + k}{2} \right\rfloor + 1 \right)\]
+
+On the second level, we have four branches, of which one contains with
+certainty the \(k\) identical addresses:
+
+\[\frac{1}{4}p\left( \frac{n}{2},\ \left\lfloor \frac{n + k}{4} \right\rfloor + 1 - k \right) + \frac{3}{4}p\left( \frac{n}{2},\ \left\lfloor \frac{n + k}{4} \right\rfloor + 1 \right)\]
+
+And so on for the other levels. In total, the average score is:
+
+\[\text{Scor}e_{\text{random}}(n,k) = \sum_{i = 1}^{32}\left\lbrack \frac{1}{2^{i}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right) + \left( 1 - \frac{1}{2^{i}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack\]
+
+\textbf{\hfill\break
+}
+
+\textbf{Situation 3: There are already} \(\mathbf{n + k}\)
+\textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
+random and} \(\mathbf{k}\) \textbf{are identical (also random). What
+score will an IP address get that is identical to the} \(\mathbf{k}\)
+\textbf{identical entries?}
+
+The situation is similar to situation 2. However, we know that we always
+stay on the branch with the \(k\) identical entries. The score is:
+
+\[\text{Scor}e_{\text{identical}}(n,k) = \sum_{i = 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right)}\]
+
+\textbf{Situation 4: There are already}
+\(\mathbf{n +}\mathbf{2}^{\mathbf{a}}\mathbf{\cdot k}\)
+\textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
+random and there are} \(\mathbf{2}^{\mathbf{a}}\) \textbf{``groups'' of}
+\(\mathbf{k}\) \textbf{entries with identical addresses. Those}
+\(\mathbf{2}^{\mathbf{a}}\) \textbf{addresses are distributed perfectly
+over the tree. What score will a new random IP address get?}
+
+Since the \(2^{a}\) addresses are distributed perfectly over the tree,
+the new random address will see exactly \(2^{a - 1} \cdot k\) of them in
+its branch at the first level, \(2^{a - 2} \cdot k\) in its branch at
+the second level etc. After level \(a\), the subtrees start to behave
+like in situation 2.
+
+The score for the level \(1 \leq j \leq a\) is
+
+\[p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)\]
+
+After level \(a\), we can apply the score of situation 2 to each
+subtree:
+
+\[{\text{Scor}e_{random - a}(n,k) = \sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)}
+}{+ \sum_{i = a + 1}^{32}\left\lbrack \frac{1}{2^{i - a}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right) + \left( 1 - \frac{1}{2^{i - a}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack}\]
+
+\textbf{Situation 5: Like situation 4
+(}\(\mathbf{n +}\mathbf{2}^{\mathbf{a}}\mathbf{\cdot k}\)
+\textbf{addresses), but the new address is not random; it is one of the}
+\(\mathbf{2}^{\mathbf{a}}\) \textbf{addresses.}
+
+The score for levels 1 to \(a\) is the same as in situation 4. However,
+for the levels \(> a\), the ``new'' address will always stay on a branch
+that contains the \(k\) entries with the same address. For those levels,
+we can use the result from situation 3.
+
+\[\text{Scor}e_{identical - a}(n,k) = \sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)} + \sum_{i = a + 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)}\]
+
