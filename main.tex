@@ -45,28 +45,16 @@
 \begin{document}
 
 \title{Topic-based service discovery for the Ethereum P2P network}
-\title{\sysname: Robust, efficient, and decentralized service discovery for the Ethereum platform}
+\title{\sysname: Service discovery for the Ethereum platform}
 \author{}
 \maketitle
 
 \begin{abstract}
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\mk{TODO:Write the abstract}
-  
-  
-%   \er{needs a full rewrite}
-% Peer-to-Peer (P2P) Networks  are being increasingly deployed in distributed systems. They are being used in blockchains (Ethereum, Bitcoin), storage systems (IPFS, Stor4j) and more. One of the main functionalities of P2P networks is the ability to collectively keep information in the form of a key-value store. However, the current implementations either trade security for efficiency (structured P2P networks) or vice-versa (unstructured P2P networks).
-%
-% In this work, we propose \sysname - a P2P key/value store implementation which enables secure, efficient and robust information storage and retrieval. Our system can be deployed on any Distributed Hash Table (DHT). \sysname stores data on multiple nodes for increased security and allows discovering that data within a bounded amount of time guaranteeing high efficiency. We implement a robust admission mechanism limiting the resource usage by its participants and preventing a vast range of malicious behaviours.
-%
-% We present the design of \sysname and evaluate the system in multiple scenarios. Compared to the state-of-the-art, our system achieves high security, more equal load distribution, lower computational and communication overhead and better robustness in the presence of a powerful attacker.
+Ethereum ecosystem consists of a plethora of decentralised applications. Nodes in the network first join a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for efficiency and security of the entire ecosystem. However, the current discovery protocol scales badly with the increasing number of applications and nodes, and prevents growth of the network.
 
-%The Ethereum blockchain runs a Peer-to-Peer (P2P) network that rely on Kademlia Distributed Hash Table (DHT) for peer discovery and exchanging pending transactions and mined blocks. 
-%Apart from supporting blockchain data exchange, the Ethereum P2P network is used by other applications taking advantage of the existing infrastructure to facilitate bootstraping of their own, application-specific networks. However, in order to achieve this task, peers using the same application must first find each other among other, unrelated nodes.
+We present \sysname, a novel service discovery system for Ethereum. \sysname combines pseudo-random and deterministic advertisement placement to achieve both efficiency and security. Our system implements a new admission control protocol that protect against a wide range of malicious behaviours expected in an open environment. 
+\sysname performs lookup operations that are up to three orders of magnitude more efficient (in terms of overhead and discovery time) than the currently used discovery system while achieving a similar security level. \sysname is currently being scheduled for deployment in the next version of the Ethereum peer-to-peer network. 
 
-%In this work, we propose a service discovery system (\sysname) which enables secure and robust discovery of application-specific peers in a large, host P2P network. 
-%Our system enables nodes to associate themselves with a set of \emph{topics}. The association is collectively stored by the network, and can be later found by interested peers within a bounded amount of time. \sysname included a robust admission mechanism limiting the resource usage by its participants and preventing a vast range of malicious behaviours. 
 \end{abstract}
 
 
