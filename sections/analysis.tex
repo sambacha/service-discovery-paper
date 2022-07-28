@@ -23,6 +23,26 @@ The pending requests (\ie not in the cache) do not create any state (apart from 
 In spite of some nondeterministic behaviour, both operations tightly follow the number of steps of the regular DHT FIND\_NODE operations and thus finish within $O(log(N))$ steps.
 
 \subsection{Fairness}
+We assume a Zipf distribution of the topics in the system and that the topic hashes are uniformly distributed in the DHT hash space. For simplicity we uniquely compare the load of \emph{registrar A} - located close to the most popular \emph{topic A} and the load of \emph{registrar B} - located close to the least popular \emph{topic B}. \emph{topic A} is followed by $N_a$ nodes and \emph{topic B} is followed by $N_b$ nodes. 
+
+We assume \emph{topic A} and \emph{topic B} located on the opposite sides of the DHT hashspace (the worst case scenario for load balancing). Both \emph{registrar A} and \emph{registrar B} receive different amounts of traffic for both \emph{topics A} and {B} ($L_a$ and $L_b$), and the same amount of traffic $L_x$ from other topics \emph{topic X}, $\textit{topic X} \neq \textit{topic A} \land  \textit{topic X} \neq \textit{topic B}$. 
+
+\para{Registration operations achieve equal load distribution}
+As the closest node to the \emph{topic A} hash, \emph{registrar A} receives registration requests from all the $N_a$ advertisers. As the furthest node to the \emph{topic B} hash, it also receives $\frac{(N_{b}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic B}. Analogically, \emph{registrar B} receives $N_b$ requests for \emph{topic B} and $\frac{(N_{a}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic A}. As $N_a \gg N_b$, the initial number of request is higher for \emph{registrar A}. However, as ad cache fills up, \emph{registrar A} will issue higher waiting time making the requests more frequent. \Cref{fig:registration fairness} presents the amount of ads in caches of both registrars as a function of popularity ratio between the two topics. The load difference experiences sub-linear growth ensuring close to equal load distribution. 
+
+%\begin{figure}[t]
+%    \includegraphics[width=1\linewidth]{img/registratio_fairness}
+%    % \vspace{-2mm}
+%    \caption{Ad cache space usage for different request rates.
+%    }
+%    \label{fig:registration fairness}
+%\end{figure}
+
+
+
+
+
+\para{Lookup operations achieve equal load distribution}
 
 
 \subsection{Security}
