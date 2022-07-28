@@ -20,7 +20,7 @@ In consultation with Geth developers, we assume the capacity of the cache $n = 1
 The pending requests (\ie not in the cache) do not create any state (apart from the lower bound) at the registrar (\ie the registrar uniquely calculates the waiting time and return a signed ticket). The lower bound state create by registrars is bounded by the number of distinct IPs and topic in the cash and is thus bounded by the capacity of the cache $O(n)$.
 
 \para{Register and lookup operations finish within $O(log(N))$ steps}
-In spite of some nondeterministic behaviour, both operations tightly follow the number of steps of the regular DHT $MSG_FIND$ operations and thus finish within $O(log(N))$ steps.
+In spite of some nondeterministic behaviour, both operations tightly follow the number of steps of the regular DHT FIND\_NODE operations and thus finish within $O(log(N))$ steps.
 
 \subsection{Fairness}
 
