@@ -30,15 +30,15 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 
 % A newly instantiated DHT node typically populates its routing table with a set of (hard-coded) bootstrap nodes\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}.
 
-\begin{figure}
-    \includegraphics[width=0.4\textwidth]{img/kademlia}
-    \caption{Organization of the DHT routing table.\mk{Do we need this figure?}}
-    \label{fig:kademlia}
- \end{figure}
+%\begin{figure}
+%    \includegraphics[width=0.4\textwidth]{img/kademlia}
+%    \caption{Organization of the DHT routing table.\mk{Do we need this figure?}}
+%    \label{fig:kademlia}
+% \end{figure}
 
-\smallskip
-\noindent
-\textbf{Lookups.}
+%\smallskip
+%\noindent
+%\textbf{Lookups.}
 %
 The bucket partitioning scheme divides the keyspace from the point of view of $N$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $N$'s ID.
 As a result, a node's routing table provides a more detailed (\ie, fine-grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
