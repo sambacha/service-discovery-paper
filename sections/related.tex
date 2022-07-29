@@ -6,24 +6,27 @@
 
 \er{Maybe discuss the byzantine-resilient peer sampling system Brahms, that also uses a blocking mechanism when more than a threshold number of view updates (pushes) are received in a certain amount of time (not sure if this is overall or for a specific node though)~\cite{}}
 
-There exists several protocols aimed at discovery devices providing network services for local area networks.
-For instance, the Simple Service Discovery Protocol (SSDP)~\cite{helal2002standards}, basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref}, or the DNS-based service discovery~\cite{RFC6763}, are used to advertise services that other devices provide, such as printers, webcams, HTTPS servers, and other mobile devices, usually using multicasting or broadcasting techniques.
-However for service discovery in Internet-wide environments, since it is not possible to broadcast, centralized setups are commonly used to provide service discovery with good performance.
-UDDI~\cite{zhang2002aggregate} has been recognized as the most popular discovery mechanism for Web services.
+%There exists several protocols aimed at discovery devices providing network services for local area networks.
+%For instance, the Simple Service Discovery Protocol (SSDP)~\cite{helal2002standards}, basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref}, or the DNS-based service discovery~\cite{RFC6763}, are used to advertise services that other devices provide, such as printers, webcams, HTTPS servers, and other mobile devices, usually using multicasting or broadcasting techniques.
+%However for service discovery in Internet-wide environments, since it is not possible to broadcast, centralized setups are commonly used to provide service discovery with good performance.
+%UDDI~\cite{zhang2002aggregate} has been recognized as the most popular discovery mechanism for Web services.
 
-But when focusing on decentralized architectures, service discovery has been addressed from different perspectives. 
+%But when focusing on decentralized architectures, service discovery has been addressed from different perspectives. 
+Service discovery in decentralised architectures has been addressed from different perspectives. 
 Most of the solutions use Distributed Hash Table (DHT) based protocols using key-based routing to discover other peers. 
-CAN, Chord,  Pastry or Kademlia, are examples of DHT protocols where all the nodes self-organize themselves into overlay networks. 
+CAN~\cite{can}, Chord~\cite{chord},  Pastry~\cite{rowstron2001pastry} or Kademlia~\cite{maymounkov2002kademlia}, are examples of DHT protocols where all the nodes self-organize themselves into overlay networks. 
 DHT-based solutions offer fault-tolerant, scalable and efficient ways of finding nodes in large-scale networks.
-However, directly applying DHT for service discovery  present some drawbacks.
+However, directly applying DHT for service discovery present some drawbacks.
 The main one is the difficulty in guaranteeing the availability of published service descriptions.
-Usually,  DHT-based systems often distribute descriptions of functionally equivalent services to the same successor node,  as they have the same or similar hashing values. 
+Usually,  DHT-based systems often distribute descriptions of functionally equivalent services to the same provider node,  as they have the same or similar hashing values. 
 If such a node fails, a service consumer will not be able to discover any of these services. 
 There are existing approaches that solve the issue. 
-For instance,  Chord4S~\cite{chord4s} enhances Chord protocol by distributing service descriptions to different successor nodes. 
-In case one node fails, a service consumer is still able to find functionally equivalent services that are stored at other successor nodes.
+For instance,  Chord4S~\cite{chord4s} enhances Chord protocol by distributing service descriptions to different provider nodes. 
+In case one node fails, a service consumer is still able to find functionally equivalent services that are stored at other provider nodes.
+However, the main drawback is that DHT-based systems are  very easy to attack by adding new nodes with specific addresses to substitute the designated providers.
 
-Another solution for service discovery on peer-to-peer overlay networks could be the use of topic-based pub/sub systems. 
+
+Other solutions for service discovery on peer-to-peer overlay networks are based on  the use of topic-based pub/sub systems. 
 These exists some solutions,  such as~\cite{scribe,poldercast,banno2015}, that uses DHT-based systems to multicast data to subscribers.
 Similarly, TERA~\cite{baldoni2007tera} uses topic-based pub/sub system
 but using gossip protocols and self organization. 
@@ -35,17 +38,17 @@ However, all these solutions have not been designed with Sybil-resistance in min
 
 %"Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
 
-In~\cite{ring}, the authors propose a  universal overlay to provide a scalable infrastructure to bootstrap multiple service overlays providing different functionality, \ie a p2p network to help bootstrapping any p2p network.
-The solution is based on pastry,  but could work with any structured p2p.  The solution assumes node ids are assigned by certification authority,  therefore its security depends on a centralised system.  It utilises three components:
-First, a file storage based on PAST~\cite{past}, a content storage solution using pastry, where content is stored by K users with nodeid closest to content id using the same namespace. It can be used to store p2p software necessary to join a specific network and  signed by the creator. 
-Second, a multicast tree using Scribe~\cite{scribe} to creates multicast groups on top of Pastry. Nodes with closest id to groupid are used as rendezvous points.  Join messages are routed towards groupid and crossed nodes join the multicast tree. Messages are delivered to rendezvous points and follows the distribution tree. 
-Third, a search engine that allows nodes to search for keys using a set of query keywords. An index associates a keyword with a list of service keys, stored to the closest node to the keyword hash. Multicast groups can be used for persistent service querys using specific keywords. When new services are created users subscribed receive the advertisement.
-Advertising and discovery is done by generating a service certificate by the creator that describes the service. Service certificate is stored using a service key. Keywords are associated with a service key for the search engine.
-Services can be discovered either finding the service certificate looking for the service key, or by subscribing to a multicast tree that matches a certain keyword. The service certificate includes service description plus code keys, that can be used to retrieve the software similarly.
-The solution can be very efficient in terms of routing and network load. However, in terms of security it generates lots of doubts. Not clear to me if there can be multiple creators for the same service, and how malicious nodes are avoided to create fake services. I think most of the security resides on the certification authority that issues nodeids certificates, and therefore its a sort of permissioned p2p network. 
+%In~\cite{ring}, the authors propose a  universal overlay to provide a scalable infrastructure to bootstrap multiple service overlays providing different functionality, \ie a p2p network to help bootstrapping any p2p network.
+%The solution is based on pastry,  but could work with any structured p2p.  The solution assumes node ids are assigned by certification authority,  therefore its security depends on a centralised system.  It utilises three components:
+%First, a file storage based on PAST~\cite{past}, a content storage solution using pastry, where content is stored by K users with nodeid closest to content id using the same namespace. It can be used to store p2p software necessary to join a specific network and  signed by the creator. 
+%Second, a multicast tree using Scribe~\cite{scribe} to creates multicast groups on top of Pastry. Nodes with closest id to groupid are used as rendezvous points.  Join messages are routed towards groupid and crossed nodes join the multicast tree. Messages are delivered to rendezvous points and follows the distribution tree. 
+%Third, a search engine that allows nodes to search for keys using a set of query keywords. An index associates a keyword with a list of service keys, stored to the closest node to the keyword hash. Multicast groups can be used for persistent service querys using specific keywords. When new services are created users subscribed receive the advertisement.
+%Advertising and discovery is done by generating a service certificate by the creator that describes the service. Service certificate is stored using a service key. Keywords are associated with a service key for the search engine.
+%Services can be discovered either finding the service certificate looking for the service key, or by subscribing to a multicast tree that matches a certain keyword. The service certificate includes service description plus code keys, that can be used to retrieve the software similarly.
+%The solution can be very efficient in terms of routing and network load. However, in terms of security it generates lots of doubts. Not clear to me if there can be multiple creators for the same service, and how malicious nodes are avoided to create fake services. I think most of the security resides on the certification authority that issues nodeids certificates, and therefore its a sort of permissioned p2p network. 
 
 Another possible solution for service discovery in blockchain platforms is to incorporate a service discovery component to the blockchain. 
-In~\cite{manevich2019endorsement}, a new service discovery component is presented for  Hyperledger Fabric (HLF), a permissioned blockchain platform.
+In~\cite{manevich2019endorsement}, a new service discovery component is presented for Hyperledger Fabric (HLF), a permissioned blockchain platform.
 The service discovery component provides APIs that allow the client application to dynamically discover the configuration details of the endorsement policies and chaincode it needs to use.
 However, since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
 
@@ -68,13 +71,13 @@ Besides the service discovery feature in Ethereum itself, some applications buil
 In the area of avoiding Sybil and derived eclipsing attacks in peer-to-peer networks several solutions and state-of-the-art can be found in the literature.
 In~\cite{danezis2005sybil}, different strategies are devised to make DHTs resilient to malicious nodes trying to poison lookups, by routing queries in a way that minimizes trust bottlenecks, to minimize the amount of poisoned information that honest nodes receive from adversarial nodes.
 In a similar way, S/Kademlia~\cite{skad} propose new mechanisms to get resilience against common attacks by using parallel lookups over multiple disjoint paths, limiting free nodeld generation with crypto puzzles and introducing a reliable sibling broadcast.
-
 In ~\cite{cholez2010efficient}, the authors propose a statistical approach to detect a particular type of Sybil attack in  Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space.
 The authors found that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
-
-In~\cite{marcus2018low}~and~\cite{henningsen2019eclipsing}, the authors present low-resource eclipsing attacks for the Ethereum P2P network. 
+More relevant to our work is~\cite{marcus2018low}~and~\cite{henningsen2019eclipsing},  where the authors present low-resource eclipsing attacks for the Ethereum P2P network. 
 The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets, requiring only 2 IPs from distinct /24 subnets to be successful.
-As a result of this paper, Geth v1.8 and v1.9 implemented new countermeasures, such as  increasing number of connections, considering all nodes of the table during lookups, or throttling the inbound connection attempt, to reduce the chance of selecting an attacker-node .
+As a result of this paper,  Ethereum network and Geth v1.8 and v1.9 implemented new countermeasures, such as  increasing number of connections, considering all nodes of the table during lookups, or throttling the inbound connection attempt, to reduce the chance of selecting an attacker-node.
+These countermeasure have been added in our simulations for the underlying Kademlia protocol.
+\iffalse
 
 %"Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient} – This paper proposes a statistical approach to detect a particular type of Sybil attack in vanilla Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space. If sufficient number of (i.e., typically 10 or more) Sybil peers are successfully placed closest to a target ID, then the Sybils could attract all or most of the search and registration requests for that ID because of their proximity to that target and launch attacks such as returning bogus search results. On the other hand, the normal behaviour of honest peers is to generate their IDs uniformly at random. Based on measurements on a DHT with only honest peers, the authors find that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. Once divergence is detected, the IDs that contribute the most to the divergence are considered to be Sybils and are therefore omitted from the search results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
 
@@ -130,3 +133,4 @@ GossipSub: Attack-Resilient Message Propagation in
 the Filecoin and ETH2.0 Networks~\cite{gossipsub}
 
 \href{https://asc.di.fct.unl.pt/~jleitao/pdf/dinps22-tr.pdf}{Enriching Kademlia by Partitioning} (work in progress report, to be presented at \href{DINPS2022 by Protocol Labs}{https://research.protocol.ai/sites/dinps/calls/})
+\fi
