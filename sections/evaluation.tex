@@ -251,10 +251,11 @@ The attack succeeds when all the inbound and outbound connections of the target 
 We evaluated the resistance against eclipse attacks using the same default parameters used in the performance evaluation, that is 25000 nodes in the simulation and 300 topics by default, distributed using zipf function of exponent 1.0.  The simulation runs for 1 hour and there is a single lookup per node for the topic it participates.
 Nodes get eclipsed when all nodes discovered during a lookup are malicious nodes controlled by the attacker, and therefore they only can connect to the attacker and get the view of the network from the attacker only. 
 
-In the following figures we show violin plots representing the number of malicious nodes returned per lookup using different parameters for the same protocols evaluated in the performance simulations.  On top of each violin plot we specify the percentage of nodes eclipsed after a lookup (\ie percentage of lookups where all nodes returned are malicious nodes).
-We evaluated the eclipse attacks targeting two specific topis, the most popular topic and a low popularity topic.
+In the following figures we show violin plots representing the number of malicious nodes returned per lookup using different number of attackers (by default there are 500 attackers) and using different number of IP addresses used in the attack (default is 10) for the same protocols evaluated in the performance simulations.  On top of each violin plot we specify the percentage of nodes eclipsed after a lookup (\ie percentage of lookups where all nodes returned are malicious nodes).
+All attackers identifiers are generated uniformly distributed in the address space.
+We evaluated the eclipse attacks targeting two specific topics, the most popular topic and a low popularity topic.
 The most popular topic has 3978 nodes registering for this topic and the low popularity has only 33 nodes.
-We evaluated the attacks for the most popular and least popular 
+%We evaluated the attacks for the most popular and least popular 
 
 
 %\begin{figure}[!h]
@@ -288,11 +289,12 @@ We evaluated the attacks for the most popular and least popular
 %\label{fig:eclipse_distribution_t299}
 %\end{figure}
 
-In Figure~\ref{fig:eclipse_evil_t0} we show the malicious nodes discovered for all lookups for all protocols, using different number of Sybil nodes in the network,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_evil_t299} we show the malicious nodes discovered for the least popular topic.  In both figures attackers identifiers are generated uniformly and attackers use a pool of 100 IP addresses. 
-In Figure~\ref{fig:eclipse_evil_t0}, we observe \discv is the protocol with the lowest number of eclipses and with the best distribution of malicious nodes returned during lookups.  However \sysname performs very close to \discv, having only 0.2\% of eclipses when there are 1000 attackers in the network.
-\altname and \altnameticket has the worst performance,  having 47.7\% and 48.4\% of eclipses when when there are 2500 attackers.
-In Figure~\ref{fig:eclipse_evil_t299}, when attacking least popular topic, we observe \sysname is the most resistant to eclipsing.
-This is because it is the protocol that is able to discover more nodes with a higher diversity and is the protocol that will find easier the any of the few valid nodes in the network, and therefore it will be not eclipsed.
+In Figure~\ref{fig:eclipse_evil_t0} we show the malicious nodes discovered for all lookups for all protocols,  using different number of Sybil nodes (attackers) in the network,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_evil_t299} we show the malicious nodes discovered for the least popular topic.  
+%In both figures attackers identifiers are generated uniformly and attackers use a pool of 100 IP addresses. 
+In Figure~\ref{fig:eclipse_evil_t0}, we observe \discv is the protocol with the lowest number of eclipses and with the best distribution of malicious nodes returned during lookups.  However \sysname performs very close to \discv, having only 0.6\% of eclipses when there are 1000 attackers in the network.
+\altname and \altnameticket has the worst performance,  having 26.7\% and 25.9\% of eclipses when when there are 1000 attackers.
+In Figure~\ref{fig:eclipse_evil_t299}, when attacking least popular topic, we observe \sysname is the most resistant to eclipsing in all cases.
+This is because it is the protocol that is able to discover more nodes with a higher diversity and is the protocol that will find easier  any of the few valid nodes in the network, and therefore it will be not eclipsed.
  
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
@@ -306,13 +308,12 @@ This is because it is the protocol that is able to discover more nodes with a hi
 \label{fig:eclipse_evil_t299}
 \end{figure}
 
-
 In Figure~\ref{fig:eclipse_sybil_t0} we show the malicious nodes discovered for different number of IP addresses available to the attacker,  when attacking the most popular topic,  and in Figure~\ref{fig:eclipse_sybil_t299} we show the malicious nodes discovered when attacking the least popular topic.
 In this case we observe the same results than for the default values. 
-\sysname is very close to \discv performance with eclipses closes to 0\% for the most popular topic, and \altname and \altnameticket is close to 33\% eclipses in all cases.
-When attacking the low popularity topic,  nodes eclipsed are very similar but having a slight better performance \discv and \sysname.
-There is not appreciated in the results any effect of increasing the number of IPs used by the attackers for any of the protocols.
-This is caused by the fact that what is more important for the eclipses is whether you hit a malicious node during the lookup process rather than the registrations attackers are able to place in other nodes.
+\sysname is very close to \discv performance with eclipses closes to 0\% for the most popular topic, and \altname and \altnameticket is close to 30\% and  eclipses in all cases.
+When attacking the low popularity topic with 100 IPs used,  nodes eclipsed are very similar but showing always a  better performance for \sysname.
+When the number of IPs used in the attack are lower,  we can appreciate \sysname  has a much higher the resistance to eclipsing,  caused by its ticket regulation, having only 5.9\% eclipses when used a single IP address and a 41.2\% of eclipses when 10 IP addresses used.  This performance is superior to the rest of the protocols that they do no have percentage of eclises below 70\% in any of the cases.
+
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
