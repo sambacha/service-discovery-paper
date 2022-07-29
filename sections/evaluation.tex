@@ -70,14 +70,16 @@ In the simulations, we verify the impact of the following parameters:
 Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and nodes each perform a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
 
 We set all the DHT-related parameters to the ones currently used by Ethereum DHT, \ie there are 17 buckets and upto 16 peers stored in each bucket. \oa{Mention the replacement policy for a bucket}. 
-Based on formal analysis (see Appendix), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing application such as Geth.
+Based on our analysis (see \Cref{sec:analysis} and also Appendix), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing application such as Geth.
 
 %The values of these parameters were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Message Overhead}
 
-In the rest of this section, we use violin plots for a compact illustration of both the distribution and the density of data points for each performance metric. For each plot, we limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
+In the rest of this section, we use violin plots (\ie density curves) for a compact illustration of both the distribution and the density of data points for each performance metric. For each violin plot, the vertical length illustrates the exact range of observed values, and the width indicates the count of observations (\ie density) at each data point. 
+%Also, in some of the plots, we display the maximum observed value at the top of a violin curve for better illustration. 
+%Also, for some of the results, we split the violin into two and illustrate the performance with and without attackers' presence in each side. 
 
 
 %In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
