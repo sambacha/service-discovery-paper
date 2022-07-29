@@ -28,15 +28,15 @@ We assume a Zipf distribution of the topics in the system and that the topic has
 We assume \emph{topic A} and \emph{topic B} located on the opposite sides of the DHT hashspace (the worst case scenario for load balancing). Both \emph{registrar A} and \emph{registrar B} receive different amounts of traffic for both \emph{topics A} and {B} ($L_a$ and $L_b$), and the same amount of traffic $L_x$ from other topics \emph{topic X}, $\textit{topic X} \neq \textit{topic A} \land  \textit{topic X} \neq \textit{topic B}$. 
 
 \para{Registration operations achieve equal load distribution}
-As the closest node to the \emph{topic A} hash, \emph{registrar A} receives registration requests from all the $N_a$ advertisers. As the furthest node to the \emph{topic B} hash, it also receives $\frac{(N_{b}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic B}. Analogically, \emph{registrar B} receives $N_b$ requests for \emph{topic B} and $\frac{(N_{a}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic A}. As $N_a \gg N_b$, the initial number of request is higher for \emph{registrar A}. However, as ad cache fills up, \emph{registrar A} will issue higher waiting time making the requests more frequent. \Cref{fig:registration fairness} presents the amount of ads in caches of both registrars as a function of popularity ratio between the two topics. The load difference experiences sub-linear growth ensuring close to equal load distribution. 
+As the closest node to the \emph{topic A} hash, \emph{registrar A} receives registration requests from all the $N_a$ advertisers. As the furthest node to the \emph{topic B} hash, it also receives $\frac{(N_{b}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic B}. Analogically, \emph{registrar B} receives $N_b$ requests for \emph{topic B} and $\frac{(N_{a}K_\textit{register})}{(\frac{N}{2})}$ requests for \emph{topic A}. As $N_a \gg N_b$, the initial number of request is higher for \emph{registrar A}. However, as ad cache fills up, \emph{registrar A} will issue higher waiting time making the requests more frequent. \Cref{fig:fairness_registration} presents the load ratio between both registrars as a function of increasing popularity between the two topics. The load difference experiences sub-linear growth. When \emph{topic A} is 100 times more popular, \emph{registrar A} receives only 1.6 times more requests than \emph{registrar B}. We present results without the admission control (\ie no waiting function) for reference\footnote{The sub-linear load ratio growth without admission control is caused by the fixed common traffic received by both registrars}. 
 
-%\begin{figure}[t]
-%    \includegraphics[width=1\linewidth]{img/registratio_fairness}
+\begin{figure}[t]
+    \includegraphics[width=1\linewidth]{img/fairness_registration}
 %    % \vspace{-2mm}
-%    \caption{Ad cache space usage for different request rates.
-%    }
-%    \label{fig:registration fairness}
-%\end{figure}
+    \caption{Load ratio between registrars located close to the most popular (\emph{registrar A}) and the least popular (\emph{registrar A}) topics.
+    }
+    \label{fig:fairness_registration}
+\end{figure}
 
 
 
