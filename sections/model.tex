@@ -23,6 +23,7 @@ Nodes fulfill the following roles in the network:
 \end{itemize}
 
 \subsection{Threat Model}
+\label{sec:threat}
 Our system is designed to operate in an adversarial environment, \ie. the Internet. We assume the presence of malicious actors in the DHT that may arbitrarily deviate from the protocol%. These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
 The security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation. This is because the DHT's basic protocol is used to initialize and maintain the data structures used by the service discovery layer. We assume that no honest node is fully eclipsed by the malicious ones, \ie each honest DHT node has at least one honest peer. The Ethereum already implements multiple mechanisms preventing eclipse attacks at the DHT level~\cite{marcus2018low, henningsen2019eclipsing}.  
