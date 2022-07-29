@@ -8,7 +8,7 @@ In this section, we present \sysname network and threat models as well as the ob
 \subsection{System Model}
 We assume a network of $N$ nodes. At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers. Nodes are identified by their \emph{node ID}, which is simply the hash of their public key. Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However, two nodes cannot share the same ID.
 
-\sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT.\mk{Is it a good place to mention that we assume the DHT to be secure?}
+\sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT.
 
 \sysname indexes participants according to \emph{topics}. A topic is an identifier for a
 service or application provided by a node. Topics are arbitrary strings but can be mapped to 256-bit integers (topic hashes), like node IDs and DHT items.
