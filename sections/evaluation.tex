@@ -76,7 +76,7 @@ We set all the DHT-related parameters to the ones currently used by Ethereum DHT
 Following Ethereum Kademlia specification,  each bucket has a replacement list of 10 nodes. 
 Every 100 seconds a random bucket is checked for unresponsive nodes. 
 In case of dead nodes, these are substituted by nodes from the replacement list.  In case not enough nodes in the replacement list,  a new random lookup is performed to discover mode nodes.
-Based on formal analysis (see Appendix), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing application such as Geth.
+Based on formal analysis (see \Cref{sec:analysis}), we set other \sysname parameters such as the number of registrations placed per bucket $K_{register}= 3$, the occupancy exponent $P_{occupancy} = 10$, the number of peers to contact per bucket during a topic lookup $L_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing applications such as Geth.
 
 %The values of these parameters were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
 
@@ -86,8 +86,8 @@ Based on formal analysis (see Appendix), we set other \sysname parameters such a
 
 \para{Network performance}
 In the rest of this section, we use violin plots for a compact illustration of both the distribution and the density of data points for each performance metric. For each plot, we limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
-The violin plots are split in two sides. The left side shows the network performance when there is no attack in the network. The right side shows the network performance under a Denial of Service topic spam attack,  described in the beginning of this section.
-In the top of the figure we also show maximum values, comparing with and without being attacked when this values go off the figure.
+The violin plots are split in two sides. The left side shows the network performance when there are no malicios nodes in the network, while the right side shows the network performance under the generic spammer attack, where Sybils spam registrations with random topics to attack ad cache resources of registrars. For each topic, we add as many Sybils as there are benign nodes participating in the topic. 
+Above each side of the violins, we display the maximum observed values. 
 
 %In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
 %Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
@@ -160,14 +160,12 @@ In the top of the figure we also show maximum values, comparing with and without
 \label{fig:msgsPerTopic}
 \end{figure}
 
-In~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic}, we show the total number of messages (overhead) created in the network by all protocols, that is total number of messages received by node during registration and lookup process. For \discv, only lookup generated messages are shown since there is no registration process in the protocol.
-We observe the total number of messages during the simulation but normalised per advertisement period (\ie 15 minutes).
-Therefore in the figures, it is shown the messages related to a single lookup per node and a single registration process per node before advertisements start to expire and need to be refreshed.
-This the overall overhead registered per node in the network.
-We can observe that \altname protocols does not scale with the increase of nodes in the network. 
-Nodes that are close to a topic hash receive most of the traffic and there is a linear increase with the number of nodes in the network. 
-\discv protocol has a better distribution of the load between nodes since its behaviour is completely random. However, the average load in nodes is the highest one because of the overhead caused by not being able to find nodes for specific topics, increasing the overhead during lookup.
-\sysname in comparison, provides lower overhead than the other protocols.
+In~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic}, we present the total number of received messages (\ie overhead) received by the nodes as part of registration and lookup processes. For \discv, only lookups generate messages as there is no registration process in the protocol.
+We observe the total number of messages during the simulation but averaged over ad expiration periods (\ie 15 minutes long). Therefore, the message counts relate to a single lookup followed by a single registration process per node before advertisements expire and refreshed again.
+
+We observe that \altname protocols have poor fairness and scalability since the number of messages received by the nodes close to each topic hash increases linearly both with increase in the number of nodes and topics. 
+\discv protocol has a better distribution of the load between nodes since the destination of lookup messages is chosen randomly. However, the average load across nodes in \discv is the highest among all of them, because nodes have to query a large number of peers during a lookup before they can discover sufficient number of topic-specific peers, increasing the overhead during lookup.
+\sysname in comparison, provides significantly lower overhead than the other protocols. However, under attack the overhead created by Sybils dominate the message counts for all four mechanisms. %\oa{I don't know what else to say about attacks here}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Lookup performance}
@@ -179,9 +177,9 @@ Nodes that are close to a topic hash receive most of the traffic and there is a 
 \label{fig:discoveredPerTopic}
 \end{figure}
 
-\Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with increasing number of topics in the network. The discovery becomes more difficult, as the number of topics grows.  \discv achieves a much lower number of discovered peers per operation, while \sysname and DHT-based solution efficiently discover the required amount of nodes. The rare cases where \sysname and DHT-based solution do not discover the required amount of peers are caused by small networks that consist of less than 30 nodes. 
-DHT-based solutions show the best discovery performance since they go direct towards the nodes (close to the topic id) where its known most of registrations will be, without taking into account network load or security resistance. 
-However \sysname is very close to DHT protocols performance
+\Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with increasing number of topics in the network. We observe that in \discv, nodes discover a much lower number of application-specific peers per operation, while \sysname and DHT-based solution efficiently discover the required (\ie 30) amount of peers to terminate the lookup. In rare cases, \sysname and DHT-based solution do not discover the required amount of peers that are caused by unpopular topics with close to 30 participants. 
+DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery performance since the nodes directly query the nodes (close to the topic id) where registrations from all application-specific peers are stored. However, as we will see, DHT-based solutions have poor security against eclipse attacks. 
+Finally, we observe that \sysname achieves very close lookup performance to DHT protocols. 
 
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
@@ -194,8 +192,9 @@ However \sysname is very close to DHT protocols performance
 \end{figure}
 
 \Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with increasing size of the network. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes.
- However, \discv suffers from poor performance for all the investigated network sizes. 
+ However, \discv again suffers from poor performance for all the investigated network sizes. 
 
+\iffalse %Onur: removing these for now
 \begin{figure}
 \includegraphics[width=\linewidth]{results/split/topic_wasDiscovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
@@ -209,7 +208,7 @@ However \sysname is very close to DHT protocols performance
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for different network size for the simulation time.}
 \label{fig:efficiency_size}
 \end{figure}
-
+\fi 
 %\subsection{Registrations}
 %
 %
