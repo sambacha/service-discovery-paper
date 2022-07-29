@@ -4,41 +4,54 @@
 \section{Related Work}
 \label{sec:related}
 
-\mk{make sure we discuss Ethereum DHT security extentions (against eclipsing).}
 
-\mk{Add the above to the model.}
+A decentralized service discovery system can be organized by directly storing the membership information in a DHT~\cite{can,chord,rowstron2001pastry,maymounkov2002kademlia}. 
+DHT-based solutions offer fault-tolerant, scalable and efficient ways of finding nodes in large-scale networks.
+However, it is difficult to guarantee the availability of published service descriptions.
+If nodes close to a service hash fail, the whole sub-network becomes undiscoverable. 
+While solutions such as Chord4S~\cite{chord4s} reduce this risk, the main drawback remains the vulnerability to Sybil attacks.
 
-\er{Maybe discuss the byzantine-resilient peer sampling system Brahms, that also uses a blocking mechanism when more than a threshold number of view updates (pushes) are received in a certain amount of time (not sure if this is overall or for a specific node though)~\cite{}}
+Other systems implement service discovery on top of publish-subscribe platforms. However, those solutions are built directly on top of a DHT~\cite{scribe,poldercast,banno2015} (and share its weaknesses), introduce significant overhead to keep the data up to date~\cite{gossipsub} or introduce a single point of failure~\cite{baldoni2007tera, dan2012centralized}.
+
+
+Recently, multiple service discovery protocols were implemented for the blockchain space~\cite{farmer2021decentralized, manevich2019endorsement, keizer2021flock}. Unfortunately, they are meant to work on a small-scale~\cite{farmer2021decentralized}, or require writing to the blockchain (thus introducing significant monetary cost)~\cite{manevich2019endorsement, keizer2021flock}. 
+
+Multiple works proposed DHT enhancements to make it more resistant to Sybil attacks. This is achieved by exploiting social relations between nodes~\cite{danezis2005sybil, danezis2009sybilinfer}, introducing some kind of Proof-of-Work~\cite{skad} or sampling participant identifiers~\cite{cholez2010efficient} but is difficult to implement in current P2P networks. An extensive number of systems have been proposed for resilient peer sampling in P2P networks~\cite{bortnikov2009brahms, jelasity2007gossip, ouguz2014stable, pigaglio2022raptee}. While those systems are useful in some scenarios, they cannot be easily adapted to application-specific peer sampling required by the Ethereum ecosystem. 
+
+
+Relevant to our work, the Ethereum DHT was recently enhanced~\cite{marcus2018low, henningsen2019eclipsing} to make it more resistant to low-resource eclipse attacks at the DHT level. Those solution enable \sysname to operate, as it relies on honest participants not being eclipsed at the DHT level. 
+
+
+
+%\er{Maybe discuss the byzantine-resilient peer sampling system Brahms, that also uses a blocking mechanism when more than a threshold number of view updates (pushes) are received in a certain amount of time (not sure if this is overall or for a specific node though)~\cite{}}
 
 %There exists several protocols aimed at discovery devices providing network services for local area networks.
 %For instance, the Simple Service Discovery Protocol (SSDP)~\cite{helal2002standards}, basis of the discovery protocol of Universal Plug and Play (UPnP)~\hl{missing ref}, or the DNS-based service discovery~\cite{RFC6763}, are used to advertise services that other devices provide, such as printers, webcams, HTTPS servers, and other mobile devices, usually using multicasting or broadcasting techniques.
 %However for service discovery in Internet-wide environments, since it is not possible to broadcast, centralized setups are commonly used to provide service discovery with good performance.
 %UDDI~\cite{zhang2002aggregate} has been recognized as the most popular discovery mechanism for Web services.
 
-%But when focusing on decentralized architectures, service discovery has been addressed from different perspectives. 
-Service discovery in decentralised architectures has been addressed from different perspectives. 
-Most of the solutions use Distributed Hash Table (DHT) based protocols using key-based routing to discover other peers. 
-CAN~\cite{can}, Chord~\cite{chord},  Pastry~\cite{rowstron2001pastry} or Kademlia~\cite{maymounkov2002kademlia}, are examples of DHT protocols where all the nodes self-organize themselves into overlay networks. 
-DHT-based solutions offer fault-tolerant, scalable and efficient ways of finding nodes in large-scale networks.
-However, directly applying DHT for service discovery present some drawbacks.
-The main one is the difficulty in guaranteeing the availability of published service descriptions.
-Usually,  DHT-based systems often distribute descriptions of functionally equivalent services to the same provider node,  as they have the same or similar hashing values. 
-If such a node fails, a service consumer will not be able to discover any of these services. 
-There are existing approaches that solve the issue. 
-For instance,  Chord4S~\cite{chord4s} enhances Chord protocol by distributing service descriptions to different provider nodes. 
-In case one node fails, a service consumer is still able to find functionally equivalent services that are stored at other provider nodes.
-However, the main drawback is that DHT-based systems are  very easy to attack by adding new nodes with specific addresses to substitute the designated providers.
+%The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets, requiring only 2 IPs from distinct /24 subnets to be successful.
+%As a result of this paper,  Ethereum network and Geth v1.8 and v1.9 implemented new countermeasures, such as  increasing number of connections, considering all nodes of the table during lookups, or throttling the inbound connection attempt, to reduce the chance of selecting an attacker-node.
+%These countermeasure have been added in our simulations for the underlying Kademlia protocol.
+
+%In the area of avoiding Sybil and derived eclipsing attacks in peer-to-peer networks several solutions and state-of-the-art can be found in the literature.
+%In~\cite{danezis2005sybil}, different strategies are devised to make DHTs resilient to malicious nodes trying to poison lookups, by routing queries in a way that minimizes trust bottlenecks, to minimize the amount of poisoned information that honest nodes receive from adversarial nodes.
+%In a similar way, S/Kademlia~\cite{skad} propose new mechanisms to get resilience against common attacks by using parallel lookups over multiple disjoint paths, limiting free nodeld generation with crypto puzzles and introducing a reliable sibling broadcast.
+%In ~\cite{cholez2010efficient}, the authors propose a statistical approach to detect a particular type of Sybil attack in  Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space.
+
+%The authors found that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
 
 
-Other solutions for service discovery on peer-to-peer overlay networks are based on  the use of topic-based pub/sub systems. 
-These exists some solutions,  such as~\cite{scribe,poldercast,banno2015}, that uses DHT-based systems to multicast data to subscribers.
-Similarly, TERA~\cite{baldoni2007tera} uses topic-based pub/sub system
-but using gossip protocols and self organization. 
-%TERA provides a good balance between bandwidth consumption and performance guarantees. 
-Similar solutions could be use to announce nodes that offer a certain service.
-However, those solutions rely on the use of rendezvous points for publishing the data,  which adds a single point of failure to the network.
-Moreover, continuous multicast of data to nodes subscribed for a service adds overhead to the network.
-However, all these solutions have not been designed with Sybil-resistance in mind and it requires that all nodes be trusted.
+%Another possible solution for service discovery in blockchain platforms is to incorporate a service discovery component to the blockchain. 
+%In~\cite{manevich2019endorsement}, a new service discovery component is presented for Hyperledger Fabric (HLF), a permissioned blockchain platform.
+%The service discovery component provides APIs that allow the client application to dynamically discover the configuration details of the endorsement policies and chaincode it needs to use.
+%However, since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
+
+%"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. 
+%Similarly, in~\cite{farmer2021decentralized} the authors propose decentralized identifiers for peer-to-peer service discovery.
+%"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}:
+%Besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
+
 
 %"Centralized and distributed protocols for tracker-based dynamic swarm management"~\cite{dan2012centralized}
 
@@ -51,15 +64,15 @@ However, all these solutions have not been designed with Sybil-resistance in min
 %Services can be discovered either finding the service certificate looking for the service key, or by subscribing to a multicast tree that matches a certain keyword. The service certificate includes service description plus code keys, that can be used to retrieve the software similarly.
 %The solution can be very efficient in terms of routing and network load. However, in terms of security it generates lots of doubts. Not clear to me if there can be multiple creators for the same service, and how malicious nodes are avoided to create fake services. I think most of the security resides on the certification authority that issues nodeids certificates, and therefore its a sort of permissioned p2p network. 
 
-Another possible solution for service discovery in blockchain platforms is to incorporate a service discovery component to the blockchain. 
-In~\cite{manevich2019endorsement}, a new service discovery component is presented for Hyperledger Fabric (HLF), a permissioned blockchain platform.
-The service discovery component provides APIs that allow the client application to dynamically discover the configuration details of the endorsement policies and chaincode it needs to use.
-However, since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
+%Another possible solution for service discovery in blockchain platforms is to incorporate a service discovery component to the blockchain. 
+%In~\cite{manevich2019endorsement}, a new service discovery component is presented for Hyperledger Fabric (HLF), a permissioned blockchain platform.
+%The service discovery component provides APIs that allow the client application to dynamically discover the configuration details of the endorsement policies and chaincode it needs to use.
+%However, since HLF is a smaller scale private blockchain it does not require large-scale service discovery as ours and it does not need to prevent this service discovery feature from attackers.
 
 %"Endorsement in Hyperledger Fabric via service discovery"~\cite{manevich2019endorsement}: allows Hyperledger Fabric client to locate available services (chaincodes) using an API since HLF version 1.2. Before the set of services (chaincodes) was hardcoded at the client and server side. 
-Similarly, in~\cite{farmer2021decentralized} the authors propose decentralized identifiers for peer-to-peer service discovery.
+%Similarly, in~\cite{farmer2021decentralized} the authors propose decentralized identifiers for peer-to-peer service discovery.
 %"Decentralized identifiers for peer-to-peer service discovery"~\cite{farmer2021decentralized}:
-Besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
+%Besides the service discovery feature in Ethereum itself, some applications build service discovery over Ethereum, as in this example of decentralized identifiers (there are tons of examples of web services using the blockchain to store and retrieve service representatives)~\cite{keizer2021flock}.
 
 %"Under the Hood of the Ethereum Gossip Protocol"~\cite{kiffer2021under}: a study of Ethereum gossip protocol that I did not read yet.
 
@@ -72,15 +85,10 @@ Besides the service discovery feature in Ethereum itself, some applications buil
 
 %Approaches to leverage security in DHT-based networks.
 
-In the area of avoiding Sybil and derived eclipsing attacks in peer-to-peer networks several solutions and state-of-the-art can be found in the literature.
-In~\cite{danezis2005sybil}, different strategies are devised to make DHTs resilient to malicious nodes trying to poison lookups, by routing queries in a way that minimizes trust bottlenecks, to minimize the amount of poisoned information that honest nodes receive from adversarial nodes.
-In a similar way, S/Kademlia~\cite{skad} propose new mechanisms to get resilience against common attacks by using parallel lookups over multiple disjoint paths, limiting free nodeld generation with crypto puzzles and introducing a reliable sibling broadcast.
-In ~\cite{cholez2010efficient}, the authors propose a statistical approach to detect a particular type of Sybil attack in  Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space.
-The authors found that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
-More relevant to our work is~\cite{marcus2018low}~and~\cite{henningsen2019eclipsing},  where the authors present low-resource eclipsing attacks for the Ethereum P2P network. 
-The attack ensures that the lookup-buffer used to initiate outbound connections is filled up with adversarial nodes by placing an adversarial node to each one of the DHT buckets, requiring only 2 IPs from distinct /24 subnets to be successful.
-As a result of this paper,  Ethereum network and Geth v1.8 and v1.9 implemented new countermeasures, such as  increasing number of connections, considering all nodes of the table during lookups, or throttling the inbound connection attempt, to reduce the chance of selecting an attacker-node.
-These countermeasure have been added in our simulations for the underlying Kademlia protocol.
+
+
+
+
 \iffalse
 
 %"Efficient DHT attack mitigation through peers' ID distribution"~\cite{cholez2010efficient} – This paper proposes a statistical approach to detect a particular type of Sybil attack in vanilla Kademlia DHT, where Sybil peers strategically choose IDs that are close to a target ID in the DHT ID space. If sufficient number of (i.e., typically 10 or more) Sybil peers are successfully placed closest to a target ID, then the Sybils could attract all or most of the search and registration requests for that ID because of their proximity to that target and launch attacks such as returning bogus search results. On the other hand, the normal behaviour of honest peers is to generate their IDs uniformly at random. Based on measurements on a DHT with only honest peers, the authors find that the expected the ID distribution of the closest nodes returned in the search results for target IDs follow a geometric distribution. Therefore, the divergence from geometric distribution of the node IDs in search results indicate existence of Sybil nodes in the results. Once divergence is detected, the IDs that contribute the most to the divergence are considered to be Sybils and are therefore omitted from the search results. However, computing a divergence threshold is not straightforward and requires fine tuning to avoid false positives when detecting Sybil nodes.
@@ -134,7 +142,7 @@ SybilInfer is an algorithm aimed at detecting Sybil attacks in social networks u
 
 
 GossipSub: Attack-Resilient Message Propagation in
-the Filecoin and ETH2.0 Networks~\cite{gossipsub}
+the Filecoin and ETH2.0 Networks
 
 \href{https://asc.di.fct.unl.pt/~jleitao/pdf/dinps22-tr.pdf}{Enriching Kademlia by Partitioning} (work in progress report, to be presented at \href{DINPS2022 by Protocol Labs}{https://research.protocol.ai/sites/dinps/calls/})
 \fi
