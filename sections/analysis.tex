@@ -39,12 +39,12 @@ As the closest node to the \emph{topic A} hash, \emph{registrar A} receives regi
 \end{figure}
 
 \para{Lookup operations achieve equal load distribution}
-Let us assume again \emph{registrar A} being the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as the number of $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that a searchers stop its lookup operation after collecting $N_{lookup}$ peers. As the number of ads it the network grows, the more searchers are likely to stop before reaching \emph{registrar A}.  
+Let us assume again \emph{registrar A} being the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as the number of $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that a searchers stop its lookup operation after collecting $N_{lookup}$ peers. As the number of ads it the network grows, the more searchers are likely to stop before reaching \emph{registrar A}. \Cref{fig:fairness_lookup} presents \emph{Registrar A}'s load for increasing $N_a$. Depending on the $K_{register}$ and $K_{lookup}$ parameters, the maximum load is experienced when the number of \emph{topic A} advertisers/searchers is relatively small and goes back to $0$, when the topic becomes popular in the network. 
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_lookup}
 %    % \vspace{-2mm}
-    \caption{\emph{Registrar A}'s load as a function increasing popularity of \emph{topic A}.
+    \caption{\emph{Registrar A}'s lookup load as a function increasing popularity of \emph{topic A}.
     }
     \label{fig:fairness_lookup}
 \end{figure}
