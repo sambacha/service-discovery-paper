@@ -38,13 +38,37 @@ As the closest node to the \emph{topic A} hash, \emph{registrar A} receives regi
     \label{fig:fairness_registration}
 \end{figure}
 
-
-
-
-
 \para{Lookup operations achieve equal load distribution}
+Let us assume again \emph{registrar A} being the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as the number of $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that a searchers stop its lookup operation after collecting $N_{lookup}$ peers. As the number of ads it the network grows, the more searchers are likely to stop before reaching \emph{registrar A}.  
 
+\begin{figure}[t]
+    \includegraphics[width=1\linewidth]{img/fairness_lookup}
+%    % \vspace{-2mm}
+    \caption{\emph{Registrar A}'s load as a function increasing popularity of \emph{topic A}.
+    }
+    \label{fig:fairness_lookup}
+\end{figure}
 
 \subsection{Security}
 
 \para{Lookup operations introduce an equal load on the registrars even with unequal popularity of the topics.}
+A lookup operation is considered as eclipsed if all the peers received by the searcher consist of malicious nodes. A searcher can receive malicious peer from an honest registrar (if malicious advertisers where able to place their ads) and malicious registrars (always returning the maximum amount of $N_\textit{returned}$ malicious peers. The probability of being eclipsed by a random node in a bucket thus depends on the probability of encountering a malicious registrar (determined uniquely by the number of Sybil identities) and the probability of an honest registrar returning uniquely malicious peers (determined also by the number of IP addresses under attacker's control). \Cref{fig:eclipse_analysis} illustrated the probability of a lookup operation being eclipse as a function of 
+
+%Assuming a uniform distribution of attacker nodes\footnote{In \Cref{sec:eval} that it is the most efficient strategy for an attacker.} the probability of encountering a malicious registrar is given by $P_{malicious} = \frac{n_{malicious}}{n}$ and the probability of encountering an honest registrar $P_{honest} = 1 - P_{malicious}$. The probability of being eclipse by a single node is given by a random node in bucket $i$ is given by $P_\textit{random eclipse i} = P_{malicious} + P_{honest} * P_\textit{h eclipse i}$. The probability of being eclipsed in a bucket after asking $K_\textit{lookup}$ registrars is given by: $P_\textit{eclipse i} = {P_\textit{random eclipse i}}^{K_\textit{lookup}}$
+
+%We need: 
+%* probability of receiving uniquely malicious ads from an honest registrar in bucket `i`: %`P_h_eclipse_i`
+%* probability of encountering a malicious node in a specific bucket (e.g., it's gonna be %`n_malicious/n` for the uniform distribution of the malicious nodes) `P_a_i` (`P_h_i = 1 - P_a_i`)
+
+%With this, we can calculate the probability of receiving uniquely malicious ads from a random node in bucket `i`. This is given by `P_random_eclipse_i = P_a_i + P_h_i * P_h_eclipse_i`
+
+%The probability of being eclipsed in a bucket after asking `K_lookup` registrars is given by: `P_eclipse_i = P_random_eclipse_i ^ K_lookup`
+
+%Finally, the probability of being entirely eclipsed is given by: `P_eclipse = sum_i:0-17(P_eclipse_i)`
+
+
+%To calculate `P_h_eclipse_i` we require:
+%* The number of honest advertiser per honest registrars in bucket `i`, `n_honest_i` - this is given by `min(n_honest, (n_honest*K_register)/(n/2^i))`
+%* The number of malcious advertiser per honest registrars in bucket `i`,  `n_malicious_i` - this is given by `min(n_malicious, (n_malicious*K_register)/(n/2^i))`, we can set the K_register to higher values
+%* The number of IP addresses that the malicious users have `n_malicious_ip_i`
+%* The number of ads in the table unrelated to the topic `d_x_i` - cab it be fixed for simplicity?
