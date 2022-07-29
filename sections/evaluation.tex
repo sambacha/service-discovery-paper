@@ -67,6 +67,8 @@ In the simulations, we verify the impact of the following parameters:
 
 %Meaning that every 25 malicious nodes will share a single, random IP address in the best case or every malicious node will use a different IP address in the worst case.  
  \end{itemize}
+
+\sr{TODO: explain topic spam (and eclipsing?) attack} 
  
 Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and nodes each perform a single lookup operation uniformly spread across the simulation time.  For \sysname and DHT-based solution, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
 
