@@ -104,12 +104,12 @@ The final formula for the waiting time function can be represented with  the fol
 
 \subsection{Lower Bound}
 With the waiting time formula, every change in the registrations stored in  the ad cache may increase or decrease waiting times of other requests. 
-Therefore,  an advertiser receiving waiting time $w(t_1)$ at time $t_1$, may get a smaller waiting time $w(t_2)$ at time $t_2$ ($t_1 < t_2$) in case the situation of the ad cache is very different (\eg when an ad for the same topic expires between $t_1$ and $t_2$). 
-As a result, advertisers are incentivized to keep checking the waiting times as frequently as possible hoping for a better one generating unnecessary overhead in the system.
+Therefore, an advertiser receiving waiting time $w(t_1)$ at time $t_1$, may get a smaller waiting time $w(t_2)$ at time $t_2$ ($t_1 < t_2$) in case the content of the ad cache is different (\eg when an ad for the same topic expires between $t_1$ and $t_2$). 
+As a result, advertisers are incentivized to keep checking the waiting times as frequently as possible hoping for a better one and generating unnecessary overhead in the system.
 %Registration ticket requests should be kept to the minimum and an incentive for constantly spamming ticket requests to get a better waiting time can overload a network and can lead to some nodes getting better performance than the rest.
-To prevent this behaviour, we have designed a mechanism ensuring that any node already in possession of a ticket with a determined waiting time, cannot get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by sending new ticket requests.
+To prevent this behaviour, we design a mechanism ensuring that any node already in possession of a ticket with a determined waiting time, cannot get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by sending new ticket requests.
 One solution to this problem is to take into account all the expiration times when calculating the waiting time. 
-However, such a solution is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice.
+However, it is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice as it open a Denial of Service vector of attack.
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/lower_bound.png}
@@ -120,29 +120,29 @@ However, such a solution is computationally expensive (\eg $O(d)$ per request) a
 When asking for a new waiting time before the previously obtained one elapses,
 an advertiser loses its already accumulated waiting time. This means that
 asking for a new waiting at time $t_2$ can lower the overall waiting only if
-the new waiting time $w(t_2)$ is smaller than $w(t_1)$ by more than $t_2 - t_1$: $w(t_1) - w(t_2) < t_2 - t_1$.
+the new waiting time $w(t_2)$ is smaller than $w(t_1)$ by more than the time elapsed $t_2 - t_1$: $w(t_1) - w(t_2) < t_2 - t_1$.
 To make sure this is not the case, our protocol enforces a lower bound on the
 waiting time. \Ie we make sure that an advertiser's waiting time received at
 $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than
 $t_2 - t_1$ (\Cref{fig:lower_bound}).
-However, holding such a bound for every request (\ie every combination of IP/topic) would cause significant memory overhead ($O(|IPs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create state at the registrar. 
+However, holding such a bound for every request (\ie every combination of IP/topic) would cause significant memory overhead ($O(|IPs|\times|topics|)  \gg O(d)$) and would present an easy way for an attacker to create additional state at the registrar. 
 
-To store the lower bound in a more efficient way, we rewrite the waiting formula as a sum of topic/IP distinctive parts:
-
+To store the lower bound in a more efficient way, we rewrite the waiting formula as a sum:
 \begin{equation}
+\begin{split}
     \textit{w(IP, topic)} = 
-    \textit{ss(IP)}\textit{os()} + 
-    \textit{ss(topic)}\textit{os()}
+    \frac{ab}{(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{ad(topic)}{d(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{\textit{score(IP)}}{32(1-\frac{d}{n})^{P_\textit{occ}}}
+\end{split}
 \end{equation}
+
+
 Ensuring that the lower bound is enforced for each of the three components
 makes sure that the total waiting will respect the lower bound as well. At the
-same time, it only requires storing the lower bound for every IP/topic and not all their combinations. This approach reduces the memory overhead to $O(|IPs|+|topics|) = O(d)$.
+same time, it only requires storing the lower bound for every IP/topic in the table and not all their combinations. This approach reduces the memory overhead to $O(|IPs|+|topics|) = O(d)$.
 
-For each of the components above IP, and topic present in the cache, we
-keep a bound. When a specific IP enters the cache for the first time, bound(IP)
-is set to 0 and a timestamp(IP) is set to the current time. When a ticket
-request arrives from the same IP, we calculate the IP waiting time $w_{IP}$ and
-return the value, $w_{IP} = max(w_{IP}, bound(IP) - timestamp(IP))$. It makes sure that advertisers never receive a better time by frequently requesting new tickets. The bound and the timestamp are updated when a new ticket is issued and $w_{IP} > (bound(IP) - timestamp(IP))$. The same holds for topics.
+\sysname keeps a lower bound for each IP and topic in the ad cache. When a specific topic enters the cache for the first time, bound(topic) is set to 0 and a timestamp(topic) is set to the current time. When a ticket request arrives for the same topic, we calculate the IP waiting time $w_{\textit{topic}}$ and return the value, $w_{\textit{topic}} = \textit{max}(w_{\textit{topic}}, \textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. The bound and the timestamp are updated when a new ticket is issued and $w_{\textit{topic}} > (\textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. 
+
+\hl{The same holds for topics.}
 \mk{TODO: @Onur we need to introduce the waiting time in the tree I believe}
 
 
