@@ -12,7 +12,7 @@
 \label{sec:background}
 
 We start by detailing the operation of the Ethereum's global DHT, which is an evolution of the canonical Kademlia~\cite{maymounkov2002kademlia} DHT.
-Then, we present the current service discovery mechanism, part of Ethereum's \emph{discv4} series of protocol operating atop this DHT, and discuss its shortcomings.
+Then, we present the current service discovery mechanism, part of Ethereum's \discv series of protocol operating atop this DHT, and discuss its shortcomings.
 
 \subsection{The Ethereum global DHT}
 \label{sec:background:dht}
@@ -20,7 +20,7 @@ Then, we present the current service discovery mechanism, part of Ethereum's \em
 All nodes in Ethereum participate to a global distributed hash table (DHT).
 A DHT is a structured overlay network allowing lookup operations, i.e., locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}~\cite{chord,rowstron2001pastry}. Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
 Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT. %\mk{we haven't mention item storage before}
-Ethereum DHT assigns a specific key $i$ to the node that is the \emph{closest} to $i$ in that space.
+The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} node to $i$ in that space where $k$ is a system parameter.
 This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of differing suffix in bits).
 
 Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
@@ -45,42 +45,48 @@ As a result, a node's routing table provides a more detailed (\ie, fine grained)
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
 
-Lookups rely on a number $\alpha$ of concurrent routing operations (or \emph{walks}) towards the target key.
+Lookups rely on $\alpha$ concurrent routing operations (or \emph{walks}) towards the target key.
 In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key, and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
-The process stops when up to $k$ nodes closest to the target are found. \er{seems contradictory when the goal is to find the exact one that is the closest?}
-The Ethereum DHT 
-\er{stopped here, not sure what level of detail we need to the new dht lookup of ethereum dht we need.}
-In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target.
+The process stops when up to $k$ nodes closest to the target are found. %\er{seems contradictory when the goal is to find the exact one that is the closest?}
+To enhance the security of lookups, Ethereum nodes provide a distance to a key (instead of the target itself) where distance is defined as the bucket number of they key where 
+the target node would be inserted. The XOR metric is then used locally to sort the lookup results, which enables nodes to hide their exact target during lookups, making it harder for adversaries to return favorable results. 
+In addition, Ethereum has incorporated several other counter-measures~\cite{marcus2018low, henningsen2019eclipsing} to secure lookups from eclipsing attacks, which we explain in ~\Cref{sec:related}. 
 
-\er{need to simplify the following and make it a single paragraph as part of the lookup paragraph}
 
-Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing nodes to hide their target from other peers in the lookups. Specifically, the distance of a key to a node is the common prefix length of the key and the node's ID, which corresponds to the bucket number of the key where the node would insert the key, following the same bucket partitioning scheme with vanilla Kademlia.
+%\er{stopped here, not sure what level of detail we need to the new dht lookup of ethereum dht we need.}
+%In Kademlia, the lookup procedure for a target key involves $\alpha$ ``walks'', each searching for the target in parallel. During each walk, the initiator node iteratively selects the closest peer to the target from its routing table and sends the peer a FIND\_NODE query message, specifying the target key. A peer responds to a FIND\_NODE message by returning information on up to $k$ closest nodes (\ie ID, IP, and port) to the given target from its routing table. The initiator node then adds the returned peers to its routing table and iteratively sends another FIND\_NODE message to the closest known peer, extending the traversed path by the walk, until the process converges to a stable $k$ closest known peers to the target.
 
-A key difference in Ethereum's parallel lookup process (\ie $\alpha$ walks) is that the initiating nodes specify the distance of an undisclosed target in their FIND\_NODE messages rather than the target key itself. Each peer responds to a FIND\_NODE message by returning up to $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket.
+%\er{need to simplify the following and make it a single paragraph as part of the lookup paragraph}
 
-\oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
 
-\subsection{\emph{discv4} service discovery}
+%Ethereum's DHT implementation uses a rather ``crude'' distance metric allowing nodes to hide their target from other peers in the lookups. Specifically, the distance of a key to a node is the common prefix length of the key and the node's ID, which corresponds to the bucket number of the key where the node would insert the key, following the same bucket partitioning scheme with vanilla Kademlia. In Ethereum's lookup process, the initiating nodes specify the distance of an undisclosed target in their lookup messages rather than the target key itself. Each peer in turn responds with $k$ peers from its bucket whose number corresponds to the supplied distance in the message. In case, there are less than $k$ peers in its bucket, a node can return peers from adjacent buckets. The initiating node terminates the lookup when the process converges to a stable set of (not necessarily $k$) closest nodes based on the modified distance metric, \ie no new peers in the target key's bucket. 
+
+
+
+%\oa{briefly mention and reference the eclipsing counter-measures of Ethereum DHT since our protocol assumes the DHT is secure}
+
+\subsection{\discv service discovery}
 \label{sec:background:discv4}
-In the current service discovery protocol, DISCV4RANDOM, a node performs \textit{random walks} through the DHT and establishes connections to encountered peers after verifying the supported protocols of the peers at the application level. In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained above. Each node maintains a \textit{discovery table} whose sole purpose is to store a set of peers that the node has come across during its parallel random walks.\mk{The discovery table seems like a implementation detail. Maybe just say that we initiate handshakes with encountered/returned peers?} %This table serves as a basis for establishing sub-protocol connections as we describe below.  
+In the current service discovery protocol, \discv, nodes perform \textit{random walks} through the DHT and performs ``handshakes'' with the encountered peers.
+In a random walk, a node picks a random target key and performs a lookup towards the distance corresponding to the target following the parallel search process explained above. 
+A handshake involves a secure channel establishment between the initiator node and the encountered peer and therefore incurs some overhead to both endpoints. If the initiator node discovers during the handshake that the encountered peer is part of a target application's sub-network, then the initiator node can follow up with a connection request to the peer to establish an application-level connection. The objective of a node is to fill up a number of \textit{application-level connection slots} with outbound (\ie initiated by the node) connections. The process of node discovery is suspended when a node has filled up all outbound slots. Nodes also reserve a number of inbound connection slots that can be filled with connections initiated by other nodes. 
 
-%\dk{could mention DNS discovery\footnote{https://eips.ethereum.org/EIPS/eip-1459} as a means for discv5 bootstrap. We implemented this for Waku v2.}
-
-A node starts establishing application-level sessions (\ie handshake) with the peers in its discovery table in order to identify their applications, \ie the sub-network(s) they are part of. A handshake involves a secure channel establishment between the initiator node and its discovered peer and therefore incurs some overhead to both endpoints. When the node discovers during the handshake that the discovered peer is part of a target application, the initiator node can follow up with a connection request to the peer to establish an application-level connection. The objective of a node is to fill up a number of \textit{application-level connection slots} with outbound (\ie initiated by the node) connections. The process of node discovery is suspended when a node has filled up all outbound slots. Nodes also reserve a number of inbound connection slots that can be filled with connections initiated by other nodes. 
-
-\subsection{Security and Efficiency of DISCV4RANDOM}
+\subsection{Security and Efficiency of \discv}
 \label{sec:securityEfficiency}
-\mk{The below is too long. I also don't think it's a good place to discuss in more details potential attacks.}
-In the context of blockchains and cryptocurrency, security is a key requirement for a service discovery protocol. A potential attack on any peer discovery protocol is the eclipse attack, where an adversary monopolises all the connections of a victim node with its Sybils, effectively separating the victim from the rest of the network. In blockchain systems, eclipse attacks are typically a pre-cursor to financially-motivated attacks such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
+%\mk{The below is too long. I also don't think it's a good place to discuss in more details potential attacks.}
+%In the context of blockchains and cryptocurrency, security is a key requirement for a service discovery protocol. A potential attack on any peer discovery protocol is the eclipse attack, where an adversary monopolises all the connections of a victim node with its Sybils, effectively separating the victim from the rest of the network. In blockchain systems, eclipse attacks are typically a pre-cursor to financially-motivated attacks such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
 
-Because eclipsing can apply to any peer discovery process, it concerns both the DHT-level (\ie Kademlia routing table) and application-level peer selection. Peer selection through random sampling, as used in Kademlia and DISCV4RANDOM, is reasonably resilient against eclipse attacks, because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
+%Because eclipsing can apply to any peer discovery process, it concerns both the DHT-level (\ie Kademlia routing table) and application-level peer selection. 
+Peer discovery through random walks is reasonably resilient against eclipse attacks, because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
+On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. %More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). 
+More importantly, for applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
 
-\felix{This is not completely true and we need to find a better reasoning here. It is technically feasible to generate chosed IDs because mining hardware exists for keccak256.}
 
-%At the same time, the buckets of the routing table are well protected from eclipsing owing to the flexible (random) peer selection mechanism inherited from Kademlia (Section~\ref{sec:kademlia}). Random peer selection is effective because attackers can not strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have equal chance of being discovered.
+%\Cref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network\footnote{Appendix contains the details of the calculations}. %
 
-On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). %\Cref{tab:discv4Overhead} provides the average number of wasteful handshakes until one peer is found for the target application, given the application's popularity, \ie adoption by the percentage of nodes in the network\footnote{Appendix contains the details of the calculations}. %
-For applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take long time.
+%\felix{This is not completely true and we need to find a better reasoning here. It is technically feasible to generate chosed IDs because mining hardware exists for keccak256.}
+
+
 
 %\dk{A math. estimation would be nice here.}
 
