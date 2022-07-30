@@ -52,8 +52,10 @@ If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{wa
 
 \begin{figure}
     \includegraphics[width=0.48\textwidth]{img/registration}
+    \vspace{-0.15in}
     \caption{Registration operation.}
     \label{fig:registration}
+    \vspace{-0.15in}
 \end{figure}
 
 The inclusion of issue-time allows the registrars to prioritize advertisers that have been waiting for the longest, as we explain later. The tickets are immutable (i.e., tampering with the ticket is detectable by the registrars that originally issued the ticket). When a registrar issues a new ticket (in case registration is not immediately successful) to an advertiser, the registrar simply copies the issue-time from the last issued ticket and uses that as the issue-time of the new ticket. This means that the registrars are not required to maintain any state for each ongoing ticket request given that they can verify the authenticity of the ticket in the incoming registration requests.
