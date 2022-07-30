@@ -146,7 +146,7 @@ Above each side of the violins, we display the maximum observed values.
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=\linewidth]{results/split/size_totalMsg.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_size_totalMsg.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size during a single advertisement period.}
 \label{fig:msgsPerSize}
@@ -154,7 +154,7 @@ Above each side of the violins, we display the maximum observed values.
 
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{results/split/topic_totalMsg.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_topic_totalMsg.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different number of topics during a single advertisement period.}
 \label{fig:msgsPerTopic}
@@ -171,7 +171,7 @@ We observe that \altname protocols have poor fairness and scalability since the 
 %\subsection{Lookup performance}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/split/topic_discovered.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different number of topics.}
 \label{fig:discoveredPerTopic}
@@ -185,7 +185,7 @@ Finally, we observe that \sysname achieves very close lookup performance to DHT 
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/split/size_discovered.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_size_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
 \label{fig:discoveredPerSize}
@@ -196,14 +196,14 @@ Finally, we observe that \sysname achieves very close lookup performance to DHT 
 
 \iffalse %Onur: removing these for now
 \begin{figure}
-\includegraphics[width=\linewidth]{results/split/topic_wasDiscovered.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_topic_wasDiscovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for number of topics in the network for the simulation time.}
 \label{fig:discoveredByPerTopic}
 \end{figure}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/split/size_wasDiscovered.eps}
+\includegraphics[width=\linewidth]{results/no_split/violin_size_wasDiscovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for different network size for the simulation time.}
 \label{fig:efficiency_size}
