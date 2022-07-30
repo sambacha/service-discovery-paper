@@ -16,7 +16,7 @@ To obtain the results shown in Figure~\ref{fig:cache_size_limit}, Equation~\ref{
 
 \subsubsection{Load distribution of registration operations}
 
-We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will received ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive, on average, $\frac{N_b\cdot K_{register}}{N/2}$ registration requests for topic $B$.
+We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will receive ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive, on average, $\frac{N_b\cdot K_{register}}{N/2}$ registration requests for topic $B$.
 
 Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
 \begin{eqnarray}
@@ -47,15 +47,15 @@ p(\mbox{$rr$ received $R$ registrations}) = \\
 Given $R$ registrations, the number of ads that the registrar returns can be calculated using Equation~\ref{eq:da_fair} by substituting $N_a$ with $R$. Combining both results, we can calculate the joint probability $p_{rr,i}(Resp=S)$.
 
 Calculating the exact probability $p_{i}(Resp=S)$ that a searcher obtains $S$ responses in bucket $i$ and the probability $p_{1..t}(Resp=S)$ to obtain $S$ responses after visiting buckets 1 to $t$ is numerically intensive.
-Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $K_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$ in this way simulating the querying of $K_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
+Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $K_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$, in this way simulating the querying of $K_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
 The probability to reach the last registrar is then $p_{1..14}(Resp< N_{lookup})$.
 
 % TODO:  explain calculation of overlaps
 
 \subsection{Security}
 
-The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ nodes, the probability that a searcher will encounter one in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
-The probability $P_i$ to receive only malicious ads from a registrar in bucket $i$ is therefore
+The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ malicious nodes, the probability that a searcher will encounter one in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
+The probability $P_i$ to receive only malicious ads from a random registrar in bucket $i$ is therefore
 $$ P_{i} = \frac{n_a}{N} + (1-\frac{n_a}{N}) \cdot P_{h,i}$$
 where $P_{h,i}$ is the probability that a honest registrar in bucket $i$ only returns malicious ads.
 Assuming independence, the probability to only receive malicious ads from the entire bucket $i$ is $P_{i}^{K_{lookup}}$ and the probability $P_{1..t}$ to be eclipsed in all $t$ visited buckets is then
@@ -63,7 +63,7 @@ $$ P_{1..t} = \prod_{i=1}^{t} P_{i}^{K_{lookup}}$$
 To calculate $P_{hi}$, we need to know the distribution of honest and malicious ads in a honest registrar.
 If the registrar contains $d_h$ honest and $d_a$ malicious ads, $P_{hi}$ is the probability to randomly select only malicious ads from those $d_h+d_a$ ads, which is $\prod_{i=0}^{d_h+d_a} \frac{d_a - i}{d_h+d_a-i}$.
 
-Calculating the distribution of $d_h$ and $d_a$ analytically is impossible due to the complexity of the waiting time calculation. Instead, we approximate $P_{hi}$ using the averages of $d_h$ and $d_a$.
+Calculating the distribution of $d_h$ and $d_a$ analytically is difficult due to the complexity of the waiting time calculation. Instead, we approximate $P_{hi}$ using the averages of $d_h$ and $d_a$.
 On average, a registrar in bucket $i$ will receive $R_h = \frac{N_h\cdot K_{register}}{N/2^i}$ honest and $R_a = \frac{N_a\cdot K'_{register}}{N/2^i}$ malicious registration requests, where $N_h$ and $N_a$ are the number of honest and malicious registrars and $K_{register}$ and $K'_{register}$ their respective number of registration attempts.
 
 The computation of the average $d_h$ and $d_a$ is, in principle, similar to Equations~\ref{eq:da_fair} and Equations~\ref{eq:da_fair2}. However, since an attacker will only have a limited number of IP addresses, we cannot ignore anymore the impact of the IP similarity score on the waiting time:
