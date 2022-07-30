@@ -5,10 +5,10 @@ In this appendix, we provide more details on the analysis described in Section~\
 
 \subsection{Efficiency}
 
-Due to the admission procedure, an advertisement for a specific topic will stay only $\frac{a}{a+w}$ of the time in the table of a registrar, where $a$ is the ad lifetime in the table (when admitted) and $w$ is the average waiting time. Assuming the ``worst case'' scenario where a request achieves 0 similarity score for both the topic and its IP address, the waiting time is $w = \frac{b\cdot a}{(1 - \frac{d}{n})^{P_{occupancy}}}$, where $n$ is the table capacity and $b$ and $P_{occupancy}$ are constants defined in Section~\ref{sec:waitingTime}.
+Due to the admission procedure, an advertisement for a specific topic will stay only $\frac{a}{a+w}$ of the time in the table of a registrar, where $a$ is the ad lifetime in the table (when admitted) and $w$ is the average waiting time. Assuming the ``worst case'' scenario where a request achieves 0 similarity score for both the topic and its IP address, the waiting time is $w = \frac{b\cdot a}{(1 - \frac{d}{n})^{P_{occ}}}$, where $n$ is the table capacity and $b$ and $P_{occ}$ are constants defined in Section~\ref{sec:waitingTime}.
 If a registrar receives $x$ such requests for that topic, the average number $d$ of ads in the table is therefore
 \begin{equation}
-d = \frac{x}{1 + b \cdot (1 - \frac{d}{n})^{-P_{occupancy}}} \label{eq:efficiency_d}
+d = \frac{x}{1 + b \cdot (1 - \frac{d}{n})^{-P_{occ}}} \label{eq:efficiency_d}
 \end{equation}
 To obtain the results shown in Figure~\ref{fig:cache_size_limit}, Equation~\ref{eq:efficiency_d} must be numerically solved for $d$. With increasing $x$, $d$ will asymptotically approach the table capacity $n$.
 
@@ -20,8 +20,8 @@ We consider two topics $A$ and $B$ that are located on the opposite sides of the
 
 Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
 \begin{eqnarray}
-d_a & = & \frac{N_a}{1 + (b + \frac{d_a}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\label{eq:da_fair}\\
-d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\label{eq:da_fair2}
+d_a & = & \frac{N_a}{1 + (b + \frac{d_a}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\label{eq:da_fair}\\
+d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\label{eq:da_fair2}
 \end{eqnarray}
 where $d = d_a + d_b$. Again, this system of non-linear equations must be solved numerically for $d_a$ and $d_b$.
 If topic $A$ is far more popular than topic $B$, i.e., $N_a \gg N_b$, $d_a$ will be greater than $d_b$. However, because of the topic similarity score $\frac{d_a}{d}$, the advertisements for topic $A$ will not occupy the entire table.
@@ -68,8 +68,8 @@ On average, a registrar in bucket $i$ will receive $R_h = \frac{N_h\cdot K_{regi
 
 The computation of the average $d_h$ and $d_a$ is, in principle, similar to Equations~\ref{eq:da_fair} and Equations~\ref{eq:da_fair2}. However, since an attacker will only have a limited number of IP addresses, we cannot ignore anymore the impact of the IP similarity score on the waiting time:
 \begin{eqnarray}
-d_h & = & \frac{R_h}{1 + (b + \frac{d_h}{d} + \mbox{IPscoreH}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\\
-d_a & = & \frac{R_a}{1 + (b + \frac{d_a}{d} + \mbox{IPscoreA}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}
+d_h & = & \frac{R_h}{1 + (b + \frac{d_h}{d} + \mbox{IPscoreH}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\\
+d_a & = & \frac{R_a}{1 + (b + \frac{d_a}{d} + \mbox{IPscoreA}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}
 \end{eqnarray}
 where $d = d_h + d_a$. Obviously, the IP score for honest ads (IPscoreH) and malicious ads (IPscoreA) depends on the numbers of honest ads and malicious ads in the table and on the number of different IP addresses used by the advertisers. Again, these non-linear equations must be solved numerically.
 
