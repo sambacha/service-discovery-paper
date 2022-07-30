@@ -25,8 +25,8 @@ We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
-\item \discv is the current discovery service\footnote{https://github.com/ethereum/devp2p/blob/master/discv4.md} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. 
-In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\footnote{https://github.com/ethereum/devp2p/blob/master/rlpx.md}) to make new connections, and when the buffer is empty new lookups are initiated to other three random nodes.
+\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. 
+In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\cite{rlpx}) to make new connections, and when the buffer is empty new lookups are initiated to other three random nodes.
 \item \altname is a traditional key/value store implementation using vanilla Kademlia DHT. 
 In this approach, peers store their ads under desired topics at the N closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie no waiting time) and uses a simple Last Recently Used (LRU) as a replacement policy.
 \item \altnameticket is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) to regulate the storage of incoming registrations. 

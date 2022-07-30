@@ -12,10 +12,11 @@ In consultation with Geth developers, we assume the capacity of the cache $n = 1
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/cache_size_limit}
-    % \vspace{-2mm}
+    \vspace{-0.10in}
     \caption{Ad cache space usage for different request rates.
     }
     \label{fig:cache_size_limit}
+    \vspace{-0.15in}
 \end{figure}
 Pending requests (\ie not in the cache) do not create any state (apart from updating the lower bound) at the registrar (\ie the registrar uniquely calculates the waiting time and returns a signed ticket). The lower bound state created by registrars is bounded by the number of distinct IPs and topics in the cash and is thus bounded by its capacity $O(n)$.
 
@@ -32,10 +33,11 @@ As the closest node to the \emph{topic A} hash, \emph{registrar A} receives regi
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_registration}
-%    % \vspace{-2mm}
+    \vspace{-0.05in}
     \caption{Load ratio between registrars located close to the most popular (\emph{registrar A}) and the least popular (\emph{registrar A}) topics.
     }
     \label{fig:fairness_registration}
+    \vspace{-0.15in}
 \end{figure}
 
 \para{Lookup operations achieve equal load distribution}
@@ -43,10 +45,11 @@ Let us assume again \emph{registrar A} is the closest node to \emph{topic A}. Al
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_lookup}
-%    % \vspace{-2mm}
+    \vspace{-0.05in}
     \caption{\emph{Registrar A}'s lookup load as a function increasing popularity of \emph{topic A}.
     }
     \label{fig:fairness_lookup}
+    \vspace{-0.15in}
 \end{figure}
 
 \subsection{Security}
@@ -56,10 +59,11 @@ We assume an attacker performing all the malicious activities listed in \Cref{se
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/eclipse_probability}
-%    % \vspace{-2mm}
+    \vspace{-0.05in}
     \caption{\emph{Lookup eclipse probability}.
     }
     \label{fig:eclipse_probability}
+    \vspace{-0.20in}
 \end{figure}
 
 \para{\sysname achieves high resistance against DoS attacks.}
