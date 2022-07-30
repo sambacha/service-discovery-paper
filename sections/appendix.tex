@@ -1,21 +1,54 @@
 \appendix\label{sec:appendix}
 \section{Extended Analysis}
-\subsection{Analysis plan}
-Ideally, we should prove efficiency, fairness and security by equations here. 
 
-\subsubsection{Efficiency}
-\begin{enumerate}
-    \item Calculate the average number of requests received/ads in the table?
-    \item prove that we cannot go above a specific memory usage (same as below?)
-    \item just the occupancy score parameters ($b$ and $P_\textit{occupancy}$) by using the maximum bandwidth and memory usage. So that even with maximum possible bandwidth, the capacity doesn't go above 100\%.
-    \item prove that an attacker (or anyone else) cannot create additional state on the registrar 
-\end{enumerate}
+In this appendix, we provide more details on the analysis described in Section~\ref{sec:analysis}.
 
-\subsubsection{Fairness}
-\begin{enumerate}
-    \item we could assume one topic (or zipf distribution?) and calculate the load on each node for registrations and lookups. Assume a specific number of nodes in the network, calculate how many registration requests each node will get in each bucket, based on that we can calculate the average waiting time and calculate a requests per lifetime ratio. 
-    \item the same for lookup, (zipf distribution again?) and calculate the average number of request each node can expect. It might be however tricky to calculate values for different buckets and assuming that they are close to a topic with a given popularity.
-\end{enumerate}
+\subsection{Efficiency}
+
+Due to the admission procedure, an advertisement for a specific topic will stay only $\frac{a}{a+w}$ of the time in the table of a registrar, where $a$ is the ad lifetime in the table (when admitted) and $w$ is the average waiting time. Assuming the ``worst case'' scenario where a request achieves 0 similarity score for both the topic and its IP address, the waiting time is $w = \frac{b\cdot a}{(1 - \frac{d}{n})^{P_{occupancy}}}$, where $n$ is the table capacity and $b$ and $P_{occupancy}$ are constants defined in Section~\ref{sec:waitingTime}.
+If a registrar receives $x$ such requests for that topic, the average number $d$ of ads in the table is therefore
+\begin{equation}
+d = \frac{x}{1 + b \cdot (1 - \frac{d}{n})^{-P_{occupancy}}} \label{eq:efficiency_d}
+\end{equation}
+To obtain the results shown in Figure~\ref{fig:cache_size_limit}, Equation~\ref{eq:efficiency_d} must be numerically solved for $d$. With increasing $x$, $d$ will asymptotically approach the table capacity $n$.
+
+\subsection{Fairness}
+
+\subsubsection{Load distribution of registration operations}
+
+We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will received ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive, on average, $\frac{N_b\cdot K_{register}}{N/2}$ registration requests for topic $B$.
+
+Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
+\begin{eqnarray}
+d_a & = & \frac{N_a}{1 + (b + \frac{d_a}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\label{eq:da_fair}\\
+d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}
+\end{eqnarray}
+where $d = d_a + d_b$. Again, this system of non-linear equations must be solved numerically for $d_a$ and $d_b$.
+If topic $A$ is far more popular than topic $B$, i.e., $N_a \gg N_b$, $d_a$ will be greater than $d_b$. However, because of the topic similarity score $\frac{d_a}{d}$, the advertisements for topic $A$ will not occupy the entire table.
+
+For a registrar the closest to topic $B$ and the furthest from topic $A$, the same equations, but with the roles of topics $A$ and $B$ switched, are obtained.
+
+\subsubsection{Load distribution of lookup operations}
+
+As described in Section~\ref{sec:lookup}, a searcher looking for topic $A$ will start at the furthest bucket and progress toward the closest registrar to that topic until it has received $N_{lookup}$ responses.
+Let bucket~1 be the furthest bucket containing $N/2$ registrars, bucket~2 the closer bucket containing $N/4$ registrars etc. In each bucket $i$, the searcher will query $\max(L_{lookup}, \frac{N}{2^i})$ registrars.
+The lookup analysis in Section~\ref{sec:analysis} requires to calculate the probability that a searcher will reach the last bucket, i.e., the closest registrar to the topic. In the following, we calculate the distribution $p_{1..t}(Resp=S)$ of the number of responses $S$ that a searcher will have received after traversing buckets 1 to $t$.
+
+Let $p_{rr,i}(Resp=S)$ be the probability that the searcher will receive $S$ responses from a registrar $rr$ in bucket $i$. We have
+\begin{eqnarray*}
+p_{rr,i}(Resp=S) =\sum_{R=0}^{N_a}{} p(  & & \mbox{$rr$ received $R$ registrations}\\
+                        & \wedge &  \mbox{$rr$ has $\min(S,N_{return})$ ads})
+\end{eqnarray*}
+where $N_{return}$ is the maximum number of responses a registrar will return. The probability that the registrar received $R$ registrations is the probability that $R$ of the $N_a$ advertisers chose the registrar. It is given by the binomial distribution:
+\begin{eqnarray*}
+p(\mbox{$rr$ received $R$ registrations}) = \\
+\binom{N_a}{R} \left( \frac{K_{register}}{N/2^i} \right)^R \left(1 - \frac{K_{register}}{N/2^i} \right)^{N_a-R}
+\end{eqnarray*}
+Given $R$ registrations, the number of ads that the registrar returns can be calculated using Equation~\ref{eq:da_fair} by substituting $N_a$ with $R$. Combining both results, we can calculate the joint probability $p_{rr,i}(Resp=S)$.
+
+Calculating the exact probability $p_{i}(Resp=S)$ that a searcher obtains $S$ responses in bucket $i$ and the probability $p_{1..t}(Resp=S)$ to obtain $S$ responses after visiting buckets 1 to $t$ is numerically intensive.
+Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $L_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$ in this way simulating the querying of $L_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
+The probability to reach the last registrar is then $p_{1..14}(Resp< N_{lookup})$.
 
 \subsubsection{Security}
 \begin{enumerate}
