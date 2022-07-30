@@ -21,7 +21,7 @@ We consider two topics $A$ and $B$ that are located on the opposite sides of the
 Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
 \begin{eqnarray}
 d_a & = & \frac{N_a}{1 + (b + \frac{d_a}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\label{eq:da_fair}\\
-d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}
+d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\label{eq:da_fair2}
 \end{eqnarray}
 where $d = d_a + d_b$. Again, this system of non-linear equations must be solved numerically for $d_a$ and $d_b$.
 If topic $A$ is far more popular than topic $B$, i.e., $N_a \gg N_b$, $d_a$ will be greater than $d_b$. However, because of the topic similarity score $\frac{d_a}{d}$, the advertisements for topic $A$ will not occupy the entire table.
@@ -31,7 +31,7 @@ For a registrar the closest to topic $B$ and the furthest from topic $A$, the sa
 \subsubsection{Load distribution of lookup operations}
 
 As described in Section~\ref{sec:lookup}, a searcher looking for topic $A$ will start at the furthest bucket and progress toward the closest registrar to that topic until it has received $N_{lookup}$ responses.
-Let bucket~1 be the furthest bucket containing $N/2$ registrars, bucket~2 the closer bucket containing $N/4$ registrars etc. In each bucket $i$, the searcher will query $\max(L_{lookup}, \frac{N}{2^i})$ registrars.
+Let bucket~1 be the furthest bucket containing $N/2$ registrars, bucket~2 the closer bucket containing $N/4$ registrars etc. In each bucket $i$, the searcher will query $\max(K_{lookup}, \frac{N}{2^i})$ registrars.
 The lookup analysis in Section~\ref{sec:analysis} requires to calculate the probability that a searcher will reach the last bucket, i.e., the closest registrar to the topic. In the following, we calculate the distribution $p_{1..t}(Resp=S)$ of the number of responses $S$ that a searcher will have received after traversing buckets 1 to $t$.
 
 Let $p_{rr,i}(Resp=S)$ be the probability that the searcher will receive $S$ responses from a registrar $rr$ in bucket $i$. We have
@@ -47,15 +47,33 @@ p(\mbox{$rr$ received $R$ registrations}) = \\
 Given $R$ registrations, the number of ads that the registrar returns can be calculated using Equation~\ref{eq:da_fair} by substituting $N_a$ with $R$. Combining both results, we can calculate the joint probability $p_{rr,i}(Resp=S)$.
 
 Calculating the exact probability $p_{i}(Resp=S)$ that a searcher obtains $S$ responses in bucket $i$ and the probability $p_{1..t}(Resp=S)$ to obtain $S$ responses after visiting buckets 1 to $t$ is numerically intensive.
-Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $L_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$ in this way simulating the querying of $L_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
+Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $K_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$ in this way simulating the querying of $K_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
 The probability to reach the last registrar is then $p_{1..14}(Resp< N_{lookup})$.
 
-\subsubsection{Security}
-\begin{enumerate}
-    \item Calculate the probability of a lookup operation being eclipsed
-    \item Prove that a node cannot place more ads on a single registrar by deviating from the protocol (with the lower bound). Here, we can just reason about it without equations IMO. 
-    \item Can we do something for the DoS mathematically?
-\end{enumerate}
+% TODO:  explain calculation of overlaps
+
+\subsection{Security}
+
+The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ nodes, the probability that a searcher will encounter one in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
+The probability $P_i$ to receive only malicious ads from a registrar in bucket $i$ is therefore
+$$ P_{i} = \frac{n_a}{N} + (1-\frac{n_a}{N}) \cdot P_{h,i}$$
+where $P_{h,i}$ is the probability that a honest registrar in bucket $i$ only returns malicious ads.
+Assuming independence, the probability to only receive malicious ads from the entire bucket $i$ is $P_{i}^{K_{lookup}}$ and the probability $P_{1..t}$ to be eclipsed in all $t$ visited buckets is then
+$$ P_{1..t} = \prod_{i=1}^{t} P_{i}^{K_{lookup}}$$
+To calculate $P_{hi}$, we need to know the distribution of honest and malicious ads in a honest registrar.
+If the registrar contains $d_h$ honest and $d_a$ malicious ads, $P_{hi}$ is the probability to randomly select only malicious ads from those $d_h+d_a$ ads, which is $\prod_{i=0}^{d_h+d_a} \frac{d_a - i}{d_h+d_a-i}$.
+
+Calculating the distribution of $d_h$ and $d_a$ analytically is impossible due to the complexity of the waiting time calculation. Instead, we approximate $P_{hi}$ using the averages of $d_h$ and $d_a$.
+On average, a registrar in bucket $i$ will receive $R_h = \frac{N_h\cdot K_{register}}{N/2^i}$ honest and $R_a = \frac{N_a\cdot K'_{register}}{N/2^i}$ malicious registration requests, where $N_h$ and $N_a$ are the number of honest and malicious registrars and $K_{register}$ and $K'_{register}$ their respective number of registration attempts.
+
+The computation of the average $d_h$ and $d_a$ is, in principle, similar to Equations~\ref{eq:da_fair} and Equations~\ref{eq:da_fair2}. However, since an attacker will only have a limited number of IP addresses, we cannot ignore anymore the impact of the IP similarity score on the waiting time:
+\begin{eqnarray}
+d_h & = & \frac{R_h}{1 + (b + \frac{d_h}{d} + \mbox{IPscoreH}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}\\
+d_a & = & \frac{R_a}{1 + (b + \frac{d_a}{d} + \mbox{IPscoreA}) \cdot (1 - \frac{d}{n})^{-P_{occupancy}}}
+\end{eqnarray}
+where $d = d_h + d_a$. Obviously, the IP score for honest ads (IPscoreH) and malicious ads (IPscoreA) depends on the numbers of honest ads and malicious ads in the table and on the number of different IP addresses used by the advertisers. Again, these non-linear equations must be solved numerically.
+
+In the next section, we will explain how to calculate averages for the IP scores. To simplify the understanding we will start with simple situations and complete them step by step.
 
 \subsection{IP Score}
 \textbf{Situation 1: There are already} \(\mathbf{n}\) \textbf{random
@@ -65,7 +83,7 @@ addresses in the tree. What score will a new random IP address get?}
 happen with a certain probability that some of the random addresses are
 identical.}
 
-First level: With probability 0.5, the new address goes to the 0-branch
+First level of the tree: With probability 0.5, the new address goes to the 0-branch
 and the probability that branch contains more than \(\frac{n}{2}\) of
 the entries is
 \(P(\# 0 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1)\). Also with
@@ -76,28 +94,24 @@ Since the binomial distribution is symmetric,
 \(P\left( \# 0 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1 \right) = \ P(\# 1 \geq \left\lfloor \frac{n}{2} \right\rfloor + 1)\).
 The average score for the first level is:
 
-\[\text{NatScor}e_{\text{level}}(n) = \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} = 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}}\]
+\[\text{NatScore}_{\text{level}}(n) = \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} = 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}}\]
 
-This will introduce an error if n is not an integer and multiple of two.
-The best seems to be to take the average of the two approximations:
-
-\[\text{NatScor}e_{\text{level}}(n) = \frac{1}{2}\left( 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}} + \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} \right)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*)\]
+%This will introduce an error if n is not an integer and multiple of two.
+%The best seems to be to take the average of the two approximations:
+%\[\text{NatScor}e_{\text{level}}(n) = \frac{1}{2}\left( 1 - \sum_{i = 0}^{\left\lfloor \frac{n}{2} \right\rfloor}\frac{\left( \frac{n}{i} \right)}{2^{n}} + \sum_{i = \left\lfloor \frac{n}{2} \right\rfloor + 1}^{n}\frac{\left( \frac{n}{i} \right)}{2^{n}} \right)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*)\]
 
 We assume that the levels are independent and that we will have, on
 average, \(\frac{n}{2^{i - 1}}\) entries in each subtree of level \(i\).
 Using the above equation on each level gives
 
-\[\text{Scor}e_{\text{random}}(n) = \sum_{i = 1}^{32}{\text{NatScor}e_{\text{level}}\left( \frac{n}{2^{i - 1}} \right)}\]
-
-\textbf{\hfill\break
-}
+\[\text{Score}_{\text{random}}(n) = \frac{1}{32} \sum_{i = 1}^{32}{\text{NatScore}_{\text{level}}\left( \frac{n}{2^{i - 1}} \right)}\]
 
 \textbf{Situation 2: There are already} \(\mathbf{n + k}\)
 \textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
 random and} \(\mathbf{k}\) \textbf{are identical. What score will a new
 random IP address get?}
 
-\emph{Note: We assume completely random addresses. That means it can
+\emph{Note: We assume again completely random addresses. That means it can
 happen with a certain probability that one of the random addresses is
 identical to another random address or even to the} \(k\)
 \emph{identical ones.}
@@ -107,14 +121,14 @@ Let's first define the probability that at least \(\text{b\ }\)out of
 
 \[p(m,b) = \sum_{i = b}^{m}\frac{\left( \frac{m}{i} \right)}{2^{m}}\]
 
-Again, errors will be introduced if \(m\) is not a natural number.
-Better results are obtained with the approximation in equation (*) from
-situation 1.
+%Again, errors will be introduced if \(m\) is not a natural number.
+%Better results are obtained with the approximation in equation (*) from
+%situation 1.
 
-First level (``level 0''): With probability 0.5, the new IP address is
+First level (``level 0'') of the tree: With probability 0.5, the new IP address is
 in the same branch as the \(k\) identical addresses. The probability
 that more than half of the entries are in this branch knowing that
-the\(\text{\ k}\) identical are in this branch is:
+the $k$ identical are in this branch is:
 
 \[p\left( n,\ \left\lfloor \frac{n + k}{2} \right\rfloor + 1 - k \right)\]
 
@@ -136,10 +150,12 @@ certainty the \(k\) identical addresses:
 
 And so on for the other levels. In total, the average score is:
 
-\[\text{Scor}e_{\text{random}}(n,k) = \sum_{i = 1}^{32}\left\lbrack \frac{1}{2^{i}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right) + \left( 1 - \frac{1}{2^{i}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack\]
-
-\textbf{\hfill\break
-}
+\[
+\begin{split}
+\text{Scor}e_{\text{random}}(n,k) = \frac{1}{32} \sum_{i = 1}^{32}\left\lbrack \frac{1}{2^{i}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right) \\
++ \left( 1 - \frac{1}{2^{i}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
+\end{split}
+\]
 
 \textbf{Situation 3: There are already} \(\mathbf{n + k}\)
 \textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
@@ -150,7 +166,7 @@ score will an IP address get that is identical to the} \(\mathbf{k}\)
 The situation is similar to situation 2. However, we know that we always
 stay on the branch with the \(k\) identical entries. The score is:
 
-\[\text{Scor}e_{\text{identical}}(n,k) = \sum_{i = 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right)}\]
+\[\text{Score}_{\text{identical}}(n,k) = \frac{1}{32} \sum_{i = 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right)}\]
 
 \textbf{Situation 4: There are already}
 \(\mathbf{n +}\mathbf{2}^{\mathbf{a}}\mathbf{\cdot k}\)
@@ -173,8 +189,14 @@ The score for the level \(1 \leq j \leq a\) is
 After level \(a\), we can apply the score of situation 2 to each
 subtree:
 
-\[{\text{Scor}e_{random - a}(n,k) = \sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)}
-}{+ \sum_{i = a + 1}^{32}\left\lbrack \frac{1}{2^{i - a}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right) + \left( 1 - \frac{1}{2^{i - a}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack}\]
+\[
+\begin{split}
+{\text{IPScoreH}(n,k) = \frac{1}{32}\sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)}
+}\\
++ \frac{1}{32}\sum_{i = a + 1}^{32}\left\lbrack \frac{1}{2^{i - a}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)+\\
+\left( 1 - \frac{1}{2^{i - a}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
+\end{split}
+\]
 
 \textbf{Situation 5: Like situation 4
 (}\(\mathbf{n +}\mathbf{2}^{\mathbf{a}}\mathbf{\cdot k}\)
@@ -186,5 +208,10 @@ for the levels \(> a\), the ``new'' address will always stay on a branch
 that contains the \(k\) entries with the same address. For those levels,
 we can use the result from situation 3.
 
-\[\text{Scor}e_{identical - a}(n,k) = \sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)} + \sum_{i = a + 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)}\]
+\[
+\begin{split}
+\text{IPScoreA}(n,k) = \frac{1}{32} \sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)}\\
++ \frac{1}{32} \sum_{i = a + 1}^{32}{p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)}
+\end{split}
+\]
 
