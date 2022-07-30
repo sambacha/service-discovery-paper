@@ -137,7 +137,8 @@ Ensuring that the lower bound is enforced for each of the three components, make
 
 \sysname keeps a lower bound for each IP and topic in the ad cache. When a specific topic enters the cache for the first time, bound(topic) is set to 0 and a timestamp(topic) is set to the current time. When a ticket request arrives for the same topic, we calculate the IP waiting time $w_{\textit{topic}}$ and return the value, $w_{\textit{topic}} = \textit{max}(w_{\textit{topic}}, \textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. The bound and the timestamp are updated when a new ticket is issued and $w_{\textit{topic}} > (\textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. 
 
-\hl{The same holds for IPs.}
-\mk{TODO: @Onur we need to introduce the waiting time in the tree I believe}
+We also maintain lower-bound state for the ticket holders' IP addresses in the IP tree structure: the state for an IP address is maintained at the node, which corresponds to the longest prefix match in the existing tree (without introducing new nodes). We also aggregate the lower bound states of multiple IPs mapping to the same node by applying a max() function.  
+%\hl{The same holds for IPs.}
+%\mk{TODO: @Onur we need to introduce the waiting time in the tree I believe}
 
 
