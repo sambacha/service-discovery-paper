@@ -152,10 +152,12 @@ And so on for the other levels. In total, the average score is:
 
 \[
 \begin{split}
-\text{Scor}e_{\text{random}}(n,k) = \frac{1}{32} \sum_{i = 1}^{32}\left\lbrack \frac{1}{2^{i}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right) \\
-+ \left( 1 - \frac{1}{2^{i}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
+\text{Score}_{\text{random}}(n,k) = \frac{1}{32} \sum_{i = 1}^{32}\left\lbrack \frac{1}{2^{i}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 - k \right)\right. \\
++ \left.\left( 1 - \frac{1}{2^{i}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
 \end{split}
 \]
+
+
 
 \textbf{Situation 3: There are already} \(\mathbf{n + k}\)
 \textbf{addresses in the tree, however} \(\mathbf{n}\) \textbf{are
@@ -193,8 +195,8 @@ subtree:
 \begin{split}
 {\text{IPScoreH}(n,k) = \frac{1}{32}\sum_{j = 1}^{a}{p\left( \frac{n}{2^{j - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{j}} \right\rfloor + 1 - 2^{a - j}k \right)}
 }\\
-+ \frac{1}{32}\sum_{i = a + 1}^{32}\left\lbrack \frac{1}{2^{i - a}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)+\\
-\left( 1 - \frac{1}{2^{i - a}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
++ \frac{1}{32}\sum_{i = a + 1}^{32}\left\lbrack \frac{1}{2^{i - a}}p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 - k \right)+\right.\\
+\left.\left( 1 - \frac{1}{2^{i - a}} \right) \cdot p\left( \frac{n}{2^{i - 1}},\ \left\lfloor \frac{n + 2^{a}k}{2^{i}} \right\rfloor + 1 \right) \right\rbrack
 \end{split}
 \]
 
