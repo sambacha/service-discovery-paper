@@ -9,11 +9,12 @@ The platform already features almost 500 applications, and their number grows ev
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
-    % \vspace{-2mm}
+    \vspace{-0.15in}
     \caption{Distribution of the number of nodes in Ethereum's sub-networks, corresponding to different applications (May 2022).
     Sub-networks are sorted by decreasing popularity.
     A Zipf distribution is given for reference.
     }
+    \vspace{-0.20in}
     \label{fig:ecosystem}
 \end{figure}
 
@@ -24,9 +25,11 @@ This mechanism returns a set of peers that are used as entry points to the P2P o
 
 \begin{figure}[b!]
     \includegraphics[width=1\linewidth]{img/subnetwork}
+    \vspace{-0.15in}
     \caption{Formation of application-specific sub-networks using a universal service discovery network.
     }
     \label{fig:subnetwork}
+    \vspace{-0.15in}
 \end{figure}
 
 Service discovery is a particularly sensitive mechanism in the Ethereum platform.
@@ -68,5 +71,5 @@ The function allows limiting the amount of resources used by each node, promotes
 
 We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of \emph{discv5}~\cite{discv5} (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
 %We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
-\hl{Our results show ...}
-\sysname already has two full-stack industrial implementations and is scheduled for deployment in the future versions of Ethereum.
+Compared to the current Ethereum discovery protocol, \sysname discovers 10 times more peers on average by sending two times less lookup messages and achieves a similar or better resistance against eclipse attacks. Compared to vanilla DHT operations, our system reduces load on the most busy node in the network by 2 orders of magnitude and is up to 4 orders of magnitude less likely to be eclipsed by a powerful attacker. 
+\sysname is currently under testnet evaluation and is scheduled for deployment in the future versions of Ethereum network.
