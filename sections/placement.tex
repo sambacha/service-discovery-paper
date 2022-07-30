@@ -19,8 +19,8 @@ Alternatively, advertisers could place their ads on random registrars across the
 To execute the ad distribution process described below, each advertiser maintains an \emph{advertise table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars. The \emph{advertise table} is similar to the routing table used in Kademlia protocol (as described in \Cref{sec:background}). It stores the advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. \Ie the \emph{advertise table} stores $K_\textit{register}$ potential registrars for every distance (bucket) from the topic ID (\Cref{fig:advertise_table}). When created, the table is initialized with peers from the routing table. 
 
 \begin{figure}
-    \includegraphics[width=0.45\textwidth]{img/ticket_table}
-    \caption{Creation of an advertise table from a routing table.\mk{To be reworked and make it consistent with other figures. E.g., we shouldn't use a circle to represent the hash space. We can maybe also try to illustrate here the mechanism of placing a fixed amount of ads in each bucket.}}
+    \includegraphics[width=0.45\textwidth]{img/tables_small}
+    \caption{Creation of an advertise table from a routing table.} %\mk{To be reworked and make it consistent with other figures. E.g., we shouldn't use a circle to represent the hash space. We can maybe also try to illustrate here the mechanism of placing a fixed amount of ads in each bucket.}}
     \label{fig:advertise_table}
  \end{figure}
 
