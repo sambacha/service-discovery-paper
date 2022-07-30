@@ -85,8 +85,7 @@ Based on formal analysis (see \Cref{sec:analysis}), we set other \sysname parame
 
 \para{Network performance}
 In the rest of this section, we use violin plots for a compact illustration of both the distribution and the density of data points for each performance metric. For each plot, we limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
-The violin plots are split in two sides. The left side shows the network performance when there are no malicios nodes in the network, while the right side shows the network performance under the generic spammer attack, where Sybils spam registrations with random topics to attack ad cache resources of registrars. For each topic, we add as many Sybils as there are benign nodes participating in the topic. 
-Above each side of the violins, we display the maximum observed values. 
+Above a violin, we display the maximum observed values (vertically), if the range of the data points exceed the range of the y axis. 
 
 %In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
 %Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
@@ -164,7 +163,7 @@ We observe the total number of messages during the simulation but averaged over 
 
 We observe that \altname protocols have poor fairness and scalability since the number of messages received by the nodes close to each topic hash increases linearly both with increase in the number of nodes and topics. 
 \discv protocol has a better distribution of the load between nodes since the destination of lookup messages is chosen randomly. However, the average load across nodes in \discv is the highest among all of them, because nodes have to query a large number of peers during a lookup before they can discover sufficient number of topic-specific peers, increasing the overhead during lookup.
-\sysname in comparison, provides significantly lower overhead than the other protocols. However, under attack the overhead created by Sybils dominate the message counts for all four mechanisms. %\oa{I don't know what else to say about attacks here}
+\sysname in comparison, provides significantly lower overhead than the other protocols. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Lookup performance}
