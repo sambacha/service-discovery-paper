@@ -148,6 +148,7 @@ Above a violin, we display the maximum observed values (vertically), if the rang
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size during a single advertisement period.}
 \label{fig:msgsPerSize}
+\vspace{-0.15in}
 \end{figure}
 
 \begin{figure}
@@ -156,6 +157,7 @@ Above a violin, we display the maximum observed values (vertically), if the rang
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
 \caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different number of topics during a single advertisement period.}
 \label{fig:msgsPerTopic}
+\vspace{-0.15in}
 \end{figure}
 
 In~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic}, we present the total number of received messages (\ie overhead) received by the nodes as part of registration and lookup processes. For \discv, only lookups generate messages as there is no registration process in the protocol.
@@ -171,8 +173,10 @@ We observe that \altname protocols have poor fairness and scalability since the 
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
+\vspace{-0.05in}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different number of topics.}
 \label{fig:discoveredPerTopic}
+\vspace{-0.20in}
 \end{figure}
 
 \Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with increasing number of topics in the network. We observe that in \discv, nodes discover a much lower number of application-specific peers per operation, while \sysname and DHT-based solution efficiently discover the required (\ie 30) amount of peers to terminate the lookup. In rare cases, \sysname and DHT-based solution do not discover the required amount of peers that are caused by unpopular topics with close to 30 participants. 
@@ -187,6 +191,7 @@ Finally, we observe that \sysname achieves very close lookup performance to DHT 
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
 \label{fig:discoveredPerSize}
+\vspace{-0.20in}
 \end{figure}
 
 \Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with increasing size of the network. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes.
@@ -198,6 +203,7 @@ Finally, we observe that \sysname achieves very close lookup performance to DHT 
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for number of topics in the network for the simulation time.}
 \label{fig:discoveredByPerTopic}
+\vspace{-0.20in}
 \end{figure}
 
 \begin{figure}[!h]
