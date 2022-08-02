@@ -10,12 +10,8 @@ The waiting time function is divided into two parts: \emph{occupancy score} (ran
 
 The \emph{occupancy score} is based uniquely on the number of ads already in the cache.
 Its role is to progressively increase the waiting time as the ad cache fills up and to limit the memory used by a registrar.
-The \emph{occupancy score} is defined by equation~\ref{eq:occupancy}:
+The \emph{occupancy score} is defined by $\textit{occupancy score} = \frac{1}{(1-\frac{d}{n})^{P_{occ}}}$
 
-\begin{equation}
-\label{eq:occupancy}
-    \textit{occupancy score} = \frac{1}{(1-\frac{d}{n})^{P_{occ}}}
-\end{equation}
 where $d$ is the number of ads in the cache, $n$ is the capacity of the cache, and $P_\textit{occ}$ is a protocol parameter. 
 When the number of ads in the cache is low ($d \ll n$ ), the \emph{occupancy score} goes to $1$. 
 As the ad cache fills up, the score will be amplified by the divisor of the equation. 
@@ -28,12 +24,8 @@ Such an approach promotes fairness across topics (it is easier for less popular 
 
 $b$ ensures that the waiting time never reaches $0$ even when requests get $0$ values for IP and topic similarity score. Together with $P_\textit{occ}$, it shapes the behavior of the waiting functions. We choose values for those parameters in \Cref{sec:analysis}.
 
-The similarity score for topics is given by:
-\begin{equation}
-\label{eq:similarity}
-    \textit{similarity(topic)}= \frac{d(topic)}{d}
-\end{equation}
-where $d(topic)$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
+The similarity score for topics is given by $\textit{similarity(topic)}= \frac{d(topic)}{d}$.
+Where $d(topic)$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
 The score goes to $1$ as the specified topic dominates the cache $d(topic) \approx d$. 
 
 A simple similarity score used for topics cannot be securely applied to IP addresses. 
@@ -47,7 +39,8 @@ Each vertex stores a counter, while the edges represent consecutive $0$s or $1$s
 For simplicity, we present the \emph{tree} for IPv4 addresses but its adaptation for IPv6 is straightforward.
 
 \begin{figure}
-    \includegraphics[width=0.45\textwidth]{img/ip_tree_small}
+    \centering
+    \includegraphics[width=0.40\textwidth]{img/ip_tree_small}
     \vspace{-0.05in}
     \caption{Inserting an IP address into the IP \emph{tree} structure.}
     \label{fig:ip_tree}
@@ -74,10 +67,7 @@ where $p_{\geq i}$ is the number of IP addresses in the cache sharing a prefix w
   \end{equation}
 
 The counter values are taken \emph{before} the increment caused by adding the address\footnote{The first added address will thus always have a score of $0$}. 
-Finally, the similarity score for an IP is normalized by the length of the IP address (and thus the maximum possible number of penalty points):
-\begin{equation}
-    \textit{similarity(IP}) = \frac{\textit{score(IP)}}{32}
-\end{equation}
+Finally, the similarity score for an IP is normalized by the length of the IP address (and thus the maximum possible number of penalty points): $\textit{similarity(IP}) = \frac{\textit{score(IP)}}{32}$
 
 Similar to the topic score, the IP similarity score ranges from $0$ to $1$ and returns values closer to 1 for IP addresses sharing the same prefix (the longer the shared prefix, the higher the score).
 
@@ -139,7 +129,7 @@ To store the lower bound more efficiently, we rewrite the waiting formula as a s
 
 Ensuring that the lower bound is enforced for each of the three components, makes sure that the total waiting will respect the lower bound as well. At the same time, it only requires storing the lower bound for every IP/topic in the table and not all their combinations. This approach reduces the memory overhead to $O(d(IPs)+d(topics)) = O(d)$.
 
-\sysname keeps a lower bound for each IP and topic in the ad cache. When a specific topic enters the cache for the first time, bound(topic) is set to 0 and a timestamp(topic) is set to the current time. When a ticket request arrives for the same topic, we calculate the IP waiting time $w_{\textit{topic}}$ and return the value, $w_{\textit{topic}} = \textit{max}(w_{\textit{topic}}, \textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. The bound and the timestamp are updated when a new ticket is issued and $w_{\textit{topic}} > (\textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. 
+\sysname keeps a lower bound for each IP and topic in the ad cache. When a specific topic enters the cache for the first time, bound(topic) is set to 0 and a timestamp(topic) is set to the current time. When a ticket request arrives for the same topic, we calculate the topic waiting time $w_{\textit{topic}}$ and return the value, $w_{\textit{topic}} = \textit{max}(w_{\textit{topic}}, \textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. The bound and the timestamp are updated when a new ticket is issued and $w_{\textit{topic}} > (\textit{bound}(\textit{topic}) - \textit{timestamp}(\textit{topic}))$. 
 
 We also maintain lower-bound state for the ticket holders' IP addresses in the IP tree structure: the state for an IP address is maintained at the node, which corresponds to the longest prefix match in the existing tree (without introducing new nodes). We also aggregate the lower bound states of multiple IPs mapping to the same node by applying a max() function.  
 %\hl{The same holds for IPs.}
