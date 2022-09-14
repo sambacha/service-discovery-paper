@@ -8,30 +8,29 @@ The function directly shapes the structure of the ad cache, determines its diver
 It also protects against attacks, where a malicious actor tries to dominate the ad cache and exhaust the resources of a registrar. 
 
 Each request is given a waiting time based on the IP address of the registrar, the topic of the request and the current state of the ad cache. 
-The waiting time function is divided into two parts: \emph{occupancy score} (ranging from $0$ to $\infty$) and  \emph{similarity score} (ranging from $0$ to $2$) and is normalized by the amount of time each ad spent in the cache $a$ (\ie \emph{ad lifetime}). $a$ determines the absolute values of the returned waiting time. The final result is a product of all three: $w = a \times \textit{occupancy score} \times \textit{similarity score}.$
+The waiting time function is divided into two parts: an \emph{occupancy score} (ranging from $0$ to $\infty$) and a \emph{similarity score} (ranging from $0$ to $2$) and is normalized by the amount of time each ad spent in the cache $a$ (\ie \emph{ad lifetime}). $a$ determines the absolute values of the returned waiting time. \er{I am not sure to understand the previous sentence (before reading the rest of the section)} The final result is a product of all three: $w = a \times \textit{occupancy score} \times \textit{similarity score}.$
 
 The \emph{occupancy score} is based uniquely on the number of ads already in the cache.
 Its role is to progressively increase the waiting time as the ad cache fills up and to limit the memory used by a registrar.
-The \emph{occupancy score} is defined by $\textit{occupancy score} = \frac{1}{(1-\frac{d}{n})^{P_{occ}}}$
-
+The \emph{occupancy score} is defined as $\frac{1}{(1-\frac{d}{n})^{P_{occ}}}$
 where $d$ is the number of ads in the cache, $n$ is the capacity of the cache, and $P_\textit{occ}$ is a protocol parameter. 
 When the number of ads in the cache is low ($d \ll n$ ), the \emph{occupancy score} goes to $1$. 
-As the ad cache fills up, the score will be amplified by the divisor of the equation. 
-The higher values of $P_\textit{occ}$, the faster the increase. 
-With the current occupancy $d$ close to the capacity of the cache $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests. We analyze the behavior of the waiting function and choose optimal system parameter values in \Cref{sec:analysis}.
+As the ad cache fills up, the score will be amplified \er{right term?} by the divisor of the equation. 
+The higher the value of $P_\textit{occ}$ is, the faster the increase. 
+With a current occupancy $d$ close to the capacity of the cache $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests. We analyze the behavior of the waiting function and choose optimal system parameter values in \Cref{sec:analysis}.
 
 The role of the \emph{similarity score} is to determine how similar the incoming request is to the ads already in the ad cache in terms of the IP address and the topic. 
 Requests significantly different from the current content of the cache receive lower similarity scores resulting in lower overall waiting times. 
-Such an approach promotes fairness across topics (it is easier for less popular topics to get into the cache) and protects against attempts to fill the ad cache by a small number of advertisers (as identified by their IP addresses). The similarity score is defined as a sum of similarity score for IP and the topic of the request and a system parameter $b$: $\textit{similarity} = b + \textit{similarity(topic)} + \textit{similarity(IP)}$. 
+Such an approach promotes fairness across topics (it is easier for less popular topics to get into the cache) and protects against attempts to fill the ad cache by a small number of advertisers (as identified by their IP addresses). The similarity score is defined as the sum of the similarity score for the IP, the similarity score for the topic of the request, and a system parameter $b$: $\textit{similarity} = b + \textit{similarity(topic)} + \textit{similarity(IP)}$. \er{not sure it is the best to name a global value (similarity) the same as two different functions. Maybe consider using different names, e.g., sim\_topic and sim\_IP?}
 
 $b$ ensures that the waiting time never reaches $0$ even when requests get $0$ values for IP and topic similarity score. Together with $P_\textit{occ}$, it shapes the behavior of the waiting functions. We choose values for those parameters in \Cref{sec:analysis}.
 
 The similarity score for topics is given by $\textit{similarity(topic)}= \frac{d(topic)}{d}$.
-Where $d(topic)$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
+Here, $d(topic)$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
 The score goes to $1$ as the specified topic dominates the cache $d(topic) \approx d$. 
 
 A simple similarity score used for topics cannot be securely applied to IP addresses. 
-An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}. 
+An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}.
 A common solution (\eg adopted by the Go Ethereum client~\cite{geth}) is to limit the number of IP addresses coming from the same (\eg /24 IPv4 address) network.
 However, it is impossible to reliably set those limits without knowledge about the network size or NAT configuration of the honest nodes. 
 Instead, we propose a more versatile approach that directly captures the similarity level across different IPs and translates it into a numerical score. 
@@ -53,7 +52,7 @@ Apart from its root, the \emph{tree} consists of 32 levels (33 levels in total) 
 The root level is depicted as level $0$, the level of its successor as level $1$ and so on. 
 The counter of every \emph{tree} node is initially set to $0$. When adding an IP to the \emph{tree}, the address is first converted to its binary representation and follows a path in the \emph{tree} corresponding to consecutive bits. 
 Counters of all the visited nodes are increased by $1$. Removing an IP from the \emph{tree} follows the analogical procedure but decreases all the counters on the path. 
-As a result, the root counter stores the number of all the IP addresses in the ad cache, its $0$ successor stores the number of the IP addresses starting with $0$, root's $1$ successor stores the number of the IP addresses starting with $1$ and so on. 
+As a result, the root counter stores the number of all the \er{different instead of ``all the''?} IP addresses in the ad cache, its $0$ successor stores the number of the IP addresses starting with $0$, root's $1$ successor stores the number of the IP addresses starting with $1$ and so on. 
 
 After each addition of an address to the \emph{tree}, an IP score is calculated.
 The score is a sum of \emph{penalty points} obtained on visited nodes. 
@@ -101,7 +100,7 @@ As a result, advertisers are incentivized to keep checking the waiting times as 
 %Registration ticket requests should be kept to the minimum and an incentive for constantly spamming ticket requests to get a better waiting time can overload a network and can lead to some nodes getting better performance than the rest.
 To prevent this behavior, we design a mechanism ensuring that any node already in possession of a ticket with a determined waiting time, cannot get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by sending new ticket requests.
 One solution to this problem is to take into account all the expiration times when calculating the waiting time. 
-However, it is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice as it opens a possibility of denial of service attacks.
+However, it is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice as it opens a possibility of denial of service attacks. \er{I am not sure to see why and how?}
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/lower_bound.png}

@@ -6,14 +6,14 @@ In this section, we describe a registration procedure followed by an advertiser 
 \subsection{Challenge}
 Registrars have a limited amount of memory and can store only a finite number of ads. If the registration demand surpasses the supply each registrar has to decide which ads should be admitted. In an open setting, implementing simple replacement policies such as Least Recently Used (LRU) or Most recently used (MRU) exposes the system to an attacker that bombards registrars with dummy ads and evicts honest ones.
 
-\sysname solves this problem by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate the amount of time the advertiser needs to wait before being admitted (\ie the waiting time). The waiting time is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and the space left in the registry. We explain the waiting time calculations in \Cref{sec:waitingTime}. The advertiser must wait for a waiting time reported by the registrar and only then, its ad will be admitted. 
+\sysname solves this problem by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate the amount of time the advertiser needs to wait before being admitted. This \emph{waiting time} is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and the space left in the registry. We explain the waiting time calculations in \Cref{sec:waitingTime}. The advertiser must wait for a waiting time reported by the registrar and only then, its ad will be admitted. \er{maybe write ``before it is allowed to contact the registrar again and have its ad admitted''; or we may understand that the ad is accepted without actiom from the advertiser itself.} 
 
 \subsection{Data Structures}
 \para{Advertisement}
 When advertisers send a registration request, they send an \emph{advertisement} (\emph{ad} in short). The ad contains the IP address of the advertiser, the ID of the advertiser, the topic the ad is for and additional information needed to later contact the advertiser (\eg an application-specific port number). In the remaining part of the paper, we omit the additional information for brevity. 
 
 \para{Ad cache}
-Registrars store received ads locally in a data structure called a \emph{ad cache}. Each ad stored in the ad cache has an associated lifetime, after which the ad is automatically removed. Once an ad is added to the cache, the lifetime is set to a fixed value $a$. The total size of the ad cache is limited by $n$. \sysname does not impose topic/IP/ID-specific limits on the content of the \emph{ad cache} to accommodate for diverse network conditions and application popularity distributions.
+Registrars store received ads locally in a data structure called an \emph{ad cache}. Each ad stored in the ad cache has an associated lifetime, after which the ad is automatically removed. Once an ad is added to the cache, the lifetime is set to a fixed value $a$. The total size of the ad cache is limited by $n$. \sysname does not impose topic/IP/ID-specific limits on the content of the \emph{ad cache} to accommodate for diverse network conditions and application popularity distributions.
 A single advertiser may place at most one ad for a specific topic in the ad cache (registration requests for ads already in the cache are ignored).
 However, an advertiser may attempt to place ads for multiple topics at the same registrar.
 
@@ -24,7 +24,7 @@ Tickets are immutable objects issued by registrars to advertisers when receiving
     \item Initial timestamp - the local time at the registrar when the ad was received for the first time, $t_\textit{init}$
     \item Waiting time - the waiting time calculated by the advertiser for the ad, $t_\textit{waiting}$. We describe the details of the waiting time calculations in \Cref{sec:waitingTime}. 
 \end{itemize}
-The tickets are digitally signed by the issuing advertiser. 
+The tickets are digitally signed by the issuing advertiser. \er{should we give more details here? What is the purpose? Do we assume the registrar knows the public key of the advertiser, always, so it can check this signature?}
 
 \subsection{Registration Procedure}
 An advertiser willing to register an ad at a registrar starts by sending an
@@ -60,11 +60,11 @@ If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{wa
     \vspace{-0.15in}
 \end{figure}
 
-The inclusion of issue-time allows the registrars to prioritize advertisers that have been waiting for the longest, as we explain later. The tickets are immutable (i.e., tampering with the ticket is detectable by the registrars that originally issued the ticket). When a registrar issues a new ticket (in case registration is not immediately successful) to an advertiser, the registrar simply copies the issue-time from the last issued ticket and uses that as the issue-time of the new ticket. This means that the registrars are not required to maintain any state for each ongoing ticket request given that they can verify the authenticity of the ticket in the incoming registration requests.
+The inclusion of issue-time allows the registrars to prioritize advertisers that have been waiting for the longest, as we explain later. The tickets are immutable (i.e., tampering with the ticket is detectable by the registrars that originally issued the ticket). \er{maybe explain how we achieve this.} When a registrar issues a new ticket (in case registration is not immediately successful) to an advertiser, the registrar simply copies the issue-time from the last issued ticket and uses that as the issue-time of the new ticket. This means that the registrars are not required to maintain any state for each ongoing ticket request given that they can verify the authenticity of the ticket in the incoming registration requests.
 
 
 
-An advertiser gives up and stops the registration process with a registrar when it receives $r$ unsuccessful registration attempts (i.e., after being issued $r$ tickets without being admitted). In this case, the advertiser removes the registrar from its advertise table and selects a new node located in the same bucket and attempts a new registration procedure. The mechanism prevents malicious registrars from stalling honest advertisers.
+An advertiser gives up and stops the registration process with a registrar when it has received $r$ unsuccessful registration attempts (i.e., after being issued $r$ tickets without being admitted). In this case, the advertiser removes the registrar from its advertise table and selects a new node located in the same bucket and attempts a new registration procedure. The mechanism prevents malicious registrars from stalling honest advertisers.
 %\michal{Is the below true? Shouldn't we try to register at the same node?}
 %\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
-Similarly, after the expiration of a previously placed ad the registrar is removed from the advertise table and the process is restarted with a new node picked from the local route table.%\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
+Similarly, after the expiration of a previously placed ad, the registrar is removed from the advertise table \er{consistency: sometimes advertise table is in italics, sometimes not. Suggest to use italics only the first time the term is used.} and the process is restarted with a new node picked from the local route table.%\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
