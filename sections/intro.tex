@@ -2,13 +2,23 @@
 %=========================================================
 
 \er{General comments (20220914) after NDSS reject:
-\begin{itemize}
+\begin{enumerate}
 	\item We need to clarify the difference, if any, between \sysname and discv5. Ideally we will want to update the online description which is already several months, if not years, old. I would advocate to present \sysname as the central component of discv5, and detail what are the helping protocols around it (unless, of course, my understanding is incorrect).
 	\item Need experiments on prototype.
 	\item The use of 100 IPs for the Sybils did not convince one of the two reviewers. Not sure how to fix this?
 	\item We should make sure the disctinction between the Ethereum blockchain and the Ethereum ecosystem is clear (confusion with second reviewer).
-\end{itemize}
+\end{enumerate}
 }
+\mk{
+Responses to the comments above:
+\begin{enumerate}
+    \item We consulted it with Felix, at agreed that we can call our think Discv5, while calling the previous one Discv4. We should just explain that both Discv5 and Discv4 have other components (e.g., slightly different encrypted communication) that we don't consider here.
+    \item In progress
+    \item We'll increase this value in the testbed experiments - it shouldn't influence us that much. 
+    \item Yeah, I thought the first part of the introduction was enough, but apparently it wasn't. 
+\end{enumerate}
+}
+
 
 \section{Introduction}
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, Ethereum is one of the largest decentralized platforms currently in operation.
@@ -50,6 +60,7 @@ It is not desirable, in particular, that it relies solely on a fixed set of dedi
 In addition, the need to provision dedicated registrar nodes would be a hindrance to the emergence of new applications and (initially) small sub-networks.
 
 \er{There are inconsistencies with the presentation of discv4; here presented as a set of protocols but later as the name of the discovery mechanism itself. In general, we should clarify what are these other protocols. If these are helping/lower level protocols for the discovery mechanism I would prefer to present discv4 as the discovery mechanism (and do the same for discv5=\sysname).}
+\mk{Yes, we can to that (see the comments before the intro}
 The current service discovery mechanism used in the Ethereum platform is part of \discv~\cite{discv4}, a set of protocols leveraging the global DHT.
 It employs a simple but robust \emph{random walk} approach.
 A node willing to join an application's sub-network simply contacts individually a series of nodes collected from random lookups on the DHT, repeatedly checking application membership until it has collected enough peers participating in this target application.
@@ -81,4 +92,5 @@ The function allows limiting the amount of resources used by each node, promotes
 We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of \emph{discv5}~\cite{discv5} (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
 %We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Compared to the current Ethereum discovery protocol, \sysname discovers 10 times more peers on average by sending two times less lookup messages and achieves a similar or better resistance against eclipse attacks. Compared to vanilla DHT operations, our system reduces load on the most busy node in the network by 2 orders of magnitude and is up to 4 orders of magnitude less likely to be eclipsed by a powerful attacker. \er{the metric for the ``eclipsability'' here is not clear. What does it mean to be 4 OOM less likely to be eclipsed?}
+\mk{In the analysis we calculate what's the probability of an operation returning only malicious results}
 \sysname is currently under testnet evaluation and is scheduled for deployment in the future versions of Ethereum network. \er{revise previous if the deployment is actually planned.}

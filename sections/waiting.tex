@@ -15,7 +15,7 @@ Its role is to progressively increase the waiting time as the ad cache fills up 
 The \emph{occupancy score} is defined as $\frac{1}{(1-\frac{d}{n})^{P_{occ}}}$
 where $d$ is the number of ads in the cache, $n$ is the capacity of the cache, and $P_\textit{occ}$ is a protocol parameter. 
 When the number of ads in the cache is low ($d \ll n$ ), the \emph{occupancy score} goes to $1$. 
-As the ad cache fills up, the score will be amplified \er{right term?} by the divisor of the equation. 
+As the ad cache fills up, the score will be amplified \er{right term?}\mk{I think so. The score increases as the ad cache fills up} by the divisor of the equation. 
 The higher the value of $P_\textit{occ}$ is, the faster the increase. 
 With a current occupancy $d$ close to the capacity of the cache $n$, the \emph{occupancy score} goes to infinity thus limiting the number of admitted requests. We analyze the behavior of the waiting function and choose optimal system parameter values in \Cref{sec:analysis}.
 
@@ -52,7 +52,7 @@ Apart from its root, the \emph{tree} consists of 32 levels (33 levels in total) 
 The root level is depicted as level $0$, the level of its successor as level $1$ and so on. 
 The counter of every \emph{tree} node is initially set to $0$. When adding an IP to the \emph{tree}, the address is first converted to its binary representation and follows a path in the \emph{tree} corresponding to consecutive bits. 
 Counters of all the visited nodes are increased by $1$. Removing an IP from the \emph{tree} follows the analogical procedure but decreases all the counters on the path. 
-As a result, the root counter stores the number of all the \er{different instead of ``all the''?} IP addresses in the ad cache, its $0$ successor stores the number of the IP addresses starting with $0$, root's $1$ successor stores the number of the IP addresses starting with $1$ and so on. 
+As a result, the root counter stores the number of all the \er{different instead of ``all the''?}\mk{should be "all the". If the same IP address is added twice, the counter increases by 2.} IP addresses in the ad cache, its $0$ successor stores the number of the IP addresses starting with $0$, root's $1$ successor stores the number of the IP addresses starting with $1$ and so on. 
 
 After each addition of an address to the \emph{tree}, an IP score is calculated.
 The score is a sum of \emph{penalty points} obtained on visited nodes. 
@@ -100,7 +100,7 @@ As a result, advertisers are incentivized to keep checking the waiting times as 
 %Registration ticket requests should be kept to the minimum and an incentive for constantly spamming ticket requests to get a better waiting time can overload a network and can lead to some nodes getting better performance than the rest.
 To prevent this behavior, we design a mechanism ensuring that any node already in possession of a ticket with a determined waiting time, cannot get a better waiting time (including the new waiting time and the time passed between the first ticket request and the subsequent) by sending new ticket requests.
 One solution to this problem is to take into account all the expiration times when calculating the waiting time. 
-However, it is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice as it opens a possibility of denial of service attacks. \er{I am not sure to see why and how?}
+However, it is computationally expensive (\eg $O(d)$ per request) and unfeasible in practice as it opens a possibility of denial of service attacks. \er{I am not sure to see why and how?}\mk{To do that we'd need to iterate through (potentially all the) registrations that we have in our cache every time we receive a request. An attacker could then send dummy requests just to force the registrar to use its CPU.}
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/lower_bound.png}

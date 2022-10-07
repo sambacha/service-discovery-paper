@@ -185,8 +185,7 @@ The \discv protocol has a better load distribution between nodes. since the dest
 \end{figure}
 
 \Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with an increasing number of topics in the network. We observe that, in \discv, nodes discover a much lower number of application-specific peers per operation, while \sysname and DHT-based solutions efficiently discover the required (30) amount of peers to terminate the lookup. In rare cases, \sysname and DHT-based solutions do not discover the required amount of peers that are caused by unpopular topics with close to 30 participants. 
-DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery performance since searchers directly query the nodes, close to their target topic, where registrations from all application-specific peers are stored. However, as we will see, DHT-based solutions have poor security against eclipse attacks. \er{I would remove previous sentence, no need to anticipate the rest of the section.}
-Finally, we observe that \sysname achieves very close lookup performance to DHT protocols. 
+DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery performance since searchers directly query the nodes, close to their target topic, where registrations from all application-specific peers are stored. Finally, we observe that \sysname achieves very close lookup performance to DHT protocols. 
 
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}

@@ -3,7 +3,7 @@
 
 \section{Ads placement}
 \label{sec:placement}
-In the following, we describe distributing advertisements in the network and discuss the process of searching for, and establishing sub-protocol connections. \er{sub-protocol connections? Application-specific connections instead?} We start by discussing the challenges related to the problem and explaining the data structures used by \sysname. 
+In the following, we describe distributing advertisements in the network and discuss the process of searching for, and establishing application-specific connections. We start by discussing the challenges related to the problem and explaining the data structures used by \sysname. 
 
 \subsection{Challenges}
 The first challenge of a robust service discovery platform is the question of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic? It is possible to deterministically choose a group of nodes based on the topic itself using DHT put and get operations. Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach causes \emph{unequal} load distribution across registrars, especially when the popularity of the topics varies significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities, and take control over the entire topic-specific traffic. 
