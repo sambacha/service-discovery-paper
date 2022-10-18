@@ -25,7 +25,7 @@ We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
-\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. \er{not consistent with the presentation of discv4 as a collection of protocols before, see comments in intro.}
+\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. \er{not consistent with the presentation of \discv as a collection of protocols before, see comments in intro.}
 In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\cite{rlpx}) to make new connections, and when the buffer is empty new lookups are initiated to three other random nodes.
 \item \altname is a traditional key/value store implementation using vanilla Kademlia DHT. 
 In this approach, peers store their ads under desired topics at the N closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy.
@@ -512,11 +512,11 @@ We also observe the deviation is bounded at around 60 seconds, with equivalent d
 \end{figure}   
 
 
-In Figure~\ref{fig:hopcount} we can observe the lookup performance of \sysname compared with Discv4 for a 5000 nodes simulation.
-In the plot we show the average number of nodes discovered for each hop during a lookup per topic, taking into account that Discv4 cannot do per topic lookups,  so we discard received nodes that do not support the specific service.
-In the figure we observe that for t1 the discovered nodes are higher when using Discv4, since all topics support t1 and any node discovered will be a valid node. 
-However, as the popularity of the topic decreases it also does the lookup performance of Discv4,  since it is very difficult to find nodes for non-popular topics without supporting per topic lookups.
-In this sense,  Discv5 lookup performance also decreases the performance with non-popular topics (simply because there are less nodes in the network) however this decrease is diminished.  Between t1 and t5 the lookup performance is decrease approximately to a 1/2th for Discv5, while when using Discv4 the lookup performance decreased to a less than a 1/10th.
+In Figure~\ref{fig:hopcount} we can observe the lookup performance of \sysname compared with \discv for a 5000 nodes simulation.
+In the plot we show the average number of nodes discovered for each hop during a lookup per topic, taking into account that \discv cannot do per topic lookups,  so we discard received nodes that do not support the specific service.
+In the figure we observe that for t1 the discovered nodes are higher when using \discv, since all topics support t1 and any node discovered will be a valid node. 
+However, as the popularity of the topic decreases it also does the lookup performance of \discv,  since it is very difficult to find nodes for non-popular topics without supporting per topic lookups.
+In this sense,  Discv5 lookup performance also decreases the performance with non-popular topics (simply because there are less nodes in the network) however this decrease is diminished.  Between t1 and t5 the lookup performance is decrease approximately to a 1/2th for Discv5, while when using \discv the lookup performance decreased to a less than a 1/10th.
 
 %TODO add lookup description including mechanisms to avoid sybils.
 
