@@ -23,15 +23,14 @@ Responses to the comments above:
 \section{Introduction}
 
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, the Ethereum ecosystem is one of the largest decentralized platforms currently in operation.
-While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet}), the platform is also home to a number of additional decentralized applications.
+While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet} and hosted by about 7,000 nodes), the platform is also home to a number of additional decentralized applications.
 This includes blockchains used for test purposes (\emph{Ropsten}, \emph{G\"orli}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), exchange markets (\emph{Binance}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}).
 The platform already features almost 500 applications, and their number grows every year~\cite{discv4-dns-lists}. The size distribution of the application-specific sub-networks varies significantly (\Cref{fig:ecosystem}) featuring a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
     \vspace{-0.15in}
-    \caption{Distribution of the number of nodes in Ethereum's sub-networks, corresponding to different applications (May 2022).
-    Sub-networks are sorted by decreasing popularity.
+    \caption{Distribution of the number of nodes in Ethereum's sub-networks, corresponding to different applications (May 2022), and sorted by decreasing popularity.
     A Zipf distribution is given for reference.
     }
     \vspace{-0.20in}
@@ -40,13 +39,14 @@ The platform already features almost 500 applications, and their number grows ev
 
 All nodes in the Ethereum platform participate in a \emph{global} peer-to-peer (P2P) network operating a distributed hash table (DHT)~\cite{maymounkov2002kademlia}.
 In addition to joining the global network, every node connects to at least one \emph{sub-network} formed of peers participating in its application(s) of interest.
-In this paper, we focus on the \emph{service discovery} mechanism, by which a node participating in the global P2P network discovers an application sub-network.
-This mechanism returns a set of peers that are used as entry points sub-network specific to that application, typically supporting an application-specific overlay network as illustrated by \Cref{fig:subnetwork}.
+In this paper, we focus on the \emph{service discovery} mechanism, by which a node participating in the global P2P network discovers this application sub-network.
+Service discovery returns a set of peers that are used as entry points to that sub-network, typically supporting a specific overlay network as illustrated by \Cref{fig:subnetwork}.
 
 \begin{figure}[b!]
     \includegraphics[width=1\linewidth]{img/subnetwork}
     \vspace{-0.15in}
     \caption{Formation of application-specific sub-networks using a universal service discovery network.
+    \protect\er{would be good to have larger fonts in the figure, they are very small compared to those of Figure~\ref{fig:ecosystem}}
     }
     \label{fig:subnetwork}
     \vspace{-0.15in}
