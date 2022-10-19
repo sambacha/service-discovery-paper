@@ -1,4 +1,4 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[compsoc, conference, a4paper, 10pt, times]{IEEEtran}
 \pagestyle{plain}
 
 
@@ -37,6 +37,7 @@
 \usepackage[noend]{algpseudocode}
 \usepackage{epsfig}
 \usepackage[tight,footnotesize]{subfigure}
+\usepackage{cite}
 
 \newcommand{\cmark}{\ding{51}}%
 \newcommand{\xmark}{\ding{55}}%
@@ -46,14 +47,21 @@
 
 \title{Topic-based service discovery for the Ethereum P2P network}
 \title{\sysname: Service discovery for the Ethereum platform}
-\author{}
+\title{Robust service discovery in the Ethereum ecosystem with \sysname}
+\title{\sysname: robust service discovery in the Ethereum ecosystem}
+\author{Anonymous submission \#}
 \maketitle
-    \vspace{-0.90in}
+    % \vspace{-0.90in}
 \begin{abstract}
-The Ethereum ecosystem consists of a plethora of decentralized applications. Nodes in the network first join a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. However, the current discovery protocol scales badly with the increasing number of applications and nodes and prevents the growth of the network.
+	
+% \er{consider using a more complete title claiming the robustness and efficiency of the mechanism.}
+% \mk{I understand the motivation but at the same time, it makes the title less readable}
+% \er{fine, but I would rename platform by ecosystem as this is the term used in the introduction. Also, the sys name should be discv5}
 
-We present \sysname, a novel service discovery system for Ethereum. \sysname combines pseudo-random and deterministic advertisement placement to achieve both efficiency and security. Our system implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
-\sysname performs lookup operations that are up to three orders of magnitude more efficient (in terms of overhead and discovery time) than the currently used discovery system while achieving a similar security level. \sysname is currently scheduled for deployment in the next version of the Ethereum peer-to-peer network. 
+The Ethereum ecosystem consists of a plethora of decentralized applications, including but not limited to the blockchain of the same name. Nodes joining the ecosystem connect to a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. Unfortunately, the current discovery protocol of the Ethereum global network scales poorly with the increasing number of applications and nodes, preventing the growth of the ecosystem.
+
+We present \sysname, a novel service discovery system for the Ethereum global network. \sysname combines pseudo-random and deterministic advertisement placement to achieve both efficiency and security. It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
+\sysname performs lookup operations that are up to three orders of magnitude more efficient (in terms of overhead and discovery time) than \discv, the currently used discovery system while achieving a similar security level. \er{maybe explicit what we mean by a similar security level} \sysname is currently scheduled for deployment in the next version of the Ethereum peer-to-peer network. \er{replace previous sentence by a stronger claim} \er{mention deployment results and evaluation highlights}
 
 \end{abstract}
 

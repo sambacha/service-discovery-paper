@@ -8,23 +8,26 @@ In this section, we present \sysname network and threat models as well as the ob
 \subsection{System Model}
 We assume a network of $N$ nodes. At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers. Nodes are identified by their \emph{node ID}, which is simply the hash of their public key. Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However, two nodes cannot share the same ID.
 
-\sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT.
+\er{revise: It is not clear \sysname is an extension of discv5 from the online documentation, but rather its central mechanism. What are the other protocols as part of discv5  is also unclear.}
+\sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT. \er{I would not necessarily make this claim here, since several operations are. Kademlia-specific in reality. Maybe save for the conclusion?}
 
 \sysname indexes participants according to \emph{topics}. A topic is an identifier for a
 service or application provided by a node. Topics are arbitrary strings but can be mapped to 256-bit integers (topic hashes), like node IDs and DHT items.
-A node providing a certain service (topic), is said to \emph{register} itself when it submits an ad to a registrar to make itself discoverable under that topic. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assume that the popularity of topics in the system may vary significantly and follows a power law distribution~\cite{kim2018measuring}. Anyone can participate in registering and searching for (one or more) topics and uses the same ID and IP for all its topics. 
+A node providing a certain service (topic), is said to \emph{register} itself when it submits an ad to a registrar \er{minor: registrar used before its definition.} to make itself discoverable under that topic. Depending on the needs of the application, a node can advertise multiple topics or no topics at all. We assume that the popularity of topics in the system may vary significantly and follows a power law distribution~\cite{kim2018measuring}. Anyone can participate in registering and searching for (one or more) topics and use the same ID and IP for all its topics. 
 
 Nodes fulfill the following roles in the network:
 
 \begin{itemize}
-    \item \textbf{Registrar} - accepts advertisements and responds to topic queries. When asked for a specific topic, a registrar responds with nodes that registered ads for the topic.  All DHT nodes act as registrars. A registrar accepts and stores advertisements for any topic.
+    \item \textbf{Registrar} - accepts advertisements and responds to topic queries. When asked for a specific topic, a registrar responds with nodes that registered ads for the topic.  All DHT nodes act as registrars. A registrar may accept and store advertisements for any topic.
     \item \textbf{Advertiser} - registers for a specific topic and wants to be discovered by its peers. Advertisers make themselves discoverable by placing ads. Nodes are advertisers for every topic/service they participate in.
     \item \textbf{Searcher} - attempts to discover nodes registered under a specific topic.
 \end{itemize}
 
 \subsection{Threat Model}
 \label{sec:threat}
-Our system is designed to operate in an adversarial environment, \ie the Internet. We assume the presence of malicious actors in the DHT that may arbitrarily deviate from the protocol.% These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
+Our system is designed to operate in an adversarial environment, \ie the Internet. We assume the presence of malicious actors in the DHT that may arbitrarily deviate from the protocol and coordinate their actions.
+\er{should we mention collusions here? It is mentioned only at the end of the section (although we do not seem to consider it so much in the experiments)}\mk{In the experiments we assume that all the Sybils ae controlled by a single entity. I've expanded the phrase above. I hope it's fine now.}
+% These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
 The security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation. This is because the DHT's basic protocol is used to initialize and maintain the data structures used by the service discovery layer. We assume that no honest node is fully eclipsed by the malicious ones, \ie each honest DHT node has at least one honest peer. The Ethereum already implements multiple mechanisms preventing eclipse attacks at the DHT level~\cite{marcus2018low, henningsen2019eclipsing}.  
 
@@ -32,19 +35,20 @@ Malicious actors can spawn multiple virtual nodes within one physical machine an
 
 Through a literature review~\cite{chen2020survey, henningsen2019eclipsing}, we collect a list of malicious behaviors that an attacker can use to disrupt a DHT-based service discovery protocol:
 \begin{itemize}
-    \item \textbf{Malicious DHT Peer} - DHT routing relies on asking peers for other nodes, closer to a specific target (\eg MSG\_FIND, MSG\_GET). When responding to those messages, an attacker returns uniquely other malicious nodes trying to hijack the DHT traversal process of honest nodes.
-    \item \textbf{Malicious Registrar} - when queried for a specific topic, it returns a maximum amount of malicious nodes \footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}. 
-    \item \textbf{Spamming Advertisers} - an attacker bombards honest registrars with malicious advertisers. The attack can be performed for single or multiple topics. The attack may cause an honest registrar to refuse honest advertisements due to the lack of resources (both storage and CPU power), and return malicious advertisements of the spammer when queried by honest searchers. 
-    \item \textbf{Generic Spammers} - an attacker bombards an honest registrar with topic queries or random traffic hoping to exhaust bandwidth or CPU power. However, we consider such attacks less of a threat as \textit{(i)} they require a symmetric amount of resources used by the attacker to establish and maintain a secure connection, \textit{(ii)} can be easily countered by sending rate limits (\eg based on the source IP address or Proof-of-Work puzzles). 
+    \item \textbf{Malicious DHT Peer} - DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to those messages, an attacker returns uniquely other malicious nodes trying to hijack the DHT traversal process of honest nodes.
+    \item \textbf{Malicious Registrar} - when queried for a specific topic, it returns a maximum amount of malicious nodes\footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}. 
+    \item \textbf{Spamming Advertisers} - an attacker bombards honest registrars with malicious advertisements. The attack can be performed for single or multiple topics. The attack may cause an honest registrar to refuse honest advertisements due to the lack of resources (both storage and CPU power), and return malicious advertisements of the spammer when queried by honest searchers. 
+    \item \textbf{Generic Spammers} - an attacker bombards an honest registrar with topic queries or random traffic hoping to exhaust bandwidth or CPU power.
 \end{itemize}
 
 Adversaries can strategically target specific nodes or regions in the DHT ID space (\ie by generating Sybil Node IDs within the desired region of the DHT ID space) with those attacks. We assume the presence of attackers that can combine some or all of the behaviors above and coordinate their actions to maximize their effect. 
 
 \subsection{Objectives}
-Under the threat model, \sysname achieves the following properties.
+Under the considered threat model, \sysname achieves the following properties.
 
 \para{Efficiency} \sysname ensures that the number of nodes contacted and messages exchanged increases logarithmically with the number of system participants for both lookup and register operations. Sending and processing requires only simple operations involving a constant amount of resources. The storage usage for the registrars is limited by a configurable, but fixed amount regardless of the incoming traffic. 
 
-\para{Fairness} \sysname ensures a balanced load distribution across systems participants and DHT regions (\ie avoids hotspots). The system provides efficient lookup and registration operations for all the participants regardless of the topic they look up/register for. Each advertiser has a similar chance of being discovered by its peers. 
+\para{Fairness} \sysname ensures a balanced load distribution across systems participants and DHT regions (\ie avoids hotspots). The system provides efficient lookup and registration operations for all the participants regardless of the topic they look up/register for. Each advertiser has a similar chance of being discovered by its peers. \er{we should ideally be a bit more formal here and give bounds (in big O?) of the unbalance between these nodes.}\mk{What fairness metric would you suggest here?}
 
-\para{Security} \sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks. While completely eliminating such attacks in an open network is technically impossible, \sysname provides high probabilistic security and increases the monetary cost of launching such attacks under the presence of a powerful attacker.
+\para{Security} \sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks. While completely eliminating such attacks in an open network is technically impossible, \sysname provides high probabilistic security \er{can we quantify this probability?}\mk{It depends on a lot of factors \#Sybil, \#malicious\_IPs etc. so not easy, but I'll think about it.} and increases the monetary cost of launching such attacks. 
+% under the presence of a powerful attacker.
