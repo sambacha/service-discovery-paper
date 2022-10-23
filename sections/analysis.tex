@@ -6,11 +6,11 @@ In this section, we analyze the properties of \sysname and choose optimal values
 
 \para{Memory usage is bounded by the capacity of the ad cache} 
 We focus uniquely on registrars, as advertisers and searchers require a fixed amount of memory for their operations. The amount of ads in the cache is given by $d = xa/(a + w(x))$, where $x$ is the number of requests constantly trying to get into the table, $a$ is ad lifetime and $w(x)$ is the average waiting time received by requests $x$.
-In the worst case scenario, when requests $x$ are able to achieve 0 similarity score for both the topic and the IP addresses, the waiting time formula is given by: $w(x) = ba/(1 - \frac{d}{n})^{P_\textit{occupancy}}$.
+In the worst case scenario, when requests $x$ are able to achieve 0 similarity score for both the topic and the IP addresses, the waiting time formula is given by: $w(x) = ba/(1 - \frac{d}{n})^{P_\textit{occ}}$.
 
-The possibility of the cache going above the capacity is determined by the constant $b$ and the exponent $P_\textit{occupancy}$. $b$ should be set to a small value to limit its influence on the waiting time (where IP and topic similarity scores should play the dominant role). $P_\textit{occupancy}$ should be large enough to prevent overflowing of the cache and small enough to enable usage of large portions of the cache under normal traffic conditions. 
+The possibility of the cache going above the capacity is determined by the constant $b$ and the exponent $P_\textit{occ}$. $b$ should be set to a small value to limit its influence on the waiting time (where IP and topic similarity scores should play the dominant role). $P_\textit{occ}$ should be large enough to prevent overflowing of the cache and small enough to enable usage of large portions of the cache under normal traffic conditions. 
 
-In consultation with Geth developers, we assume a cache capacity of $n = 1000$ entries \er{minor/global: consider using thousands delimiters in all values above 999.} and an average size of an advertisement equal to 1KB. \Cref{fig:cache_size_limit} presents the cache usage for different rates of incoming requests. We chose $b=10^{-7}$ and $P_\textit{occupancy}=10$ that provide protections against cache overflowing and good usage of cache space under normal conditions. 
+In consultation with Geth developers, we assume a cache capacity of $n = 1000$ entries \er{minor/global: consider using thousands delimiters in all values above 999.} and an average size of an advertisement equal to 1KB. \Cref{fig:cache_size_limit} presents the cache usage for different rates of incoming requests. We chose $b=10^{-7}$ and $P_\textit{occ}=10$ that provide protections against cache overflowing and good usage of cache space under normal conditions. 
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/cache_size_limit}
@@ -39,19 +39,19 @@ As $N_a \gg N_b$, the initial number of requests is higher for \emph{registrar A
     \includegraphics[width=1\linewidth]{img/fairness_registration}
     \vspace{-0.05in}
     \caption{Load ratio between registrars located close to the most popular (\emph{registrar A}) and the least popular (\emph{registrar A}) topics.
-	\protect\er{as the value for the blue line for x=100 is not readable, we could add it as text on the figure?}\mk{good idea - will do} Parameters: $K_{register}=5, N=25000, N_a+N_b=15000, N_x=100$.}
+	\protect\er{as the value for the blue line for x=100 is not readable, we could add it as text on the figure?}\mk{good idea - will do} Parameters: $K_\textit{register}=5, N=25000, N_a+N_b=15000, N_x=100$.}
     \label{fig:fairness_registration}
     \vspace{-0.15in}
 \end{figure}
 
 \para{Lookup operations achieve equal load distribution}
-Let us assume again \emph{registrar A} is the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that searchers stop their lookup operations after collecting $N_{lookup}$ peers. \er{global: incorrect use of math mode. We should use macros for these definitions, and use the text command for the word identifiers, i.e., $N_{lookup}$ should be $N_{\text{lookup}}$ and same for the others.} We set $N_{lookup} = 30$, a value commonly used by applications in the Ethereum ecosystem. As the number of ads in the network grows, more searchers are likely to stop before reaching \emph{registrar A}. \Cref{fig:fairness_lookup} presents \emph{Registrar A}'s load for increasing values of $N_a$. Depending on the $K_{register}$ and $K_{lookup}$ parameters, the maximum load is experienced when the number of \emph{topic A}-advertisers/searchers is relatively small and goes back to $0$, when the topic becomes popular in the network. We choose $K_{register}$ and $K_{lookup} =5$ as a reasonable middle-ground between efficiency, load balance and security.
+Let us assume again \emph{registrar A} is the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that searchers stop their lookup operations after collecting $N_\textit{lookup}$ peers. \er{global: incorrect use of math mode. We should use macros for these definitions, and use the text command for the word identifiers, i.e., $N_{lookup}$ should be $N_{\text{lookup}}$ and same for the others.} We set $N_\textit{lookup} = 30$, a value commonly used by applications in the Ethereum ecosystem. As the number of ads in the network grows, more searchers are likely to stop before reaching \emph{registrar A}. \Cref{fig:fairness_lookup} presents \emph{Registrar A}'s load for increasing values of $N_a$. Depending on the $K_\textit{register}$ and $K_\textit{lookup}$ parameters, the maximum load is experienced when the number of \emph{topic A}-advertisers/searchers is relatively small and goes back to $0$, when the topic becomes popular in the network. We choose $K_\textit{register}$ and $K_\textit{lookup} =5$ as a reasonable middle-ground between efficiency, load balance and security.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_lookup}
     \vspace{-0.05in}
     \caption{\emph{Registrar A}'s lookup load as a function increasing popularity of \emph{topic A}.
-		Parameters: $N_{return}=10, N=25000, N_b=100, N_x=500$.}
+		Parameters: $N_\textit{return}=10, N=25000, N_b=100, N_x=500$.}
     \label{fig:fairness_lookup}
     \vspace{-0.15in}
 \end{figure}

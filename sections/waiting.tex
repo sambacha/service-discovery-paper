@@ -12,7 +12,7 @@ The waiting time function is divided into two parts: an \emph{occupancy score} (
 
 The \emph{occupancy score} is based uniquely on the number of ads already in the cache.
 Its role is to progressively increase the waiting time as the ad cache fills up and to limit the memory used by a registrar.
-The \emph{occupancy score} is defined as $\frac{1}{(1-\frac{d}{n})^{P_{occ}}}$
+The \emph{occupancy score} is defined as $\frac{1}{(1-\frac{d}{n})^{P_\textit{occ}}}$
 where $d$ is the number of ads in the cache, $n$ is the capacity of the cache, and $P_\textit{occ}$ is a protocol parameter. 
 When the number of ads in the cache is low ($d \ll n$ ), the \emph{occupancy score} goes to $1$. 
 As the ad cache fills up, the score will be amplified \er{right term?}\mk{I think so. The score increases as the ad cache fills up} by the divisor of the equation. 
@@ -25,13 +25,13 @@ Such an approach promotes fairness across topics (it is easier for less popular 
 
 $b$ ensures that the waiting time never reaches $0$ even when requests get $0$ values for IP and topic similarity score. Together with $P_\textit{occ}$, it shapes the behavior of the waiting functions. We choose values for those parameters in \Cref{sec:analysis}.
 
-The similarity score for topics is given by $\textit{similarity(topic)}= \frac{d(topic)}{d}$.
-Here, $d(topic)$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
-The score goes to $1$ as the specified topic dominates the cache $d(topic) \approx d$. 
+The similarity score for topics is given by $\textit{similarity(topic)}= \frac{d(\textit{topic})}{d}$.
+Here, $d(\textit{topic})$ is the number of ads for the specified topic already in the cache and $d$ is the total number of ads in the cache. 
+The score goes to $1$ as the specified topic dominates the cache $d(\textit{topic}) \approx d$. 
 
 A simple similarity score used for topics cannot be securely applied to IP addresses. 
 An attacker may be able to generate a large number of different addresses sharing the same prefix (\eg using a single /24 IPv4 network) that, while similar, would receive low \emph{similarity scores}.
-A common solution (\eg adopted by the Go Ethereum client~\cite{geth}) is to limit the number of IP addresses coming from the same (\eg /24 IPv4 address) network.
+A common solution (\eg adopted by the Go Ethereum client~\cite{geth}) is to limit the number of IP addresses coming from the same (\eg \ /24 IPv4 address) network.
 However, it is impossible to reliably set those limits without knowledge about the network size or NAT configuration of the honest nodes. 
 Instead, we propose a more versatile approach that directly captures the similarity level across different IPs and translates it into a numerical score. 
 
@@ -56,7 +56,7 @@ As a result, the root counter stores the number of all the \er{different instead
 
 After each addition of an address to the \emph{tree}, an IP score is calculated.
 The score is a sum of \emph{penalty points} obtained on visited nodes. 
-$$score(IP)=\sum_{i=1}^{32} \textit{penalty}(p_{\geq i}) $$
+$$\textit{score}(IP)=\sum_{i=1}^{32} \textit{penalty}(p_{\geq i}) $$
 where $p_{\geq i}$ is the number of IP addresses in the cache sharing a prefix with $IP$ with a length of at least $i$. A penalty point is given at $p_{\geq i}$ if the IP address to be added makes the tree more unbalanced than the tree currently is:
 
 \begin{equation}
@@ -77,7 +77,7 @@ The final formula for the waiting time function can be represented with the foll
 \begin{equation}
 \begin{split}
     \textit{w(IP, topic)} = 
-    a(b + \frac{d(topic)}{d} + \frac{\textit{score(IP)}}{32}
+    a(b + \frac{d(\textit{topic})}{d} + \frac{\textit{score(IP)}}{32}
     )
     \frac{1}{(1-\frac{d}{n})^{P_\textit{occ}}}
 \end{split}
@@ -117,13 +117,13 @@ To ensure this is not the case, our protocol enforces a lower bound on the
 waiting time. \Ie we make sure that an advertiser's waiting time received at
 $t_2$ is not smaller than the waiting time at $t_1$ ($t_1 < t_2$) by more than
 $t_2 - t_1$ (\Cref{fig:lower_bound}).
-However, holding such a bound for every request (\ie every combination of IP/topic) would cause significant memory overhead ($O(|IPs|\times|topics|) \gg O(d)$) and would present an easy way for an attacker to create additional state at the registrar. 
+However, holding such a bound for every request (\ie every combination of IP/topic) would cause significant memory overhead ($O(|\textit{IPs}|\times|\textit{topics}|) \gg O(d)$) and would present an easy way for an attacker to create additional state at the registrar. 
 
 To store the lower bound more efficiently, we rewrite the waiting formula as a sum:
 \begin{equation}
 \begin{split}
     \textit{w(IP, topic)} = 
-    \frac{ab}{(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{ad(topic)}{d(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{\textit{score(IP)}}{32(1-\frac{d}{n})^{P_\textit{occ}}}
+    \frac{a\cdot b}{(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{a\cdot d(\textit{topic})}{d(1-\frac{d}{n})^{P_\textit{occ}}} + \frac{\textit{score(IP)}}{32(1-\frac{d}{n})^{P_\textit{occ}}}
 \end{split}
 \end{equation}
 
