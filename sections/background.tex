@@ -23,9 +23,9 @@ Every node in the overlay is assigned a unique identifier (\emph{node ID}), draw
 The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} node to $i$ in that space where $k$ is a system parameter.
 This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of the differing suffix in bits).
 
-Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
+Each node $X$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
 The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
-Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $N$.
+Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $X$.
 \er{if space allows, a figure for the DHT and for discv4 could help. It could also highlight the case of less-popular topics.}
 % The last bucket (\ie, bucket $m-1$) additionally contains peers whose IDs share a prefix of length exceeding $m-1$ bits with the local node. \er{I do not see the point/interest of this precision, this is already covered by the previous sentence.}
 
@@ -41,7 +41,7 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 %\noindent
 %\textbf{Lookups.}
 %
-The bucket partitioning scheme divides the keyspace from the point of view of $N$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $N$'s ID.
+The bucket partitioning scheme divides the keyspace from the point of view of $X$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $X$'s ID.
 As a result, a node's routing table provides a more detailed (\ie, fine-grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.

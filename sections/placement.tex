@@ -58,7 +58,7 @@ successful registrations per bucket unless there are less than $K_\textit{regist
 The advertiser repeats the process for every bucket in the \emph{advertise table}. 
 
 The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser will not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
-To fill the empty buckets, the advertiser asks potential registrars to return $N$ closest peers to the topic hash they know of. 
+To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. 
 The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. 
 The registrars respond with a list of peers regardless of the success of the registration operation. 
 The advertiser uses the returned information to populate its \emph{advertise table}. 
