@@ -18,17 +18,21 @@ To obtain the results shown in Figure~\ref{fig:cache_size_limit}, Equation~\ref{
 
 \subsubsection{Load distribution of registration operations}
 
-We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will receive ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive, on average, $\frac{N_b\cdot K_{register}}{N/2}$ registration requests for topic $B$.
+We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will receive ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive requests from, on average, $\frac{N_b\cdot K_{register}}{N/2}$ advertisers for topic $B$.
 
 Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
 \begin{eqnarray}
 d_a & = & \frac{N_a}{1 + (b + \frac{d_a}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\label{eq:da_fair}\\
-d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\label{eq:da_fair2}
+d_b & = & \frac{\frac{N_b\cdot K_{register}}{N/2}}{1 + (b + \frac{d_b}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}\\
+\label{eq:da_fair2}
+d_X & = & \frac{N_x}{1 + (b + \frac{d_x}{d}) \cdot (1 - \frac{d}{n})^{-P_{occ}}}
 \end{eqnarray}
-where $d = d_a + d_b$. Again, this system of non-linear equations must be solved numerically for $d_a$ and $d_b$.
+where $d = d_a + d_b + d_x$. $N_X$ is a ``background load'' representing the other topics in the system.
+
+Again, the above system of non-linear equations must be solved numerically for $d_a$ and $d_b$.
 If topic $A$ is far more popular than topic $B$, i.e., $N_a \gg N_b$, $d_a$ will be greater than $d_b$. However, because of the topic similarity score $\frac{d_a}{d}$, the advertisements for topic $A$ will not occupy the entire table.
 
-For a registrar the closest to topic $B$ and the furthest from topic $A$, the same equations, but with the roles of topics $A$ and $B$ switched, are obtained.
+For a registrar the closest to topic $B$ and the furthest from topic $A$, the same equations, but with the roles of topics $A$ and $B$ switched, are obtained. We assume that both registrars will experience the same background load $N_X$.
 
 \subsubsection{Load distribution of lookup operations}
 
@@ -38,7 +42,7 @@ The lookup analysis in Section~\ref{sec:analysis} requires to calculate the prob
 
 Let $p_{rr,i}(Resp=S)$ be the probability that the searcher will receive $S$ responses from a registrar $rr$ in bucket $i$. We have
 \begin{eqnarray*}
-p_{rr,i}(Resp=S) =\sum_{R=0}^{N_a}{} p(  & & \mbox{$rr$ received $R$ registrations}\\
+p_{rr,i}(Resp=S) & = & \sum_{R=0}^{N_a}{} p( \mbox{$rr$ received $R$ registrations}\\
                         & \wedge &  \mbox{$rr$ has $\min(S,N_{return})$ ads})
 \end{eqnarray*}
 where $N_{return}$ is the maximum number of responses a registrar will return. The probability that the registrar received $R$ registrations is the probability that $R$ of the $N_a$ advertisers chose the registrar. It is given by the binomial distribution:
@@ -50,13 +54,13 @@ Given $R$ registrations, the number of ads that the registrar returns can be cal
 
 Calculating the exact probability $p_{i}(Resp=S)$ that a searcher obtains $S$ responses in bucket $i$ and the probability $p_{1..t}(Resp=S)$ to obtain $S$ responses after visiting buckets 1 to $t$ is numerically intensive.
 Instead, we use Monte-Carlo simulation to approximate $p_{1..t}(Resp=S)$ from $p_{rr,i}(Resp=S)$. For each bucket $1\le i \le t$, the simulation randomly draws $K_{lookup}$ samples from the distribution $p_{rr,i}(Resp=S)$, in this way simulating the querying of $K_{lookup}$ registrars per bucket. This approximation assumes that the distributon of responses for the individual registrars in a bucket are independent, which is mostly correct for large $N$. The simulation is repeated 100,000 times for the result shown in Figure~\ref{fig:fairness_lookup}.
-The probability to reach the last registrar is then $p_{1..14}(Resp< N_{lookup})$.
+The probability to reach the last registrar is then $p_{1..u}(Resp< N_{lookup})$, where $u$ is the number of buckets.
 
 % TODO:  explain calculation of overlaps
 
 \subsection{Security}
 
-The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ malicious nodes, the probability that a searcher will encounter one in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
+The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ malicious nodes, the probability that a searcher will contact a malicious registrar in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
 The probability $P_i$ to receive only malicious ads from a random registrar in bucket $i$ is therefore
 $$ P_{i} = \frac{n_a}{N} + (1-\frac{n_a}{N}) \cdot P_{h,i}$$
 where $P_{h,i}$ is the probability that a honest registrar in bucket $i$ only returns malicious ads.
