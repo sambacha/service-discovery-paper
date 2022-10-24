@@ -6,6 +6,8 @@ In this section, we describe a registration procedure followed by an advertiser 
 \subsection{Challenge}
 Registrars have a limited amount of memory and can store only a finite number of ads. If the registration demand surpasses the supply each registrar has to decide which ads should be admitted. In an open setting, implementing simple replacement policies such as Least Recently Used (LRU) or Most recently used (MRU) exposes the system to an attacker that bombards registrars with dummy ads and evicts honest ones.
 
+\mk{TODO:Mention previous work suggested by the NDSS reviewers~\cite{liu2010netfence, crowcroft2007lazy, kung2015practical}}
+
 \sysname solves this problem by using a lightweight \textit{waiting-time-based admission mechanism} for access control. When an advertiser sends an ad placement request to a registrar, the registrar will calculate the amount of time the advertiser needs to wait before being admitted. This \emph{waiting time} is calculated based on the diversity of the request (\ie how different is the request from ads already in the registry) and the space left in the registry. We explain the waiting time calculations in \Cref{sec:waitingTime}. The advertiser must wait for a waiting time reported by the registrar and only then, its ad will be admitted. \er{maybe write ``before it is allowed to contact the registrar again and have its ad admitted''; or we may understand that the ad is accepted without actiom from the advertiser itself.} 
 
 \subsection{Data Structures}
