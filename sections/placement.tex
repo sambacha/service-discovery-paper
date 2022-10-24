@@ -3,7 +3,7 @@
 
 \section{Ads placement}
 \label{sec:placement}
-In the following, we describe distributing advertisements in the network and discuss the process of searching for, and establishing sub-protocol connections. \er{sub-protocol connections? Application-specific connections instead?} We start by discussing the challenges related to the problem and explaining the data structures used by \sysname. 
+In the following, we describe distributing advertisements in the network and discuss the process of searching for, and establishing application-specific connections. We start by discussing the challenges related to the problem and explaining the data structures used by \sysname. 
 
 \subsection{Challenges}
 The first challenge of a robust service discovery platform is the question of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic? It is possible to deterministically choose a group of nodes based on the topic itself using DHT put and get operations. Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach causes \emph{unequal} load distribution across registrars, especially when the popularity of the topics varies significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities, and take control over the entire topic-specific traffic. 
@@ -48,20 +48,18 @@ Increasing $K_\textit{register}$, makes the advertiser easier to find at the cos
 %\end{equation}
 %\michal{TODO: Need to decide what to do with the equation above.}
 
-For every bucket in the \emph{advertise table}, the advertiser selects
-$K_{register}$ random peers and attempts to perform registration.
+For every bucket in the \emph{advertise table}, iterates over
+$K_{register}$ peers and attempts to perform registration.
 We describe details of the admission procedure in \Cref{sec:admission}. 
 A successful registration places an ad on an advertiser for a fixed amount of time $a$.
-If registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser selects another random peer from the same bucket and retries the registration process. 
+If registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser removes the registrar from its bucket.
 The advertisers always maintain $K_\textit{register}$ attempts and/or
 successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
 The advertiser repeats the process for every bucket in the \emph{advertise table}. 
 
-The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser will not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
-To fill the empty buckets, the advertiser asks potential registrars to return $N$ closest peers to the topic hash they know of. 
-The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. 
-The registrars respond with a list of peers regardless of the success of the registration operation. 
-The advertiser uses the returned information to populate its \emph{advertise table}. 
+The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser does not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
+To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. 
+The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. The registrars respond with a list of peers regardless of the success of the registration operation. However, \sysname provides an additional protection against malicious registrars that try to poison the advertise table by returning malicious peers. Registrars are allowed to provide a only a single node per bucket of the advertiser's advertise table. It allows the advertiser to populate its \emph{advertise table} while limiting the likelihood of buckets filled uniquely with malicious peers.
 As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network. 
 Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps. 
 

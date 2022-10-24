@@ -11,21 +11,21 @@
 \section{Background}
 \label{sec:background}
 
-We start by detailing the operation of Ethereum's global DHT, which is an evolution of the canonical Kademlia~\cite{maymounkov2002kademlia} DHT.
-Then, we present the current service discovery mechanism, part of Ethereum's \discv series of protocols operating atop this DHT, and discuss its shortcomings.
+We start by detailing the operation of Ethereum's global DHT, which is an evolution of the canonical Kademlia~\cite{maymounkov2002kademlia}.
+Then, we present \discv, the current service discovery mechanism of Ethereum operating over this DHT, and discuss its shortcomings.
 
 \subsection{The Ethereum global DHT}
 \label{sec:background:dht}
 
 All nodes in the Ethereum ecosystem participate in a global distributed hash table (DHT).
 A DHT is a structured overlay network allowing lookup operations, \ie locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}~\cite{chord,rowstron2001pastry}. Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
-Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT. %\mk{we haven't mention item storage before}
+Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT.
 The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} node to $i$ in that space where $k$ is a system parameter.
 This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie the length of the differing suffix in bits).
 
-Each node $N$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
+Each node $X$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
 The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
-Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $N$.
+Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $X$.
 \er{if space allows, a figure for the DHT and for discv4 could help. It could also highlight the case of less-popular topics.}
 % The last bucket (\ie, bucket $m-1$) additionally contains peers whose IDs share a prefix of length exceeding $m-1$ bits with the local node. \er{I do not see the point/interest of this precision, this is already covered by the previous sentence.}
 
@@ -41,11 +41,12 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 %\noindent
 %\textbf{Lookups.}
 %
-The bucket partitioning scheme divides the keyspace from the point of view of $N$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $N$'s ID.
+The bucket partitioning scheme divides the keyspace from the point of view of $X$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $X$'s ID.
 As a result, a node's routing table provides a more detailed (\ie, fine-grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
 
+\er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}
 Lookups rely on $\alpha$ concurrent routing operations (or \emph{walks}) towards the target key.
 In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
 The process stops when up to $k$ nodes closest to the target are found. %\er{seems contradictory when the goal is to find the exact one that is the closest?}
@@ -68,14 +69,20 @@ In addition, Ethereum has incorporated several other counter-measures~\cite{marc
 
 \subsection{\discv service discovery}
 \label{sec:background:discv4}
-In the current service discovery protocol, \discv, \er{consistency: sometimes DISCV4, sometimes discv4.} nodes perform \textit{random walks} through the DHT and perform application-layer \emph{handshakes} with the encountered peers.
+
+In \discv, Ethereum's current service discovery protocol, nodes perform \textit{random walks} over the DHT overlay structure and perform application-layer \emph{handshakes} with the encountered peers.
 In a random walk, a node picks a random target key and performs a lookup toward the distance corresponding to the target following the parallel search process explained above. 
-A handshake involves a secure channel establishment between the initiator node and the encountered peer and therefore incurs some overhead to both endpoints. If the initiator node discovers during the handshake that the encountered peer is part of a target application's sub-network, then the initiator node can follow up with a connection request to the peer to establish an application-level connection. The objective of a node is to fill up its \textit{application-level connection slots} with outbound (\ie initiated by the node) connections. The process of node discovery completes when a node fills up all outbound slots. Nodes also reserve a number of inbound connection slots that can be filled with connections initiated by other nodes. 
+A handshake involves a secure channel establishment between the initiator node and the encountered peer and therefore incurs some overhead to both endpoints.
+If the initiator node discovers during the handshake that the encountered peer is part of a target application's sub-network, then the initiator node can follow up with a connection request to the peer to establish an application-level connection.
+The objective of a node is to fill up its \textit{application-level connection slots} with outbound (\ie initiated by the node) connections.
+The process of node discovery completes when a node fills up all outbound slots.
+Nodes also reserve a number of inbound connection slots that can be filled with connections initiated by other nodes. 
 
 \para{Security and Efficiency}
 %\mk{The below is too long. I also don't think it's a good place to discuss in more details potential attacks.}
 %In the context of blockchains and cryptocurrency, security is a key requirement for a service discovery protocol. A potential attack on any peer discovery protocol is the eclipse attack, where an adversary monopolises all the connections of a victim node with its Sybils, effectively separating the victim from the rest of the network. In blockchain systems, eclipse attacks are typically a pre-cursor to financially-motivated attacks such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
 %Because eclipsing can apply to any peer discovery process, it concerns both the DHT-level (\ie Kademlia routing table) and application-level peer selection. 
-Peer discovery through random walks is reasonably resilient against eclipse attacks. Attackers cannot strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie all locations in the keyspace have an equal chance of being discovered. \er{consider replacing discovered by scanned or interrogated?}
+Peer discovery through random walks is reasonably resilient against eclipse attacks. Attackers cannot strategically place their Sybil identities in the keyspace to increase their chance of being discovered by victims, \ie, all locations in the keyspace have an equal chance of being discovered. % \er{consider replacing discovered by scanned or interrogated?}
 On the other hand, the brute-force approach of expensive handshakes with randomly encountered nodes has several drawbacks in terms of efficiency. First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. %More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). 
-More importantly, for applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take a long time. \er{can we give more precise numbers based on simulations or experiments?}
+More importantly, for applications with low popularity, the number of handshakes can be excessive, \ie on the order of thousands when 0.1\% of the nodes are running the target application. \er{in addition to the numbers in the intro, can we give more precise numbers here? One of the reviewer did not get this central point of \discv inefficiency.}
+Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take a long time. \er{can we give more precise numbers based on simulations or experiments?}\mk{We can, it's just a bit challenging as it's size dependent. Would some examples be ok? If not, we can also refer the readers to our evaluation}
