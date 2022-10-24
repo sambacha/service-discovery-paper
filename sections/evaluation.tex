@@ -143,6 +143,8 @@ Above a violin, we display the maximum observed values (vertically), if the rang
 %\sr{why there is an increase for \discv with the number of nodes in the simulation and not the number of topics??? shouldn't be the opposite? I guess is because even if there are topics with less nodes there is just a single lookup with the same nodes contacted}
 %\sr{why the peak is bigger for DHT for 600 than 300? Is it because of topic hash ids colliding?}
 
+\vspace{-0.20in}
+
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_totalMsg.eps}
@@ -152,6 +154,7 @@ Above a violin, we display the maximum observed values (vertically), if the rang
 \vspace{-0.15in}
 \end{figure}
 
+	
 \begin{figure}
 \centering
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_totalMsg.eps}
@@ -175,6 +178,8 @@ The \discv protocol has a better load distribution between nodes. since the dest
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Lookup performance}
 
+\vspace{-0.20in}
+
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
@@ -189,6 +194,8 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
+
+\vspace{-0.20in}
 
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_discovered.eps}
@@ -305,6 +312,8 @@ In \Cref{fig:eclipse_evil_t0}, \discv and \sysname achieve close to a $0$ eclips
 In \Cref{fig:eclipse_evil_t299}, 
 when Sybils attack the least popular topic, we observe \sysname to be the most resistant to eclipsing as can be seen in \Cref{fig:eclipse_evil_t299}. \sysname's high resistance to eclipsing even for the least popular topic with a large Sybil presence highlights the effectiveness of both the waiting time mechanism and distributing the lookup and registration operations across different buckets.
  
+ \vspace{-0.20in}
+
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the most popular topic (3978 nodes).}
@@ -321,6 +330,8 @@ In \Cref{fig:eclipse_sybil_t0} and \Cref{fig:eclipse_sybil_t299}, we again illus
 When attacking the least popular topic using 100 IPs, the percentage of eclipsed nodes is similar for all four mechanisms. However, \sysname performs significantly better for a lower number of IP addresses under the control of the adversary.
 More specifically, we observe that, when using \sysname, only 5.9\% of nodes are eclipsed when the adversary has a single IP address for its Sybils, which goes up to 41.2\% when 10 IP addresses are used, as opposed to over 70\% of nodes being eclipsed for \discv in all cases.  
 
+\vspace{-0.20in}
+
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
 \caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the most popular topic (3978 nodes).}
@@ -328,6 +339,7 @@ More specifically, we observe that, when using \sysname, only 5.9\% of nodes are
 \end{figure}
 
 
+\vspace{-0.20in}
 
 \begin{figure}[!h]
 \includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
