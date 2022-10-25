@@ -1,25 +1,6 @@
 %!TEX root = ../main.tex
 %=========================================================
 
-\er{General comments (20220914) after NDSS reject:
-\begin{enumerate}
-	\item We need to clarify the difference, if any, between \sysname and discv5. Ideally we will want to update the online description which is already several months, if not years, old. I would advocate to present \sysname as the central component of discv5, and detail what are the helping protocols around it (unless, of course, my understanding is incorrect).
-	\item Need experiments on prototype.
-	\item The use of 100 IPs for the Sybils did not convince one of the two reviewers. Not sure how to fix this?
-	\item We should make sure the disctinction between the Ethereum blockchain and the Ethereum ecosystem is clear (confusion with second reviewer).
-\end{enumerate}
-}
-\mk{
-Responses to the comments above:
-\begin{enumerate}
-    \item We consulted it with Felix, at agreed that we can call our think Discv5, while calling the previous one \discv. We should just explain that both Discv5 and \discv have other components (e.g., slightly different encrypted communication) that we don't consider here.
-    \item In progress
-    \item We'll increase this value in the testbed experiments - it shouldn't influence us that much. 
-    \item Yeah, I thought the first part of the introduction was enough, but apparently it wasn't. 
-\end{enumerate}
-}
-
-
 \section{Introduction}
 
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, the Ethereum ecosystem is one of the largest decentralized platforms currently in operation.

@@ -27,7 +27,9 @@ This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise e
 Each node $X$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
 The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
 Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $X$.
-\er{if space allows, a figure for the DHT and for discv4 could help. It could also highlight the case of less-popular topics.}
+
+% \er{if space allows, a figure for the DHT and for discv4 could help. It could also highlight the case of less-popular topics.}
+
 % The last bucket (\ie, bucket $m-1$) additionally contains peers whose IDs share a prefix of length exceeding $m-1$ bits with the local node. \er{I do not see the point/interest of this precision, this is already covered by the previous sentence.}
 
 % A newly instantiated DHT node typically populates its routing table with a set of (hard-coded) bootstrap nodes\footnote{While other approaches where proposed based on social relations between nodes, currently, most of the deployed DHTs use the bootstrap node approach.}.
@@ -47,16 +49,26 @@ As a result, a node's routing table provides a more detailed (\ie, fine-grained)
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of the key space.
 
-% \er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}\mk{Ethereum Kademlia support lookups but doesn't support put/get. The lookups are still used when joining the DHT to check whether a node with the same ID as us exists and populate the routing tables.}
-Lookups rely on $\alpha$ concurrent routing operations (or \emph{walks}) towards the target key.
-In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
-The process stops when up to $k$ nodes closest to the target are found. %\er{seems contradictory when the goal is to find the exact one that is the closest?}
-% \er{detail what is the risk that is prevented}\mk{This is to prevent the queried malicious nodes to create on the fly and return to us nodes that are extremely close to the target key. If we don't expose the key, this risk is reduced.}
-When performing a lookup, Ethereum nodes target a \emph{distance} to a key instead of the key itself.
-This distance is defined as the bucket number of the key where the target node would be inserted. \er{I am not sure to understand the bucket number of the key? Do you mean "the bucket number in which the queried node would insert the key if it would have it?"}
-The XOR metric is then used locally to sort the lookup results, which enables nodes to hide their exact target during lookups. %, making it harder for adversaries to return favorable results. 
-This increases security, as it prevents queried nodes from being able to create Sybil on the fly, that would be extremely close to this specific target key, and return these Sybils to the querier.
-Ethereum incorporated several other counter-measures~\cite{marcus2018low, henningsen2019eclipsing} to secure lookups from eclipsing attacks, which we explain in \Cref{sec:related}.
+Lookups for a key rely on $\alpha$ concurrent \emph{routing} operations, with the goal of identifying the $k$ closest nodes to that key.
+Original DHT designs~\cite{maymounkov2002kademlia,chord,rowstron2001pastry} would use a recursive routing mechanism and specify the target key to each encountered node.
+This poses a risk, as these intermediate nodes could leverage the target information to establish Sybils in proximity of the target key and return these to the querier.
+A security measure in Ethereum's Kademlia implementation is, therefore, to use an iterative (i.e., querier-controlled) routing process and hide the precise targeted key.
+The querier retrieves \emph{entire} buckets from intermediate nodes, and filters them locally before continuing the process.
+Other counter measures integrated following researchers assessments of Kademlia's security in Ethereum~\cite{marcus2018low,henningsen2019eclipsing} include for instance limiting the number of nodes from the same /24 subnet in the same bucket or routing table, or strengthening the seeding process by which a routing table is initialized.
+
+% % \er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}\mk{Ethereum Kademlia support lookups but doesn't support put/get. The lookups are still used when joining the DHT to check whether a node with the same ID as us exists and populate the routing tables.}
+% Lookups rely on $\alpha$ concurrent routing operations
+% % (or \emph{walks})
+% towards the target key.
+% In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
+% The process stops when up to $k$ nodes closest to the target are found. %\er{seems contradictory when the goal is to find the exact one that is the closest?}
+% % \er{detail what is the risk that is prevented}\mk{This is to prevent the queried malicious nodes to create on the fly and return to us nodes that are extremely close to the target key. If we don't expose the key, this risk is reduced.}
+% When performing a lookup, Ethereum nodes target a \emph{distance} to a key instead of the key itself.
+% This distance is defined as the bucket number of the key where the target node would be inserted. \er{I am not sure to understand the bucket number of the key? Do you mean "the bucket number in which the queried node would insert the key if it would have it?"}
+% \er{1. the node simply asks for the full bucket of the target node; 2. Do not go into so many details, just mention that there are mechanisms to make it more secure against sybils.}
+% The XOR metric is then used locally to sort the lookup results, which enables nodes to hide their exact target during lookups. %, making it harder for adversaries to return favorable results.
+% This increases security, as it prevents queried nodes from being able to create Sybil on the fly, that would be extremely close to this specific target key, and return these Sybils to the querier.
+% Ethereum incorporates several other counter-measures~\cite{marcus2018low, henningsen2019eclipsing} to secure lookups from eclipsing attacks, which we explain in \Cref{sec:related}.
 
 
 %\er{stopped here, not sure what level of detail we need to the new dht lookup of ethereum dht we need.}
@@ -74,21 +86,26 @@ Ethereum incorporated several other counter-measures~\cite{marcus2018low, hennin
 \subsection{\discv service discovery}
 \label{sec:background:discv4}
 
-In \discv, Ethereum's current service discovery protocol, nodes perform \textit{random walks} over the DHT overlay structure and perform application-layer \emph{handshakes} with all encountered peers.
-In a random walk, a node picks a random target key and performs a lookup toward the distance corresponding to the target following the parallel search process explained above. \er{I am not sure to understand. Why doesn't it perform a lookup toward that randomly-selected key, as discussed before? We explained it will not use the exact key for this but rough distances -- no need to re-explain} \er{we do not explain the parallel search any longer, is it still important?}
-A handshake involves a secure channel establishment between the initiator node and the encountered peer and therefore incurs some overhead to both endpoints.
-If the initiator node discovers during the handshake that the encountered peer is part of the target application's sub-network, then the initiator node can follow up with a connection request and establish an application-level connection.
+In \discv, Ethereum's current service discovery protocol, nodes perform \textit{random walks} over the DHT by looking up random keys and performing \emph{handshakes} with all encountered peers.
+A handshake involves a secure channel establishment between the initiator node and the encountered peer and incurs some overhead to both endpoints.
+If the initiator node discovers during the handshake that the encountered peer is part of the target application's sub-network, it establishes an application-level connection.
 The objective of a node is to fill up its \textit{application-level connection slots} with \emph{outbound}  connections (\ie, connections initiated by the node).
 The process of node discovery completes when a node fills up all these slots.
 Nodes also reserve a number of \emph{inbound} connection slots that can be filled with connections initiated by other nodes. 
 
+% In \discv, Ethereum's current service discovery protocol, nodes perform \textit{random walks} over the DHT overlay structure and perform application-layer \emph{handshakes} with all encountered peers.
+% In a random walk, a node picks a random target key and performs a lookup toward the distance corresponding to the target following the parallel search process explained above. \er{I am not sure to understand. Why doesn't it perform a lookup toward that randomly-selected key, as discussed before? We explained it will not use the exact key for this but rough distances -- no need to re-explain} \er{we do not explain the parallel search any longer, is it still important?}
+% A handshake involves a secure channel establishment between the initiator node and the encountered peer and therefore incurs some overhead to both endpoints.
+% If the initiator node discovers during the handshake that the encountered peer is part of the target application's sub-network, then the initiator node can follow up with a connection request and establish an application-level connection.
+% The objective of a node is to fill up its \textit{application-level connection slots} with \emph{outbound}  connections (\ie, connections initiated by the node).
+% The process of node discovery completes when a node fills up all these slots.
+% Nodes also reserve a number of \emph{inbound} connection slots that can be filled with connections initiated by other nodes.
+
 \para{Security and Efficiency}
-%\mk{The below is too long. I also don't think it's a good place to discuss in more details potential attacks.}
-%In the context of blockchains and cryptocurrency, security is a key requirement for a service discovery protocol. A potential attack on any peer discovery protocol is the eclipse attack, where an adversary monopolises all the connections of a victim node with its Sybils, effectively separating the victim from the rest of the network. In blockchain systems, eclipse attacks are typically a pre-cursor to financially-motivated attacks such as double spending and stubborn mining~\cite{henningsen2019eclipsing}.
-%Because eclipsing can apply to any peer discovery process, it concerns both the DHT-level (\ie Kademlia routing table) and application-level peer selection. 
 Peer discovery through random walks is reasonably resilient to eclipse attacks.
 Attackers cannot strategically place their Sybil identities in the key space to increase their chance of being discovered by victims, as all locations in the key space have an equal chance of being discovered.
 On the other hand, the brute-force approach of performing handshakes with all randomly encountered nodes is particularly inefficient.
-First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead. %More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). 
+First of all, handshakes with peers not in the target sub-network are wasteful and incur unnecessary overhead.
+%More importantly, it can take very long to discover peers that are part of an unpopular sub-network (\ie an application for which there is only a small number of peers). 
 More importantly, for applications with low popularity, the number of handshakes can be excessive, \ie, on the order of thousands when 0.1\% of the nodes are running the target application. \er{can we give more precise numbers based on simulations or experiments?}\mk{We can, it's just a bit challenging as it's size dependent. Would some examples be ok? If not, we can also refer the readers to our evaluation} \er{the point is indeed to give examples for networks of specific sizes, we do not want to leave the reader in doubt until the evaluation. This could be ``As our experiments (\Cref{sec:eval}) show, service discovery may require up to XXX, XXX, and XXX hops for networks of size YYY, YYY, and YYY respectively.''}
 Because all the applications are initially unpopular, the upfront cost of building a sub-network can be large and finding peers can take a long time.
