@@ -123,10 +123,10 @@ Similar to the DHT routing, the registration procedure finds the closest nodes t
 % As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network.
 % Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps.
 
-\subsection{Service discovery operation}
+\subsection{Service lookup operation}
 \label{sec:lookup}
 
-The service discovery process in \sysname shares similarities to the ad registration procedure.
+The service lookup in \sysname shares similarities to the ad registration procedure.
 Its goal is to identify $N_\textit{lookup}$ advertisers peers for a target topic.
 Note that \emph{service lookup} is independent from, and does not rely on, the underlying DHT's lookup process.
 
