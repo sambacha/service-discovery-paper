@@ -44,7 +44,7 @@ It maps a set of peers to a set of buckets.
 However, instead of placing nodes in these buckets based on the distance from the advertiser, it uses the distance from the topic ID.
 Each bucket aims to contain \emph{at least} $K_\textit{register}$ potential registrars for every distance (bucket) from the topic ID (\Cref{fig:advertise_table}).
 A configurable number of extra peers above the number of $K_\textit{register}$ are maintained as backup peers.
-These peers are passively learnt through interactions with other nodes.
+% These peers are passively learnt through interactions with other nodes.
 When created, the table is initialized with peers from the routing table.
 
 % To execute the ad distribution process described below, each advertiser maintains an \emph{advertise table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars. The \emph{advertise table} is similar to the routing table used by the Kademlia protocol (as described in \Cref{sec:background}). It stores the advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. This means that the \emph{advertise table} stores $K_\textit{register}$ potential registrars for every distance (bucket) from the topic ID (\Cref{fig:advertise_table}). When created, the table is initialized with peers from the routing table.
@@ -59,10 +59,10 @@ When created, the table is initialized with peers from the routing table.
  \end{figure}
 
 \para{Search Table}
-The \emph{lookup} of ads is supported by a \emph{search table}.
-Searchers maintain a separate table for each of the topics they are currently looking up (\ie, for each topic for which the client wants to start discovering nodes, a new \emph{search table} is created). 
+The discovery (\emph{lookup}) of ads for specific services is supported by a \emph{search table}.
+Searchers maintain a separate table for each of the topics they are currently looking up (\ie, for each topic for which the client wants to start discovering nodes, a new \emph{search table} is created).
 Similarly to the \emph{advertise table}, the \emph{search table} stores buckets of registrar nodes organized by distance to the topic hash.
-Theses buckets are initially filled from the local routing table organized by the distance from the topic hash. %, and later filled with new nodes discovered during the registration process.
+Theses buckets are initially filled from the local routing table. % organized by the distance from the topic hash. %, and later filled with new nodes discovered during the registration process.
 
 % The ad lookup process is supported by a \emph{search table}.
 % Searchers maintain a separate table per topic they are currently looking for (\ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created).
@@ -108,10 +108,11 @@ successful registrations per bucket unless there are less than $K_\textit{regist
 % successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
 % The advertiser repeats the process for every bucket in the \emph{advertise table}.
 
-An advertise table is initialized with peers already present in the routing table, in which the density of peers around the topic hash might be sparse.
-As a result, it is common that the table does not contain any (or enough) peers for buckets close to this topic hash, particularly when the advertiser's ID is distant from the topic hash.
+\mypara{Construction of the advertise table}
+An advertise table is initialized with peers already from the advertiser's routing table, in which the density of peers around the topic hash might be low.
+As a result, it is common that the table does not contain any (or enough) peers for buckets close to the topic hash, particularly when the advertiser's ID is distant from the topic hash.
 The filling of buckets is performed lazily while performing registration with known peers (\ie, there is no proactive collection of peers using specific lookup operations).
-This collection obeys a compromise between the risk of having malicious registrars pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic has.
+This collection implements a compromise between the risk of having malicious registrars pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic has.
 The advertiser thereby request from a registrar present in bucket $b_x$ (from the registrar perspective) a sample of its routing table with a \emph{single} peer fitting in $b_x$ and in any of its bucket $b_{y}|y>x$, \ie, buckets closer to the topic hash.
 As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network. 
 Similar to the DHT routing, the registration procedure finds the closest nodes to the topic hash in the network within $O(\log(N))$ communication steps.
@@ -122,10 +123,33 @@ Similar to the DHT routing, the registration procedure finds the closest nodes t
 % As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network.
 % Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps.
 
-\subsection{Lookup operation}
+\subsection{Service discovery operation}
 \label{sec:lookup}
 
-\er{stopped here}
+The service discovery process in \sysname shares similarities to the ad registration procedure.
+Its goal is to identify $N_\textit{lookup}$ advertisers peers for a target topic.
+Note that \emph{service lookup} is independent from, and does not rely on, the underlying DHT's lookup process.
+
+Each service lookup by a searcher uses its own topic-specific \emph{search table} as described in \Cref{sec:struct}.
+This table is formed of buckets, each containing at least $K_\textit{lookup}$ \er{can be 'a number of' since parallelism is apparently not linked to the size of buckets in the search table (and it should not be)} registrars, and centered on the topic hash.
+The buckets in the search table are sorted from the farthest to the nearest to the topic hash.
+
+A searcher performing a service lookup progressively progresses through the table starting from the farthest bucket (\ie, containing peers with the smallest prefix to the topic hash).
+The search process progresses in parallel 
+
+From this bucket, the searcher selects $K_\textit{lookup}$ registrars and sends them parallel lookup requests.
+These registrars answer with a list of peers, one for each bucket with rank equal or higher to that of the bucket they are in the table, as previously detailed for the advertise table maintenance. \er{my speculation, is this correct? This is not detailed in the text below and I am not sure we can work with only the initial copy of the routing table for low-popularity topics so the search table certainly needs to grow.}
+The searcher waits for responses from these first $K_\textit{lookup}$ registrars and proceeds to the next bucket. \er{is there a timeout mechanism? Do we proceed to the second bucket only when we received all three $K_\textit{lookup}$ registrars responses at level 1 to move on to level 2? Or do we proceed as soon as we receive?}
+Note that a registrar in the table is used only once: queried nodes are marked as \emph{used} in the table.
+
+Queries registrars return, in addition to other registrars in buckets closer to the topic hash, a set of up to $N_\textit{return}$ topic-specific advertisers they know with a valid registered ad.
+These advertisers are collected by the querier.
+A successful search stops when at least $N_\textit{lookup}$ different peers have been collected.\footnote{In case more than $N_\textit{lookup}$ peers were found, a random subset of $N_\textit{lookup}$ peers is drawn.}
+The search stops unsuccessfully when either no nodes remain in any of the buckets that are not marked as used, or when the two last queries did not returned any new, unused nodes. \er{not sure if we are talking about new registrars or new advertisers here, I suppose the former?}
+In this case, a new search table is initialized from the searchers' routing table with all registrars unmarked, and the process starts again from the furthest-away bucket.
+
+\er{this is the previous, unmodified text}
+\er{the construction of the search table is unclear. I tried to guess in the text above, but I may have misunderstood.}
 
 To find ads, \sysname uses a process similar to the registration procedure. 
 %The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
@@ -133,10 +157,12 @@ To find ads, \sysname uses a process similar to the registration procedure.
 Each lookup requires a topic-specific \emph{search table} described in \Cref{sec:struct}.
 The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per bucket and sends them parallel lookup requests. 
 Once it receives results from the first $K_\textit{lookup}$ selected registrars, other $K_\textit{lookup}$ registrars are selected from the following bucket with a smaller distance to the topic id.
-The queried nodes are removed from the bucket.
+The queried nodes are removed from the bucket. \er{they are in fact marked as used}
 Searchers stop the lookup procedure when they have discovered $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the topic hash, especially for popular topics. As a result, \sysname avoids hot spots in the network and ensures fair load distribution. 
 In case all buckets have been queried without finding enough nodes, the lookup process continues starting with the furthest distance bucket again. 
 Once the lookup process is completed, the nodes are returned to the application.
+
+\er{I did not revise/rewrite the following text, will do when the previous will be validated.}
 
 Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. 
 Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
@@ -152,7 +178,7 @@ There is a trade-off between overhead and security when choosing $N_\textit{retu
 By requiring a large number of total ads to stop the search
 ($N_\textit{lookup}$), compared with the ads returned by the registrar
 ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread.
-\er{maybe revise this paragraph for clarity, need to read several time to grasp details.}
+
 %However, for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
 %In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
 %\sr{Future work: investigate the impact of search parameters}
