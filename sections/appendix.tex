@@ -60,12 +60,26 @@ The probability to reach the last registrar is then $p_{1..u}(Resp< N_\textit{lo
 
 \subsection{Security}
 
-The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. If the network contains $n_a$ malicious nodes, the probability that a searcher will contact a malicious registrar in a bucket $i$ is $\frac{n_a}{N}$, assuming a uniform distribution of the malicious nodes.
+The probability that a searcher is eclipsed when looking up a topic in $t$ buckets is the probability to only receive malicious ads from the contacted registrars. The probability that a searcher will contact a malicious registrar in a bucket $i$ is $P_{m,i}$ .
 The probability $P_i$ to receive only malicious ads from a random registrar in bucket $i$ is therefore
-$$ P_{i} = \frac{n_a}{N} + (1-\frac{n_a}{N}) \cdot P_{h,i}$$
+$$ P_{i} = P_{m,i} + (1-P_{m,i}) \cdot P_{h,i}$$
 where $P_{h,i}$ is the probability that a honest registrar in bucket $i$ only returns malicious ads.
 Assuming independence, the probability to only receive malicious ads from the entire bucket $i$ is $P_{i}^{K_\textit{lookup}}$ and the probability $P_{1..t}$ to be eclipsed in all $t$ visited buckets is then
 $$ P_{1..t} = \prod_{i=1}^{t} P_{i}^{K_\textit{lookup}}$$
+
+\subsubsection{Finding $P_{m,i}$}
+
+The probability $P_{m,i}$ that an individual registrar in bucket $i$ is malicious depends on what source the searcher used to add nodes to that bucket.
+If the searcher itself is located in bucket $u$, it can be expected that, on average, the buckets $1$ to $u$ are fully populated by the searcher from its own routing table and that the routing table is also able to provide 17 uniformly distributed nodes for the remaining buckets. Since the buckets get smaller and smaller, we can except that we will get 8 nodes for bucket $u+1$, 4 nodes for bucket $u+2$, 2 nodes for bucket $u+3$, and one node for bucket $u+4$ from the routing table.
+The probability for such a node to be malicious is $\frac{n_a}{N}$, where $n_a$ is the number of malicious nodes in the network.
+
+To fill the empty slots in buckets $i>u+1$ (note that $K_\textit{register}=K_\textit{lookup}=5$), the searcher has to use the nodes returned by the queried registrars, as explained in Section~\ref{sec:struct}. If the queried registrar is honest, it will return nodes that are malicious with probability $\frac{n_a}{N}$. However, if the registrar is malicious, all the nodes it returns are likely malicious, too. Consequently, the probability that a node in bucket $i>u+1$ is malicious will be greater than $\frac{n_a}{N}$ and will increase with $i$.
+
+For the results shown in Figure~\ref{fig:eclipse_probability}, we calculate $P_{m,i}$ using Monte-Carlo simulation and assume that $u=2$ which is the expected bucket for a random searcher.
+
+
+\subsubsection{Finding $P_{h,i}$}
+
 To calculate $P_{h,i}$, we need to know the distribution of honest and malicious ads in a honest registrar.
 If the registrar contains $d_h$ honest and $d_a$ malicious ads, $P_{hi}$ is the probability to randomly select only malicious ads from those $d_h+d_a$ ads, which is $\prod_{i=0}^{d_h+d_a} \frac{d_a - i}{d_h+d_a-i}$.
 
