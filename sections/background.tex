@@ -47,11 +47,11 @@ As a result, a node's routing table provides a more detailed (\ie, fine-grained)
 This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of key space.
 
-\er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}
+\er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}\mk{Ethereum Kademlia support lookups but doesn't support put/get. The lookups are still used when joining the DHT to check whether a node with the same ID as us exists and populate the routing tables.}
 Lookups rely on $\alpha$ concurrent routing operations (or \emph{walks}) towards the target key.
 In the original Kademlia~\cite{maymounkov2002kademlia}, these lookups specify the target key and collect from each node in the process the $k$ closest nodes to that target, which are fed into the querying node's own routing table.
 The process stops when up to $k$ nodes closest to the target are found. %\er{seems contradictory when the goal is to find the exact one that is the closest?}
-To enhance the security of lookups, \er{detail what is the risk that is prevented} Ethereum nodes provide a distance to a key (instead of the target itself) where distance is defined as the bucket number of the key where 
+To enhance the security of lookups, \er{detail what is the risk that is prevented}\mk{This is to prevent the queried malicious nodes to create on the fly and return to us nodes that are extremely close to the target key. If we don't expose the key, this risk is reduced.} Ethereum nodes provide a distance to a key (instead of the target itself) where distance is defined as the bucket number of the key where 
 the target node would be inserted. The XOR metric is then used locally to sort the lookup results, which enables nodes to hide their exact target during lookups, making it harder for adversaries to return favorable results. 
 In addition, Ethereum has incorporated several other counter-measures~\cite{marcus2018low, henningsen2019eclipsing} to secure lookups from eclipsing attacks, which we explain in \Cref{sec:related}.
 

@@ -88,17 +88,16 @@ In contrast with the direct use of the DHT as a key-value store, however, in \sy
 The density of advertisements for an application increases as a DHT lookup approaches its associated key in the DHT overlay structure.
 
 Robustness, load balancing, and efficiency for the discovery of smaller sub-networks all rely on a novel \emph{admission protocol}, by which registrars accept or reject incoming service advertisements (\Cref{sec:admission}).
-It ensures that advertisers cannot effectively flood advertisements at a registrar, even when deviating from the protocol or operating Sybils, and that less popular topics get a sufficiently high probability to be represented and looked up. \er{and looked up $\rightarrow$ and found?}
+It ensures that advertisers cannot effectively flood advertisements at a registrar, even when deviating from the protocol or operating Sybils, and that less popular topics get a sufficiently high probability to be represented and found.
 
 At the core of our novel admission protocol lies the need for registrants to respect a waiting time imposed by the registrars before being able to successfully register their advertisement.
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 The function allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
-% \er{The relation between discv5 and \sysname is unclear. If discv5 is a set of protocols as written below we should detail what the other protocols are. From the webpage description it seems more that the discovery mechanism is the central protocol and other protocols are helper/subsidiary protocols, e.g., for defining the communication standards between nodes in the p2p operation. We should make it clearer that \sysname is the core component of discv5 (or even consider using discv5 name directly if possible, and mention that the other protocols are helpers, if the reasoning above applies).}
-% \er{comment is now addressed}
 
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
-We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of \emph{discv5}~\cite{discv5} \er{change me: the code base of Ethereum (two clients right?)} (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
+We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of \emph{Ethereum Geth Client}~\cite{geth}.
+% (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
 %We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Compared to the \discv, \sysname discovers 10 times more peers on average by sending two times less lookup messages and achieves a similar or better resistance against eclipse attacks. 
 Compared to vanilla DHT operations, our system reduces load on the most busy node in the network by 2 orders of magnitude and is up to 4 orders of magnitude less likely to be eclipsed by a powerful attacker. \er{the metric for the ``eclipsability'' here is not clear. What does it mean to be 4 OOM less likely to be eclipsed?} \mk{In the analysis we calculate what's the probability of an operation returning only malicious results} \er{ok, keeping for now}
