@@ -82,7 +82,7 @@ The storage usage for the registrars is limited by a configurable but fixed thre
 \sysname ensures a balanced load distribution across systems participants and DHT regions (\ie, it avoids \emph{hotspots}).
 The system provides efficient lookup and registration operations for all participants regardless of the topic they look up or register for.
 Each advertiser has a similar probability of being discovered by its peers. 
-\er{we should ideally be a bit more formal here and give bounds (in big O?) of the unbalance between these nodes.}\mk{What fairness metric would you suggest here?} \er{this would be ratio between the likelihood of being discovered for a popular and a less-popular advertiser}
+% \er{we should ideally be a bit more formal here and give bounds (in big O?) of the unbalance between these nodes.}\mk{What fairness metric would you suggest here?} \er{this would be ratio between the likelihood of being discovered for a popular and a less-popular advertiser}
 
 \para{Security}
 \sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks.
