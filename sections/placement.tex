@@ -58,7 +58,7 @@ successful registrations per bucket unless there are less than $K_\textit{regist
 The advertiser repeats the process for every bucket in the \emph{advertise table}. 
 
 The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser does not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
-To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. 
+To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. \er{consistency: we use $k$ for the closest peers in background.}
 The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. The registrars respond with a list of peers regardless of the success of the registration operation. However, \sysname provides an additional protection against malicious registrars that try to poison the advertise table by returning malicious peers. Registrars are allowed to provide a only a single node per bucket of the advertiser's advertise table. It allows the advertiser to populate its \emph{advertise table} while limiting the likelihood of buckets filled uniquely with malicious peers.
 As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network. 
 Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps. 

@@ -7,9 +7,13 @@
 In this section, we present our network and threat models as well as the objectives of \sysname. 
 
 \subsection{System Model}
-We assume a network of $N$ nodes. At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers. Nodes are identified by their \emph{node ID}, which is simply the hash of their public key. Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine). However, two nodes cannot share the same ID.
+
+We assume a network of $N$ nodes ($N$ does not need to be known to the participants, but is used in our analysis).
+At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers.
+Nodes are identified by their \emph{node ID}, which is simply the hash of their public key. Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine)~\cite{marcus2018low}. However, two nodes cannot share the same ID.
 
 As for \discv, \sysname leverages the existing Ethereum DHT.
+\er{continue here}
 
 \er{revise: It is not clear \sysname is an extension of discv5 from the online documentation, but rather its central mechanism. What are the other protocols as part of discv5  is also unclear.}
 \sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT. \er{I would not necessarily make this claim here, since several operations are. Kademlia-specific in reality. Maybe save for the conclusion?}
