@@ -57,7 +57,9 @@
 The Ethereum ecosystem hosts a steadily increasing number of decentralized applications, including but not limited to the blockchain of the same name. Nodes joining the ecosystem connect to a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. Unfortunately, \discv, the current discovery protocol of the Ethereum global network scales poorly with increasing numbers of applications and nodes.
 
 We present \sysname, a novel service discovery protocol for the Ethereum global network. \sysname combines pseudo-random and deterministic placement of advertisements to achieve both efficiency and security. It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
-\sysname performs lookup operations that are up to three orders of magnitude more efficient (in terms of overhead and discovery time) than \discv, while achieving a similar security level. \er{maybe explicit what we mean by a similar security level} \sysname is scheduled for deployment in the next version of the Ethereum peer-to-peer network. \er{replace previous sentence by a stronger claim} \er{mention deployment results and evaluation highlights}
+We implement \sysname in the official Go Ethereum client (geth) and a dedicated, large-scale simulator.
+In comparison \discv, \sysname performs lookup operations that are send up three orders of magnitude less messages, discovers ten time more peers per time slot while achieving a similar or lower eclipse probability. \sysname is currently being investigated by the Ethereum community for future use with
+the Ethereum protocol.
 
 \end{abstract}
 

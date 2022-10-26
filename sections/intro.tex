@@ -80,10 +80,9 @@ We summarize the results of the analysis of \sysname security in \Cref{sec:analy
 
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
 We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} (\Cref{sec:eval}).
-% (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
-%We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
-Compared to \discv, \sysname discovers 10 times more peers on average by sending two times less lookup messages and achieves a similar or better resistance against eclipse attacks. 
-Compared to vanilla DHT operations, our system reduces load on the most busy node in the network by 2 orders of magnitude and is up to 4 orders of magnitude less likely to be eclipsed by a powerful attacker. \er{the metric for the ``eclipsability'' here is not clear. What does it mean to be 4 OOM less likely to be eclipsed?} \mk{In the analysis we calculate what's the probability of an operation returning only malicious results} \er{ok, keeping for now}
-\sysname is currently under testnet evaluation and is scheduled for deployment in the future versions of Ethereum network. \er{revise previous if the deployment is actually planned.}
+Compared to \discv, \sysname discovers ten times more peers per time slot while achieving a similar or lower probability of being eclipsed by a powerful attacker.
+Compared to vanilla DHT operations, our system eliminates vulnerability to attacks from resource-constraint attackers, reduces load on the most busy node in the network by two orders of magnitude.
+\sysname is currently being investigated by the Ethereum community for future use with the Ethereum protocol.
 
 We finally review related work in \Cref{sec:related} and draw conclusions in \Cref{sec:con}.
+ 
