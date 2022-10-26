@@ -25,20 +25,20 @@ We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
-\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. \er{not consistent with the presentation of \discv as a collection of protocols before, see comments in intro.}
+\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. \er{not consistent with the presentation of \discv as a collection of protocols before, see comments in intro.} \oa{now we introduce discv4 as merely a discovery protocol, so we should be good now.}
 In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\cite{rlpx}) to make new connections, and when the buffer is empty new lookups are initiated to three other random nodes.
 \item \altname is a traditional key/value store implementation using vanilla Kademlia DHT. 
-In this approach, peers store their ads under desired topics at the N closest \er{consistency: in background, $k$ is used for the closest $k$ peers to a topic; and $N$ is defined in model as the number of nodes in the system.} (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy.
+In this approach, peers store their ads under desired topics at the k closest \er{consistency: in background, $k$ is used for the closest $k$ peers to a topic; and $N$ is defined in model as the number of nodes in the system.} \oa{good catch - I changed N to k} (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use the Last Recently Used (LRU) replacement policy.
 \item \altnameticket is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) to regulate the storage of incoming registrations. 
 \end{enumerate}
 
 %Both \altname and \altnameticket do not make use of a \emph{registration table} to keep track of on-going registrations and new registrations are periodically issued by nodes every advertisement period.
 
 Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
-As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
+As similarly done in the IPFS system, we use k=20 peers (closest to the topic hashes) for storage of ads in both \altname and \altnameticket approaches.
 
 % On the other hand, t
-The topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
+The topic lookup process in \altname and \altnameticket involve first finding k closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of k closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the k peers.
 
 %On the other hand, the topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 20 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
 %In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
@@ -46,7 +46,7 @@ The topic lookup process in \altname and \altnameticket involve first finding N 
 %The known nodes with the same distance to the topic id are added to the list of 20 closest nodes,  which is reordered and keeps only the 16 closest.
 %The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
 
-\para{Metrics} The simulator reports the following performance metrics. 
+\para{Metrics} The simulator reports the following metrics: 
  \begin{itemize}
      \item \textbf{Message Overhead} - the total number of messages received by each node. 
 %We calculate separate values for both lookup and registration operations. 
