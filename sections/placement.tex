@@ -193,7 +193,7 @@ Subsequent buckets cover smaller (halved for each increased prefix length) fract
 Parameters $N_\textit{return}$ and $N_\textit{lookup}$ play an important role in the compromise between security and efficiency.
 A small value of $N_\textit{return} << N_\textit{lookup}$ increases the \emph{diversity} of the source of ads received by the searcher but increases search time, and requires reaching buckets covering smaller key ranges where eclipse risks are higher.
 On the other hand, values of a similar order of magnitude for $N_\textit{lookup}$ and $N_\textit{return}$ reduce overheads but increase the danger of a searcher receiving ads uniquely from malicious nodes.
-Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread.
+Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread. We choose the optimal values for all the protocol parameters in \Cref{sec:analysis}. 
 
 
 
