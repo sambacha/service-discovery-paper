@@ -3,25 +3,8 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-
-%We evaluate the performance of \sysname prototype and answer the following research questions:
-%\begin{enumerate} 
-%    \item What is the overhead introduced by \sysname's register and lookup operations? %How does it compare to the current \discv system and vanilla DHT-based solutions?
-%    What is the load distribution across network participants?
-%    \item Does \sysname provide high performance for all the topics regardless of their popularity? 
-%    \item How do malicious nodes impact \sysname's performance? How difficult is it to launch eclipse and DoS attacks against the system?
-%\end{enumerate}
-
-%We evaluate a prototype of \sysname to address the following research questions:
-%\begin{enumerate} 
-%    \item What is the overhead introduced by \sysname's register and lookup operations? How does the overhead of \sysname compare to the current \discv system and vanilla DHT-based solutions?
-%    \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
-%    \item What is the impact of malicious nodes on \sysname’s performance? How difficult is it to launch various (\eg eclipse, DoS, \etc) attacks against the system?
-%\end{enumerate}
-
-%\subsection{Evaluation Setup}
-%\para{Setup} 
-We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator.  In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+We implemented \sysname in \emph{Go Ethereum} (Geth) client~\cite{geth}. 
+For large scale experiments we also built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
@@ -32,19 +15,11 @@ In this approach, peers store their ads under desired topics at the N closest \e
 \item \altnameticket is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) to regulate the storage of incoming registrations. 
 \end{enumerate}
 
-%Both \altname and \altnameticket do not make use of a \emph{registration table} to keep track of on-going registrations and new registrations are periodically issued by nodes every advertisement period.
-
 Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
 As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
 
-% On the other hand, t
 The topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
 
-%On the other hand, the topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 20 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
-%In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
-%The known nodes for the specific topic are stored in the lookup buffer. 
-%The known nodes with the same distance to the topic id are added to the list of 20 closest nodes,  which is reordered and keeps only the 16 closest.
-%The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
 
 \para{Metrics} The simulator reports the following performance metrics. 
  \begin{itemize}
