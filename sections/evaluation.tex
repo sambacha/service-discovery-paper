@@ -21,7 +21,7 @@
 
 %\subsection{Evaluation Setup}
 %\para{Setup} 
-We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator.  In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
 We compare \sysname against the following approaches:
 \begin{enumerate}
@@ -33,7 +33,6 @@ In this approach, peers store their ads under desired topics at the N closest \e
 \end{enumerate}
 
 %Both \altname and \altnameticket do not make use of a \emph{registration table} to keep track of on-going registrations and new registrations are periodically issued by nodes every advertisement period.
-
 
 Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
 As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
@@ -63,8 +62,8 @@ In the simulations, we verify the impact of the following parameters:
  \begin{itemize}
      \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records. \er{ENS records were never defined before.} We observe an average network churn of 3\% across daily crawls equal and therefore we use this value in our simulations to simulate nodes joining and leaving. 
      \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data, as shown in \Cref{fig:ecosystem}). 
-     \item \textbf{Malicious nodes} - the number of attackers targeting the peers in the discovery system. We experiment with values ranging from 250 and 2500 nodes,  using 500 as the default value.  Each malicious node receives a distinct ID (\ie hash of its public key) generated following either uniformly at random or non-uniformly, \ie picking identifiers that are closer to the hash of the target topic than any honest node. The latter can be achieved in practice through ``brute-force'' generation of public keys until one with a suitable hash is found.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to all the attackers. We set its value between 1 and 100, using 10 for the default value. In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
+     \item \textbf{\% Malicious nodes} - the percentage of attackers targeting the peers in the discovery system related to the total number of nodes participating in the topic .  We experiment with values ranging from 20\% to 50\%,  using 33.3\% as default value.  Each malicious node is a different Sybil that receives a distinct ID (\ie hash of its public key) generated following a uniformly random distribution.
+     \item \textbf{\#Attackers reusing IPs} - the number of nodes reusing the same IP addresses in the attack.  We set its value between 50 and 1, using 5 for the default value.  In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
 
 %Meaning that every 25 malicious nodes will share a single, random IP address in the best case or every malicious node will use a different IP address in the worst case.  
  \end{itemize}
@@ -178,15 +177,12 @@ The \discv protocol has a better load distribution between nodes. since the dest
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Lookup performance}
 
-\vspace{-0.20in}
-
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \vspace{-0.05in}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different number of topics.}
 \label{fig:discoveredPerTopic}
-\vspace{-0.20in}
 \end{figure}
 
 \Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with an increasing number of topics in the network. We observe that, in \discv, nodes discover a much lower number of application-specific peers per operation, while \sysname and DHT-based solutions efficiently discover the required (30) amount of peers to terminate the lookup. In rare cases, \sysname and DHT-based solutions do not discover the required amount of peers that are caused by unpopular topics with close to 30 participants. 
@@ -195,14 +191,11 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
 
-\vspace{-0.20in}
-
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
 \caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
 \label{fig:discoveredPerSize}
-\vspace{-0.20in}
 \end{figure}
 
 \Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with an increasing network size. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes.
@@ -214,7 +207,6 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for number of topics in the network for the simulation time.}
 \label{fig:discoveredByPerTopic}
-\vspace{-0.20in}
 \end{figure}
 
 \begin{figure}[!h]
@@ -268,10 +260,12 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 \para{Eclipse attack resistance}
 We evaluate \sysname resistance against eclipse attacks where an attacker simultaneously behaves as a malicious DHT peer, a malicious registrar and a spamming advertiser (see \Cref{sec:threat}). 
 
-In the attack scenarios, we assume a single entity controlling a pool of Sybils that have access to a limited pool of IP addresses. Malicious nodes register ads for the \er{a?} target topic at a rate 10 times higher than that of honest nodes. Malicious nodes return other malicious peers in response to both DHT routing and topic queries. The objective of the attackers is to eclipse as many peers as possible by taking over their (outbound) connections.
+In the attack scenarios, we assume a single entity controlling a pool of Sybils that have access to a limited pool of IP addresses. 
+Malicious nodes register ads for the targeted topic at a rate 10 times higher than that of honest nodes.  Malicious nodes return other malicious peers in response to both DHT routing and topic queries. The objective of the attackers is to eclipse as many peers as possible by taking over their (outbound) connections.
+\discv malicious nodes do not do any registrations and just act as a malicious DHT peer.
 
 The simulations run for one hour and we report results from a single lookup operation per node for the topic it participates to. On top of each violin plot, we specify the \emph{percentage of eclipsed (benign) nodes after a lookup operation}; that is, the percentage of lookups where all the peers obtained are malicious. We assume that the attacker identifiers are uniformly distributed in the address space. We omit the results for scenarios with non-uniform Sybil ID distributions. In that case, the \altname and \altnameticket suffer from $100\%$ eclipse rates. \er{we should probably define eclipse rate more formally before using it, it is a central metric.} With as little as $N_{malicious} = 30$ nodes, an adversary can intercept all the lookup queries for the target topic. At the same time, \sysname is shown to achieve lower eclipse rates under a non-uniform Sybil ID distribution (~\Cref{sec:analysis}). The results below represent the worst-case scenario for \sysname and the best-case scenario for protocols we compare against. 
-We evaluate the eclipse attacks targeting two specific topics: the most popular (3978 honest nodes) and the least popular (33 honest nodes) topics.
+We evaluate the eclipse attacks targeting an average popular topic (approx.  500 nodes participating in the topic). 
 %We evaluated the attacks for the most popular and least popular 
 
 
@@ -306,46 +300,58 @@ We evaluate the eclipse attacks targeting two specific topics: the most popular 
 %\label{fig:eclipse_distribution_t299}
 %\end{figure}
 
-\Cref{fig:eclipse_evil_t0} and \Cref{fig:eclipse_evil_t299} present the percentage of malicious nodes in the lookup results and the percentage of eclipsed nodes for the most and the least popular topic, respectively.
+\Cref{fig:eclipse_evil} presents the percentage of malicious nodes discovered during a single lookup as a violin plot,  including the percentage of eclipsed nodes after the lookup,  on top of each plot.
+The number of malicious node added in the simulation is the percentage of malicious nodes versus the honest nodes participating in the topic (\ie from 125 to 500 attackers). 
 % In both figures, Sybil nodes use a pool of 100 IP addresses, and we observe the impact of Sybil size on the eclipse resistance of all four mechanisms. 
-In \Cref{fig:eclipse_evil_t0}, \discv and \sysname achieve close to a $0$ eclipse rate, even with a high number of malicious nodes. On the other hand, both \altname and \altnameticket have significantly worse performance with respectively 26.7\% and 25.9\% eclipses \er{eclipse rates?} when there are 1000 attackers.
-In \Cref{fig:eclipse_evil_t299}, 
-when Sybils attack the least popular topic, we observe \sysname to be the most resistant to eclipsing as can be seen in \Cref{fig:eclipse_evil_t299}. \sysname's high resistance to eclipsing even for the least popular topic with a large Sybil presence highlights the effectiveness of both the waiting time mechanism and distributing the lookup and registration operations across different buckets.
+In \Cref{fig:eclipse_evil}, we observe  \sysname to be the most resistant to eclipsing \sysname, achieving close to a $0$ eclipse rate, even with a high number of malicious nodes.  
+It highlights the effectiveness of both the waiting time mechanism and distributing the lookup and registration operations across different buckets.
+\discv performs worse than \sysname, reaching up to $17.8\%$ eclipses. Although performs better than \altname because it has no mechanism to targeted lookups with a very high overhead,  it performs worse than \sysname caused by the fact that \discv requires querying much more nodes for the same results, and therefore higher chance of querying malicious nodes.
+\altname has  significantly the worse performance,  reaching  59.7\% of eclipsed lookups when the  attackers are 100\%.
+\altnameticket outperforms by far \discv and \altname, since it includes the waiting time based admission mechanism to limit the registrations accepted by Sybils.
  
- \vspace{-0.20in}
+% \vspace{-0.20in}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the most popular topic (3978 nodes).}
+%\label{fig:eclipse_evil_t0}
+%\end{figure}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the most popular topic (3978 nodes).}
-\label{fig:eclipse_evil_t0}
+\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t10.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes during a lookup for a different number of Sybil nodes used in the attack as a percentage of honest.}
+\label{fig:eclipse_evil}
 \end{figure}
+
+In \Cref{fig:eclipse_sybil},  we again illustrate the percentage of malicious nodes in the lookup results and the percentage of eclipsed nodes.
+In these figures, we vary the size of the IP address pool used by the adversary. 
+The x axis shows the number of Sybil nodes reusing the same IP address in the attack.
+We observe that  \sysname achieve close to no eclipsing,  increasing from $0\%$ to $0.5\%$, when all attackers use different IP addresses.
+In comparison, \discv, \altname and \altnameticket are outperformed by \sysname.
+\altname has the worst performance,  followed by \discv with no affectation by the increase of number of IPs used,  since it has no protection agains reusing IP addresses in the attack.
+\altnameticket outperforms \discv and \altname, with a number of eclipses from $2.8\%$ to $11.4\%$. 
+The number of eclipses are increased for \altnameticket when increasing the number of IPs used in the attack,  since the waiting time admission mechanism limits the number of Sybils accepted in the registration when reusing IPs.
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the least popular topic (33 nodes).}
-\label{fig:eclipse_evil_t299}
+\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t10.eps}
+\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of IP addresses used by Sybil nodes.}
+\label{fig:eclipse_sybil}
 \end{figure}
 
-In \Cref{fig:eclipse_sybil_t0} and \Cref{fig:eclipse_sybil_t299}, we again illustrate the percentage of malicious nodes in the lookup results and the percentage of eclipsed nodes for the most and the least popular topic, respectively. In these figures, we vary the size of the IP address pool used by the adversary. We observe that both \sysname and \discv achieve close to no eclipsing, while in \altname and \altnameticket at least 30\% of nodes are eclipsed in all cases.
-When attacking the least popular topic using 100 IPs, the percentage of eclipsed nodes is similar for all four mechanisms. However, \sysname performs significantly better for a lower number of IP addresses under the control of the adversary.
-More specifically, we observe that, when using \sysname, only 5.9\% of nodes are eclipsed when the adversary has a single IP address for its Sybils, which goes up to 41.2\% when 10 IP addresses are used, as opposed to over 70\% of nodes being eclipsed for \discv in all cases.  
-
-\vspace{-0.20in}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the most popular topic (3978 nodes).}
-\label{fig:eclipse_sybil_t0}
-\end{figure}
-
-
-\vspace{-0.20in}
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the least popular topic (33 nodes).}
-\label{fig:eclipse_sybil_t299}
-\end{figure}
+%\vspace{-0.20in}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the most popular topic (3978 nodes).}
+%\label{fig:eclipse_sybil_t0}
+%\end{figure}
+%
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the least popular topic (33 nodes).}
+%\label{fig:eclipse_sybil_t299}
+%\end{figure}
 
 
 
