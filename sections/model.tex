@@ -16,7 +16,7 @@ Multiple nodes may share the same IP address (due to NAT or being hosted by the 
 % \er{revise: It is not clear \sysname is an extension of discv5 from the online documentation, but rather its central mechanism. What are the other protocols as part of discv5  is also unclear.}
 % \sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT. \er{I would not necessarily make this claim here, since several operations are. Kademlia-specific in reality. Maybe save for the conclusion?}
 
-As for \discv, \sysname leverages the existing Ethereum DHT.
+As for \discv, \sysname leverages the existing Ethereum DHT, but does not rely on its key lookup operations directly.
 \sysname indexes different applications in the Ethereum eco-system as \emph{topics}.
 A topic is an identifier for an application, or \emph{service}, provided by a node.
 Topics are arbitrary strings that hash to a specific key. % in the DHT key space.
@@ -30,7 +30,7 @@ All DHT nodes fulfill the following roles:
     \item An \textbf{advertiser} registers for a specific service topic and wants to be discovered by its peers.
     Advertisers make themselves discoverable by placing ads for that topic.
     Nodes are advertisers for every service they participate in.
-    \item A \textbf{searcher} attempts to discover nodes registered under a specific topic.
+    \item A \textbf{searcher} attempts to discover nodes registered under a specific topic, using service lookup operations.
 \end{itemize}
 
 A node providing a certain service topic is said to \emph{register} itself when it submits an ad to a registrar. % to make itself discoverable under that topic.
@@ -42,32 +42,32 @@ Anyone can participate in registering and searching for (one or more) topics and
 \label{sec:threat}
 
 \sysname is designed to operate in an open, adversarial environment.
-We assume the presence of malicious actors in the DHT that may arbitrarily deviate from the protocol and coordinate their actions.
+We assume the presence of malicious actors in the network that may arbitrarily deviate from the protocol and coordinate their actions.
+Malicious actors can spawn multiple virtual nodes within one physical machine, and operate multiple physical machines.
+As a result, they can control a number of Sybil node IDs.
 
 % \er{should we mention collusions here? It is mentioned only at the end of the section (although we do not seem to consider it so much in the experiments)}\mk{In the experiments we assume that all the Sybils ae controlled by a single entity. I've expanded the phrase above. I hope it's fine now.}
 % % These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
-The security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation.
-This is because the DHT's basic protocol is used to initialize and maintain the data structures used by the service discovery layer.
-We assume that no honest node is fully eclipsed by the malicious ones, \ie, each honest DHT node has at least one honest peer.
+The security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation, and in particular on its ability to avoid eclipse attacks against a specific node.
+Indeed, even if \sysname does not rely on DHT lookup operations, information in the DHT routing table is used to initialize and maintain the data structures used by the service discovery layer.
+We assume, therefore, that no honest node is fully eclipsed by the malicious ones, \ie, each honest DHT node has \emph{at least} one honest peer.
 As previously mentioned, Ethereum already implements multiple mechanisms preventing eclipse attacks at the DHT level~\cite{marcus2018low, henningsen2019eclipsing}.  
 
-Malicious actors can spawn multiple virtual nodes within one physical machine, and operate multiple physical machines.
-As a result, they can control a number of Sybil node IDs.
 Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume that the resources under the control of an attacker are limited.
 Specifically, we assume that it is easier for an attacker to generate similar IP addresses (\ie within a single subnet) than it is to control many diverse IP addresses (with different prefixes).
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in \Cref{sec:eval}.
 
 Through a literature review~\cite{chen2020survey, henningsen2019eclipsing} we collected a list of malicious behaviors that an attacker can use to disrupt a DHT-based service discovery protocol:
 \begin{itemize}
-    \item \textbf{Malicious DHT Peer}: DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to such requests, an attacker only returns other malicious nodes, in order to hijack the process of DHT traversal by honest nodes. \er{this seems contradictory with the fact that we wrote two paragraphs ago that we assumed the DHT routing to be secured against Sybils. Should we change DHT routing to something more generic, like an exploration process?}
-    \item \textbf{Malicious Registrar}: When queried for a specific topic, an attacker returns a maximum amount of malicious nodes\footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}. 
+    \item \textbf{Malicious DHT Peer}: DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to such requests, an attacker only returns other malicious nodes, in order to hijack the process of DHT traversal by honest nodes. \er{this seems contradictory with the fact that we wrote two paragraphs ago that we assumed the DHT to be secured against Sybils. Should we change DHT routing to something more generic, like an exploration process?} \er{also, this may appear contradictory to the fact we do not use the DHT routing (lookup) directly but implement our own}
+    \item \textbf{Malicious Registrar}: When queried for a specific topic, an attacker returns a maximum amount of malicious nodes.\footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}
     \item \textbf{Spamming Advertisers}: An attacker bombards honest registrars with malicious ads. The attack can target single or multiple topics. The attack may cause an honest registrar to refuse honest ads due to lack of resources (\eg, storage and CPU power). This registrar will, furthermore, later return maliciously-inserted ads of the spammer when queried by honest searchers. 
     \item \textbf{Generic Spammers}: An attacker bombards an honest registrar with topic queries or random traffic hoping to exhaust bandwidth or CPU power.
 \end{itemize}
 
-Adversaries can strategically target specific nodes or regions in the DHT ID space (\ie by generating Sybil Node IDs within the desired region of the DHT ID space) with these attacks.
-We assume the presence of attackers that can combine some or all of the behaviors above and coordinate their actions to maximize their effect. 
+Adversaries can strategically target specific nodes or regions in the DHT key space (\ie by generating Sybil Node IDs within the desired region) when implementing these attacks.
+We assume the presence of attackers that can combine some or all of the behaviors above, and coordinate their actions to maximize their effect. 
 
 \subsection{Target Properties}
 
@@ -76,10 +76,10 @@ Under the considered threat model, \sysname achieves the following properties.
 \para{Efficiency} 
 \sysname ensures that the number of nodes contacted and the number of messages exchanged increase logarithmically with the number of system participants, for both lookup and register operations. 
 Sending and processing service discovery requests requires only simple operations involving a constant amount of resources.
-The storage usage for the registrars is limited by a configurable but fixed threshold that does not depend on the amount of incoming traffic. 
+The storage usage for the registrars is limited by a configurable but fixed cap that does not depend on the amount of incoming traffic. 
 
 \para{Fairness}
-\sysname ensures a balanced load distribution across systems participants and DHT regions (\ie, it avoids \emph{hotspots}).
+\sysname ensures a balanced load distribution across systems participants and regions of the key space (\ie, it avoids \emph{hotspots}).
 The system provides efficient lookup and registration operations for all participants regardless of the topic they look up or register for.
 Each advertiser has a similar probability of being discovered by its peers. 
 % \er{we should ideally be a bit more formal here and give bounds (in big O?) of the unbalance between these nodes.}\mk{What fairness metric would you suggest here?} \er{this would be ratio between the likelihood of being discovered for a popular and a less-popular advertiser}
@@ -88,5 +88,5 @@ Each advertiser has a similar probability of being discovered by its peers.
 \sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks.
 While completely eliminating such attacks in an open network is technically impossible, \sysname provides high probabilistic security 
 % \er{can we quantify this probability?}\mk{It depends on a lot of factors \#Sybil, \#malicious\_IPs etc. so not easy, but I'll think about it.} \er{commenting for now, no time}
-and increases the monetary cost of launching such attacks. 
+and increases the monetary cost of committing them. 
 % under the presence of a powerful attacker.

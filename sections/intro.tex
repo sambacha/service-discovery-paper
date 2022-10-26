@@ -6,7 +6,7 @@
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, the Ethereum ecosystem is one of the largest decentralized platforms currently in operation.
 While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet} and hosted by about 7,000 nodes), the platform is also home to a number of additional decentralized applications.
 This includes blockchains used for test purposes (\emph{Ropsten}, \emph{G\"orli}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), exchange markets (\emph{Binance}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}).
-The platform already features almost 500 applications, and their number grows every year~\cite{discv4-dns-lists}. The size distribution of the application-specific sub-networks varies significantly (\Cref{fig:ecosystem}) featuring a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less.
+The platform already features almost 500 such applications, and their number grows every year~\cite{discv4-dns-lists}. The size distribution of the application-specific sub-networks varies significantly (\Cref{fig:ecosystem}) featuring a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
@@ -38,7 +38,7 @@ It must ensure that malicious participants to this open network are unable to bi
 Of particular importance is the protection against \emph{eclipse} attacks, where an adversary would lure its victim(s) into a sub-network formed of only nodes under its control.
 Similarly, an adversary may run \emph{denial-of-service} attacks against a specific application, preventing other nodes from discovering peers from the associated sub-network.
 On the other hand, the mechanism must remain efficient and scalable.
-It is not desirable, for scalability and robustness reasons, that it relies solely on fixed (sets of) dedicated registrar nodes maintaining the membership of each application.
+It is not desirable, for reasons of scalability and robustness, that it relies solely on fixed (sets of) dedicated registrar nodes maintaining the membership of each application.
 Registrar nodes for popular applications could quickly become overwhelmed, and they would be an easy target for attackers.
 In addition, the need to provision dedicated registrar nodes would be a hindrance to the emergence of new applications and (initially) small sub-networks.
 
@@ -49,10 +49,11 @@ The current service discovery mechanism used in the Ethereum platform, named \di
 A node willing to join an application's sub-network simply contacts individually a series of nodes collected from random lookups on the DHT, repeatedly checking application membership until it has collected enough peers participating in this target application.
 This approach offers good resilience to malicious behaviors but it suffers from very poor scalability and performance, in particular for small sub-networks.
 Random walks have, indeed, a decreasing likelihood of encountering peers from the target sub-network, increasing the number of messages required, join latency, and resource consumption at all the encountered peers.
-Our observations of \discv show that it can require no less than \hl{\textbf{XXX}} \er{FILL ME} attempts for a node to find \hl{\textbf{Y}} \er{FILL ME} different peers, for a medium-size sub-network already featuring \textbf{100} nodes, and significantly more for smaller sub-networks.
+% Our observations of \discv show that it can require no less than \hl{\textbf{XXX}} \er{FILL ME} attempts for a node to find \hl{\textbf{Y}} \er{FILL ME} different peers, for a medium-size sub-network already featuring \textbf{100} nodes, and significantly more for smaller sub-networks.
+% \er{note that such numbers should be given also in the next section, so we may decide to cut the sentence here to avoid a repetition.}
 As more applications join the DHT, the inefficiency of the random discovery process becomes a bottleneck for the entire ecosystem.
-While alternative solutions for service discovery have been proposed, they are meant for small-scale network~\cite{zhang2002aggregate, helal2002standards}, centralised~\cite{RFC6763}, based on unrealistic assumptions~\cite{danezis2005sybil, danezis2009sybilinfer}, or insecure~\cite{baldoni2007tera,scribe,poldercast,banno2015,scribe}.
-We provide an extensive analysis of these systems in \Cref{sec:related}.
+Alternative solutions for service discovery were proposed, but were meant for small-scale network~\cite{zhang2002aggregate, helal2002standards}, centralised~\cite{RFC6763}, based on unrealistic assumptions~\cite{danezis2005sybil, danezis2009sybilinfer}, or insecure~\cite{baldoni2007tera,scribe,poldercast,banno2015,scribe}.
+% We provide an extensive analysis of these systems in \Cref{sec:related}.
 
 \smallskip
 \noindent
@@ -66,20 +67,23 @@ After providing background knowledge and reviewing the current service discovery
 In \Cref{sec:placement}, we present how this new protocol enables nodes, members of application sub-networks, to \emph{advertise} their membership to these applications in the form of \emph{service advertisements}.
 Any node can act as a \emph{registrar} and store advertisements for any topic.
 In contrast with the direct use of the DHT as a key-value store, however, in \sysname service advertisements propagate to a pseudo-random subset of all nodes in the global network.
-The density of advertisements for an application increases as a DHT lookup approaches its associated key in the DHT overlay structure.
+The density of advertisements for an application increases as a service lookup approaches the key of a specific application in the DHT.
 
 Robustness, load balancing, and efficiency for the discovery of smaller sub-networks all rely on a novel \emph{admission protocol}, by which registrars accept or reject incoming service advertisements (\Cref{sec:admission}).
 It ensures that advertisers cannot effectively flood advertisements at a registrar, even when deviating from the protocol or operating Sybils, and that less popular topics get a sufficiently high probability to be represented and found.
 
-At the core of our novel admission protocol lies the need for registrants to respect a waiting time imposed by the registrars before being able to successfully register their advertisement.
+At the core of our admission protocol lies the need for registrants to respect a waiting time imposed by the registrars before being able to successfully register their advertisement.
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 The function allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
+We summarize the results of the analysis of \sysname security in \Cref{sec:analysis}, and provide more thorough development of this analysis in the appendix.
 
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
-We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth}.
+We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} (\Cref{sec:eval}).
 % (\ie, Node Discovery protocol version 5) - a new set of P2P protocols replacing \emph{discv4}~\cite{discv4}. 
 %We intend to release the full code and dataset of our experiment open source with the unblinded version of this paper.
 Compared to \discv, \sysname discovers 10 times more peers on average by sending two times less lookup messages and achieves a similar or better resistance against eclipse attacks. 
 Compared to vanilla DHT operations, our system reduces load on the most busy node in the network by 2 orders of magnitude and is up to 4 orders of magnitude less likely to be eclipsed by a powerful attacker. \er{the metric for the ``eclipsability'' here is not clear. What does it mean to be 4 OOM less likely to be eclipsed?} \mk{In the analysis we calculate what's the probability of an operation returning only malicious results} \er{ok, keeping for now}
 \sysname is currently under testnet evaluation and is scheduled for deployment in the future versions of Ethereum network. \er{revise previous if the deployment is actually planned.}
+
+We finally review related work in \Cref{sec:related} and draw conclusions in \Cref{sec:con}.

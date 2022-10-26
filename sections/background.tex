@@ -50,7 +50,7 @@ This property is essential for efficiency and enables lookup operations that tak
 It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of the key space.
 
 Lookups for a key rely on $\alpha$ concurrent \emph{routing} operations, with the goal of identifying the $k$ closest nodes to that key.
-Original DHT designs~\cite{maymounkov2002kademlia,chord,rowstron2001pastry} would use a recursive routing mechanism and specify the target key to each encountered node.
+Original DHT designs~\cite{maymounkov2002kademlia,chord,rowstron2001pastry} would use a recursive routing mechanism and communicate the target key to each encountered node.
 This poses a risk, as these intermediate nodes could leverage the target information to establish Sybils in proximity of the target key and return these to the querier.
 A security measure in Ethereum's Kademlia implementation is, therefore, to use an iterative (i.e., querier-controlled) routing process and hide the precise targeted key.
 The querier retrieves \emph{entire} buckets from intermediate nodes, and filters them locally before continuing the process.
