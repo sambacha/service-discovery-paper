@@ -95,7 +95,7 @@ As the routing table is centered on the peer ID and not on this topic ID, the de
 The buckets are filled opportunistically while interacting with peers during the advertisement, resp. lookup, processes.
 There is, therefore, no specific DHT lookup for filling in the entries of these tables.
 
-A local node $n$ communicating with peer $p$ in bucket $b_i$ of a table $T$ asks $p$ to return peers from $p$'s routing table that match the prefixes of all buckets $b_j \:|\: j \geq i$.
+A local node $n$ communicating with peer $p$ in bucket $b_i$ of a table $T$ asks $p$ to return peers from $p$'s routing table that match the prefixes of all buckets $b_j \:|\: j \geq i$ in $T$.
 For instance, when communicating with peer $p$ in bucket $b_{5}$ of a search table $T$, $n$ may receive candidate peers for buckets $b_5$, $b_6$, and $b_8$.
 
 The collection of peers in the tables implements a compromise between the risk of having malicious contacted peers pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic ID.
@@ -193,7 +193,8 @@ Subsequent buckets cover smaller (halved for each increased prefix length) fract
 Parameters $N_\textit{return}$ and $N_\textit{lookup}$ play an important role in the compromise between security and efficiency.
 A small value of $N_\textit{return} << N_\textit{lookup}$ increases the \emph{diversity} of the source of ads received by the searcher but increases search time, and requires reaching buckets covering smaller key ranges where eclipse risks are higher.
 On the other hand, values of a similar order of magnitude for $N_\textit{lookup}$ and $N_\textit{return}$ reduce overheads but increase the danger of a searcher receiving ads uniquely from malicious nodes.
-Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread. We choose the optimal values for all the protocol parameters in \Cref{sec:analysis}. 
+Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread. 
+We discuss the selection of optimal values for all of the protocol parameters in \Cref{sec:analysis}. 
 
 
 
