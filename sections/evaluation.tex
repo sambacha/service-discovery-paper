@@ -1,8 +1,10 @@
 %!TEX root = ../main.tex
 %=========================================================
 
+\vspace{-0.5mm}
 \section{Performance Evaluation}
 \label{sec:eval}
+\vspace{-2mm}
 
 We evaluate \sysname first with two complementary means: an actual implementation and large-scale simulations.
 
@@ -46,7 +48,7 @@ The results indicate the \sysname lookup process is a sound basis to spawn a hea
 
 At first, the equal discovery rate across topics with different popularity might be surprising.
 To investigate it further, for each topic, we plot the average total waiting time received by its advertisers.
-We express the waiting time in ad lifetimes $a$ and keep the topic colors consistent with the one used in \Cref{fig:testbed_time_discovered} and \Cref{fig:testbed_time_discovered}.
+We express the waiting time in ad lifetimes $a$ and keep the topic colors consistent with the one used in \Cref{fig:testbed_discovered_search} and \Cref{fig:testbed_time_discovered}.
 The waiting time function returns higher waiting times to nodes from popular applications.
 As a result, those nodes will spend less time in the ad caches and more time waiting to be admitted.
 This mechanism allows advertisements of less popular topics to get a fair share of ad cache space and results in an equal discovery rate presented above. 
@@ -59,11 +61,24 @@ This mechanism allows advertisements of less popular topics to get a fair share 
 \vspace{-0.15in}
 \end{figure}
 
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{results/testbed/op_time.pdf}
+\caption{Request processing time.}
+\label{fig:op_time}
+\vspace{-0.15in}
+\end{figure}
+
+Finally, we investigate the processing time required by each type of request across 1000 runs (\Cref{fig:op_time}). We consider cases with an empty and full ad cache. Topic query performed on an empty ad cache is the fastest operation as it does not require processing the ad cache content. Topic queries performed on a full ad cache requires $66\mu s$. The register topic operation requires $58\mu s$ on average and is not heavily influenced by the increasing number of the stored ads.
+For all operations, we observe consistent processing time across multiple runs. 
+
+\vspace{-2mm}
 \subsection{Simulations}
+\vspace{-2mm}
 
 For large scale experiments and comparison with other protocols, we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}, a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
-We implement the following approaches as baselines. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using vanilla Kademlia DHT.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS) - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
+We implement the following approaches as baselines. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using the vanilla Kademlia DHT lookup operations.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic ID. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS)~\cite{} - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
 
 %Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
 %As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
@@ -83,9 +98,10 @@ Higher values mean larger strain put on each node.
  \end{itemize}
  %We calculate per-node average for the metrics above and report their standard deviation.  Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
+\noindent
 We verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records~\cite{bauer2022ethereum}.% We observe an average network churn of 3\% across daily crawls equal and we use this value in our simulations to simulate nodes joining and leaving. 
+     \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25,000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records~\cite{bauer2022ethereum}.% We observe an average network churn of 3\% across daily crawls equal and we use this value in our simulations to simulate nodes joining and leaving. 
      \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data in \Cref{fig:ecosystem}). 
      \item \textbf{\%Malicious nodes} - the percentage of attackers targeting the peers in the discovery system related to the total number of nodes participating in the topic. We experiment with values ranging from 20\% to 50\%,  using 33.3\% as default value.% Each malicious node is a different Sybil that receives a distinct ID (\ie hash of its public key) generated following a uniformly random distribution.
      \item \textbf{\#Attackers reusing IPs} - the number of attacker nodes reusing the same IP addresses in the attack. Lower values incur increased cost for the attacker. We set its value between 50 and 1, using 5 for the default value.  In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
@@ -142,11 +158,11 @@ The \discv protocol has a better load distribution between nodes since the desti
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \vspace{-0.05in}
-\caption{Discovered peers for different number of topics.}
+\caption{Discovered peers for diff. number of topics.}
 \label{fig:discoveredPerTopic}
 \end{figure}
 
-\Cref{fig:discoveredPerTopic} presents \emph{Discovered Peers} during a single lookup operation for an increasing number of topics. The random walk of \discv discovers relatively low number of results per operation ($< 5$). The performance decreases with an increasing number of topics in the network. The targeted approach of \sysname and the DHT-based solutions discovers the required number of 30 peers. In rare cases, those protocols do not discover the required amount of peers. It is caused by unpopular topics the total number of participants close to 30. 
+\Cref{fig:discoveredPerTopic} presents the number of \emph{Discovered Peers} during a single lookup operation for an increasing number of topics. The random walk of \discv discovers relatively low number of results per operation ($< 5$). The performance decreases with an increasing number of topics in the network. The targeted approach of \sysname and the DHT-based solutions discovers the required number of 30 peers. In rare cases, those protocols do not discover the required amount of peers. It is caused by unpopular topics the total number of participants close to 30. 
 
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
