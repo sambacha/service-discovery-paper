@@ -1,8 +1,10 @@
 %!TEX root = ../main.tex
 %=========================================================
 
+\vspace{-0.5mm}
 \section{Performance Evaluation}
 \label{sec:eval}
+\vspace{-2mm}
 
 We evaluate \sysname first with two complementary means: an actual implementation and large-scale simulations.
 
@@ -46,7 +48,7 @@ The results indicate the \sysname lookup process is a sound basis to spawn a hea
 
 At first, the equal discovery rate across topics with different popularity might be surprising.
 To investigate it further, for each topic, we plot the average total waiting time received by its advertisers.
-We express the waiting time in ad lifetimes $a$ and keep the topic colors consistent with the one used in \Cref{fig:testbed_time_discovered} and \Cref{fig:testbed_time_discovered}.
+We express the waiting time in ad lifetimes $a$ and keep the topic colors consistent with the one used in \Cref{fig:testbed_discovered_search} and \Cref{fig:testbed_time_discovered}.
 The waiting time function returns higher waiting times to nodes from popular applications.
 As a result, those nodes will spend less time in the ad caches and more time waiting to be admitted.
 This mechanism allows advertisements of less popular topics to get a fair share of ad cache space and results in an equal discovery rate presented above. 
@@ -66,10 +68,13 @@ This mechanism allows advertisements of less popular topics to get a fair share 
 \label{fig:op_time}
 \vspace{-0.15in}
 \end{figure}
-Finally, we investigate the processing time required by each type of request across 1000 runs (\Cref{fig:op_time}). We consider cases with an empty and full ad cache. Topic query performed on an empty ad cache is the fastest operation as it does not require processing the ad cache content. Topic query performed on a full ad cache requires $66\mu s$. The register topic operation requires $58\mu s$ on average and is not heavily influenced by the increasing number of the stored ads.
-For all the operations, we observe consistent processing time across multiple runs. 
 
+Finally, we investigate the processing time required by each type of request across 1000 runs (\Cref{fig:op_time}). We consider cases with an empty and full ad cache. Topic query performed on an empty ad cache is the fastest operation as it does not require processing the ad cache content. Topic queries performed on a full ad cache requires $66\mu s$. The register topic operation requires $58\mu s$ on average and is not heavily influenced by the increasing number of the stored ads.
+For all operations, we observe consistent processing time across multiple runs. 
+
+\vspace{-2mm}
 \subsection{Simulations}
+\vspace{-2mm}
 
 For large scale experiments and comparison with other protocols, we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}, a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
@@ -153,7 +158,7 @@ The \discv protocol has a better load distribution between nodes since the desti
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \vspace{-0.05in}
-\caption{Discovered peers for different number of topics.}
+\caption{Discovered peers for diff. number of topics.}
 \label{fig:discoveredPerTopic}
 \end{figure}
 
