@@ -28,11 +28,19 @@ We first analyse the average number of lookup results obtained by each node. \Cr
 
 The results indicate the \sysname lookup process is a sound basis to spawn a healthy, application-specific p2p network regardless of the application popularity.
 
-At first, the equal discovery rate across topics with different popularity might be surprising.
+At first, the equal discovery rate across topics with different popularity might be surprising. To investigate it further, for each topic, we plot the average total waiting time received by its advertisers. We express the waiting time in ad lifetimes $a$ and keep the topic colors consistent with the one used in \Cref{fig:testbed_time_discovered} and \label{fig:testbed_time_discovered}. The waiting time function returns higher waiting times to nodes from popular applications. As a result, those nodes will spend less time in the ad caches and more time waiting to be admitted. This mechanism allows advertisements of less popular topics to get a fair share of adcache space and results in an equal discovery rate presented above. 
 
-\para{Simulations} For large scale experiments we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{results/testbed/waiting_time.pdf}
+\caption{Average total waiting times received per topic.}
+\label{fig:testbed_waiting_time}
+\vspace{-0.15in}
+\end{figure}
 
-We compare \sysname against the following approaches. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using vanilla Kademlia DHT.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS) - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
+\para{Simulations} For large scale experiments and comparison with other protocols, we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+
+We implement the following approaches as baselines. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using vanilla Kademlia DHT.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS) - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
 
 %Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
 %As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
