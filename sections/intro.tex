@@ -8,7 +8,8 @@
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, the Ethereum ecosystem is one of the largest decentralized platforms currently in operation.
 While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet} and hosted by about 7,000 nodes), the platform is also home to a number of additional decentralized applications.
 This includes blockchains used for test purposes (\emph{Ropsten}, \emph{G\"orli}), divergent blockchains resulting from a past fork (\emph{Ethereum classic}), alternative cryptocurrencies (\emph{Pirl}, \emph{Musicoin}), exchange markets (\emph{Binance}), content delivery networks (\emph{Swarm}), or messaging applications (\emph{Whisper}).
-The platform already features almost 500 such applications, and their number grows every year~\cite{discv4-dns-lists}. The size distribution of the application-specific sub-networks varies significantly (\Cref{fig:ecosystem}) featuring a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less.
+The platform already features almost 500 such applications, and their number grows every year~\cite{discv4-dns-lists}.
+The size distribution of the application-specific sub-networks varies significantly (\Cref{fig:ecosystem}) featuring a \emph{long tail}, with a vast majority of applications formed of a few hundred nodes or less.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/ecosystem}
@@ -28,9 +29,7 @@ Service discovery returns a set of peers that are used as entry points to that s
 \begin{figure}[b!]
     \includegraphics[width=1\linewidth]{img/subnetwork}
     \vspace{-0.15in}
-    \caption{Formation of application-specific sub-networks using a universal service discovery network.
-    \protect\er{would be good to have larger fonts in the figure, they are very small compared to those of Figure~\ref{fig:ecosystem}}
-    }
+    \caption{Formation of application-specific sub-networks using a universal service discovery network.}
     \label{fig:subnetwork}
     \vspace{-0.15in}
 \end{figure}
@@ -81,10 +80,10 @@ The function allows limiting the amount of resources used by each node, promotes
 We summarize the results of the analysis of \sysname security in \Cref{sec:analysis}, and provide more thorough development of this analysis in \Cref{sec:appendix}.
 
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
-We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} (\Cref{sec:eval}).
+We overcome multiple practical challenges, implement \sysname in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} as well as in a simulator (\Cref{sec:eval}).
 Compared to \discv, \sysname discovers ten times more peers per time slot while achieving a similar or lower probability of being eclipsed by a powerful attacker.
 Compared to vanilla DHT operations, our system eliminates vulnerability to attacks from resource-constrained attackers, and reduces load on the most busy node in the network by two orders of magnitude.
-\sysname is currently being investigated by the Ethereum community for future use in the Ethereum ecosystem.
+\sysname is scheduled for deployment in future versions of the Ethereum platform. 
 
 We finally review related work in \Cref{sec:related} and draw conclusions in \Cref{sec:con}.
  

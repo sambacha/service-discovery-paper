@@ -11,12 +11,13 @@ In this section, we present our network and threat models as well as the target 
 We assume a network of $N$ nodes.\footnote{$N$ is unknown to the participants but is used in our analysis.}
 At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers.
 Nodes are identified by their \emph{node ID}, which is simply the hash of their public key.
-Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine)~\cite{marcus2018low}. However, two nodes cannot share the same ID.
+Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine)~\cite{marcus2018low}.
+However, two nodes cannot share the same ID.
 
 % \er{revise: It is not clear \sysname is an extension of discv5 from the online documentation, but rather its central mechanism. What are the other protocols as part of discv5  is also unclear.}
 % \sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT. \er{I would not necessarily make this claim here, since several operations are. Kademlia-specific in reality. Maybe save for the conclusion?}
 
-As for \discv, \sysname leverages the existing Ethereum DHT, but does not rely on its key lookup operations directly.
+As for \discv, \sysname leverages the existing Ethereum DHT, but does not rely on its key lookup operations.
 \sysname indexes different applications in the Ethereum eco-system as \emph{topics}.
 A topic is an identifier for an application, or \emph{service}, provided by a node.
 Topics are arbitrary strings that hash to a specific key. % in the DHT key space.
@@ -49,7 +50,7 @@ As a result, they can control a number of Sybil node IDs.
 % \er{should we mention collusions here? It is mentioned only at the end of the section (although we do not seem to consider it so much in the experiments)}\mk{In the experiments we assume that all the Sybils ae controlled by a single entity. I've expanded the phrase above. I hope it's fine now.}
 % % These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
 
-The security of the service discovery mechanism against attacks is fundamentally dependent on the security guarantees provided by the underlying DHT implementation, and in particular on its ability to avoid eclipse attacks against a specific node.
+The security of the service discovery mechanism is fundamentally dependent on the security guarantees provided by the underlying DHT implementation, and in particular on its ability to avoid eclipse attacks against a specific node.
 Indeed, even if \sysname does not rely on DHT lookup operations, information in the DHT routing table is used to initialize and maintain the data structures used by the service discovery layer.
 We assume, therefore, that no honest node is fully eclipsed by the malicious ones, \ie, each honest DHT node has \emph{at least} one honest peer.
 As previously mentioned, Ethereum already implements multiple mechanisms preventing eclipse attacks at the DHT level~\cite{marcus2018low, henningsen2019eclipsing}.  

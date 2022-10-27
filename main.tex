@@ -56,11 +56,11 @@
 
 The Ethereum ecosystem hosts a steadily increasing number of decentralized applications, including but not limited to the blockchain of the same name. Nodes joining the ecosystem connect to a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. Unfortunately, \discv, the current discovery protocol of the Ethereum global network scales poorly with increasing numbers of applications and nodes.
 
-We present \sysname, a novel service discovery protocol for the Ethereum global network. \sysname combines pseudo-random and deterministic placement of advertisements to achieve both efficiency and security. It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
-We implement \sysname in the official Go Ethereum client (geth) and in a dedicated scalable simulator.
-In comparison with \discv, \sysname performs lookup operations send up to three orders of magnitude less messages, and discovers ten time more peers per time slot while achieving a similar or lower eclipse probability. 
-\sysname is currently being investigated by the Ethereum community for future use in the Ethereum ecosystem.
-
+We present \sysname, a novel service discovery protocol for the Ethereum global network. \sysname combines pseudo-random and deterministic placement of advertisements to achieve both efficiency and security.
+It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
+We implement \sysname in the official Go Ethereum client (Geth) and in a dedicated scalable simulator.
+In comparison with \discv, \sysname performs lookup operations using three orders of magnitude less messages, and discovers ten time more peers per time slot while achieving a similar or lower eclipse probability. 
+\sysname is scheduled for deployment in future versions of the Ethereum platform.
 \end{abstract}
 
 \input{sections/intro}
