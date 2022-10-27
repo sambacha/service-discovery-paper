@@ -1,7 +1,9 @@
 %!TEX root = ../main.tex
 %=========================================================
 
+\vspace{-1mm}
 \section{Introduction}
+\vspace{-2mm}
 
 With an average of 23,500 constantly live nodes~\cite{discv4-dns-lists}, the Ethereum ecosystem is one of the largest decentralized platforms currently in operation.
 While it is widely known for supporting the blockchain of the same name (also known as the \emph{mainnet} and hosted by about 7,000 nodes), the platform is also home to a number of additional decentralized applications.
@@ -59,14 +61,14 @@ Alternative solutions for service discovery were proposed, but were meant for sm
 \noindent
 \textbf{Contributions.}
 %
-We present in this paper \sysname, a novel service discovery mechanism for large-scale, decentralized platforms and its application to Ethereum.
+We present in this paper \sysname, a novel service discovery mechanism for Ethereum.
 \sysname targets a balance between robustness, i.e., the ability to resist malicious behaviors and Sybil identities, efficiency, i.e., fast service discovery even for small applications, and good load-balance over participating nodes.
 
 After providing background knowledge and reviewing the current service discovery mechanism of Ethereum in \Cref{sec:background}, and detailing our system and threat models in \Cref{sec:model}, we detail \sysname as follows.
 
-In \Cref{sec:placement}, we present how this new protocol enables nodes, members of application sub-networks, to \emph{advertise} their membership to these applications in the form of \emph{service advertisements}.
+In \Cref{sec:placement}, we present how \sysname enables nodes, members of application sub-networks, to \emph{advertise} their membership to these applications in the form of \emph{service advertisements}.
 Any node can act as a \emph{registrar} and store advertisements for any topic.
-In contrast with the direct use of the DHT as a key-value store, however, in \sysname service advertisements propagate to a pseudo-random subset of all nodes in the global network.
+In contrast with the direct use of DHT lookups, however, in \sysname service advertisements propagate to a pseudo-random subset of all nodes in the global network.
 The density of advertisements for an application increases as a service lookup approaches the key of a specific application in the DHT.
 
 Robustness, load balancing, and efficiency for the discovery of smaller sub-networks all rely on a novel \emph{admission protocol}, by which registrars accept or reject incoming service advertisements (\Cref{sec:admission}).
@@ -76,7 +78,7 @@ At the core of our admission protocol lies the need for advertisers to respect a
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 The function allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
-We summarize the results of the analysis of \sysname security in \Cref{sec:analysis}, and provide more thorough development of this analysis in the appendix.
+We summarize the results of the analysis of \sysname security in \Cref{sec:analysis}, and provide more thorough development of this analysis in \Cref{sec:appendix}.
 
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
 We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} (\Cref{sec:eval}).
