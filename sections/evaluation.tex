@@ -59,9 +59,18 @@ This mechanism allows advertisements of less popular topics to get a fair share 
 \vspace{-0.15in}
 \end{figure}
 
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{results/testbed/op_time.pdf}
+\caption{Request processing time.}
+\label{fig:op_time}
+\vspace{-0.15in}
+\end{figure}
+
 \subsection{Simulations}
 
 For large scale experiments and comparison with other protocols, we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}, a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
+
 
 We implement the following approaches as baselines. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using vanilla Kademlia DHT.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS) - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
 
