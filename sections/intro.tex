@@ -52,7 +52,7 @@ Random walks have, indeed, a decreasing likelihood of encountering peers from th
 % Our observations of \discv show that it can require no less than \hl{\textbf{XXX}} \er{FILL ME} attempts for a node to find \hl{\textbf{Y}} \er{FILL ME} different peers, for a medium-size sub-network already featuring \textbf{100} nodes, and significantly more for smaller sub-networks.
 % \er{note that such numbers should be given also in the next section, so we may decide to cut the sentence here to avoid a repetition.}
 As more applications join the DHT, the inefficiency of the random discovery process becomes a bottleneck for the entire ecosystem.
-Alternative solutions for service discovery were proposed, but were meant for small-scale network~\cite{zhang2002aggregate, helal2002standards}, centralised~\cite{RFC6763}, based on unrealistic assumptions~\cite{danezis2005sybil, danezis2009sybilinfer}, or insecure~\cite{baldoni2007tera,scribe,poldercast,banno2015,scribe}.
+Alternative solutions for service discovery were proposed, but were meant for small-scale networks~\cite{zhang2002aggregate, helal2002standards}, centralised~\cite{RFC6763}, based on unrealistic assumptions~\cite{danezis2005sybil, danezis2009sybilinfer}, or insecure~\cite{baldoni2007tera,scribe,poldercast,banno2015,scribe}.
 % We provide an extensive analysis of these systems in \Cref{sec:related}.
 
 \smallskip
@@ -72,7 +72,7 @@ The density of advertisements for an application increases as a service lookup a
 Robustness, load balancing, and efficiency for the discovery of smaller sub-networks all rely on a novel \emph{admission protocol}, by which registrars accept or reject incoming service advertisements (\Cref{sec:admission}).
 It ensures that advertisers cannot effectively flood advertisements at a registrar, even when deviating from the protocol or operating Sybils, and that less popular topics get a sufficiently high probability to be represented and found.
 
-At the core of our admission protocol lies the need for registrants to respect a waiting time imposed by the registrars before being able to successfully register their advertisement.
+At the core of our admission protocol lies the need for advertisers to respect a waiting time imposed by the registrars before being able to successfully register their advertisement.
 We discuss the design and dynamics of the waiting function in \Cref{sec:waitingTime}.
 The function allows limiting the amount of resources used by each node, promotes diversity of topic advertisements stored by each node, and protects against a vast range of malicious behaviors.
 
@@ -81,7 +81,7 @@ We summarize the results of the analysis of \sysname security in \Cref{sec:analy
 \er{revise this paragraph in light of the deployment results; highlights could focus on real deployments.}
 We overcome multiple practical challenges, implement \sysname in a simulator as well as in the code base of the \emph{Go Ethereum} (Geth) client~\cite{geth} (\Cref{sec:eval}).
 Compared to \discv, \sysname discovers ten times more peers per time slot while achieving a similar or lower probability of being eclipsed by a powerful attacker.
-Compared to vanilla DHT operations, our system eliminates vulnerability to attacks from resource-constraint attackers, and reduces load on the most busy node in the network by two orders of magnitude.
+Compared to vanilla DHT operations, our system eliminates vulnerability to attacks from resource-constrained attackers, and reduces load on the most busy node in the network by two orders of magnitude.
 \sysname is currently being investigated by the Ethereum community for future use in the Ethereum ecosystem.
 
 We finally review related work in \Cref{sec:related} and draw conclusions in \Cref{sec:con}.
