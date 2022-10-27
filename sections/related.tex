@@ -4,6 +4,7 @@
 \section{Related Work}
 \label{sec:related}
 
+\mk{TODO:Mention previous work suggested by the NDSS reviewers~\cite{liu2010netfence, crowcroft2007lazy, kung2015practical}} \er{as per discussion, these should be discussed in the RW and not in the admission section.}
 
 A decentralized service discovery system can be organized by directly storing the membership information in a DHT~\cite{can,chord,rowstron2001pastry,maymounkov2002kademlia}. 
 DHT-based solutions offer fault-tolerant, scalable and efficient ways of finding nodes in large-scale networks.
@@ -11,17 +12,25 @@ However, it is difficult to guarantee the availability of published service desc
 If nodes close to a service hash fail, the whole sub-network becomes undiscoverable. 
 While solutions such as Chord4S~\cite{chord4s} reduce this risk, the main drawback remains the vulnerability to Sybil attacks.
 
-Other systems implement service discovery on top of publish-subscribe platforms. However, those solutions are built directly on top of a DHT~\cite{scribe,poldercast,banno2015} (and share its weaknesses), introduce significant overhead to keep the data up to date~\cite{gossipsub} or introduce a single point of failure~\cite{baldoni2007tera, dan2012centralized}.
+Other systems implement service discovery on top of publish-subscribe platforms.
+However, those solutions are built directly on top of a DHT~\cite{scribe,poldercast,banno2015} (and share its weaknesses), introduce significant overhead to keep the data up to date~\cite{gossipsub}, introduce a single point of failure~\cite{dan2012centralized}, or require all nodes to be correct (\ie not byzantine)~\cite{baldoni2007tera}.
 
+Recently, multiple service discovery protocols were implemented for the blockchain space~\cite{farmer2021decentralized, manevich2019endorsement, keizer2021flock}.
+Unfortunately, these solutions are meant to work in small-scale systems~\cite{farmer2021decentralized}, or require writing to the blockchain (thus introducing significant monetary and/or computational cost)~\cite{manevich2019endorsement, keizer2021flock}. 
 
-Recently, multiple service discovery protocols were implemented for the blockchain space~\cite{farmer2021decentralized, manevich2019endorsement, keizer2021flock}. Unfortunately, they are meant to work on a small-scale~\cite{farmer2021decentralized}, or require writing to the blockchain (thus introducing significant monetary cost)~\cite{manevich2019endorsement, keizer2021flock}. 
+Multiple works proposed DHT enhancements to make it more resistant to Sybil attacks.
+This can be achieved by exploiting social relations between participants operating the nodes~\cite{danezis2005sybil, danezis2009sybilinfer}, introducing some kind of Proof-of-Work~\cite{skad} or sampling participant identifiers~\cite{cholez2010efficient}.
+All these solutions are difficult to implement in current P2P networks, and may have a negative impact on privacy.
+An extensive number of systems have been proposed for resilient peer sampling in P2P networks~\cite{bortnikov2009brahms, jelasity2007gossip, ouguz2014stable, pigaglio2022raptee}.
+While those systems are useful in some scenarios, they cannot be easily adapted to application-specific peer sampling required by the Ethereum ecosystem.
 
-Multiple works proposed DHT enhancements to make it more resistant to Sybil attacks. This is achieved by exploiting social relations between nodes~\cite{danezis2005sybil, danezis2009sybilinfer}, introducing some kind of Proof-of-Work~\cite{skad} or sampling participant identifiers~\cite{cholez2010efficient} but is difficult to implement in current P2P networks. An extensive number of systems have been proposed for resilient peer sampling in P2P networks~\cite{bortnikov2009brahms, jelasity2007gossip, ouguz2014stable, pigaglio2022raptee}. While those systems are useful in some scenarios, they cannot be easily adapted to application-specific peer sampling required by the Ethereum ecosystem. 
+Relevant to our work, the Ethereum DHT was recently enhanced~\cite{marcus2018low, henningsen2019eclipsing} to make it more resistant to low-resource eclipse attacks at the DHT level. Those solution enable \sysname to operate, as it relies on honest participants not being fully eclipsed at the DHT level.
 
-
-Relevant to our work, the Ethereum DHT was recently enhanced~\cite{marcus2018low, henningsen2019eclipsing} to make it more resistant to low-resource eclipse attacks at the DHT level. Those solution enable \sysname to operate, as it relies on honest participants not being eclipsed at the DHT level. 
-
-
+The enforcement of a waiting time for incoming requests to improve fairness and implement rate control has been used for preventing DDoS attacks towards centralized services or domains.
+In this context, the key interest is to avoid maintaining per-client state at a server while offering priority services to clients that have waited the longest, and to adjust waiting times based on per-domain traffic and congestion.
+Implementations of this idea include NetFence~\cite{liu2010netfence}, Lazy Suzan~\cite{crowcroft2007lazy} and the work of Kung \emph{et al.}~\cite{kung2015practical}.
+In contrast with \sysname, however, these approaches do not focus on content (topic ads) diversity, but only use enforced waiting for rate control.
+% They also do not consider a decentralized system.
 
 %\er{Maybe discuss the byzantine-resilient peer sampling system Brahms, that also uses a blocking mechanism when more than a threshold number of view updates (pushes) are received in a certain amount of time (not sure if this is overall or for a specific node though)~\cite{}}
 

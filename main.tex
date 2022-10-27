@@ -48,38 +48,21 @@
 \title{Topic-based service discovery for the Ethereum P2P network}
 \title{\sysname: Service discovery for the Ethereum platform}
 \title{Robust service discovery in the Ethereum ecosystem with \sysname}
-\title{\sysname: robust service discovery in the Ethereum ecosystem}
-\author{Anonymous submission \#}
+\title{\sysname: Robust Service Discovery in the Ethereum Ecosystem}
+\author{Anonymous submission \#48}
 \maketitle
     % \vspace{-0.90in}
 \begin{abstract}
-	
-% \er{consider using a more complete title claiming the robustness and efficiency of the mechanism.}
-% \mk{I understand the motivation but at the same time, it makes the title less readable}
-% \er{fine, but I would rename platform by ecosystem as this is the term used in the introduction. Also, the sys name should be discv5}
 
-The Ethereum ecosystem consists of a plethora of decentralized applications, including but not limited to the blockchain of the same name. Nodes joining the ecosystem connect to a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. Unfortunately, the current discovery protocol of the Ethereum global network scales poorly with the increasing number of applications and nodes, preventing the growth of the ecosystem.
+The Ethereum ecosystem hosts a steadily increasing number of decentralized applications, including but not limited to the blockchain of the same name. Nodes joining the ecosystem connect to a global peer-to-peer network in which they have to find their application-specific peers. The peer discovery process is crucial for the efficiency and security of the entire ecosystem. Unfortunately, \discv, the current discovery protocol of the Ethereum global network scales poorly with increasing numbers of applications and nodes.
 
-We present \sysname, a novel service discovery system for the Ethereum global network. \sysname combines pseudo-random and deterministic advertisement placement to achieve both efficiency and security. It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
-\sysname performs lookup operations that are up to three orders of magnitude more efficient (in terms of overhead and discovery time) than \discv, the currently used discovery system while achieving a similar security level. \er{maybe explicit what we mean by a similar security level} \sysname is currently scheduled for deployment in the next version of the Ethereum peer-to-peer network. \er{replace previous sentence by a stronger claim} \er{mention deployment results and evaluation highlights}
+We present \sysname, a novel service discovery protocol for the Ethereum global network. \sysname combines pseudo-random and deterministic placement of advertisements to achieve both efficiency and security. It implements a new admission control protocol that protects against a wide range of malicious behaviors expected in an open environment. 
+We implement \sysname in the official Go Ethereum client (geth) and in a dedicated scalable simulator.
+In comparison with \discv, \sysname performs lookup operations send up to three orders of magnitude less messages, and discovers ten time more peers per time slot while achieving a similar or lower eclipse probability. 
+\sysname is currently being investigated by the Ethereum community for future use in the Ethereum ecosystem.
 
 \end{abstract}
 
-
-%\input{sections/new_introduction}
-
-% \er{Suggestions for alternative titles:
-% \begin{itemize}
-%   \item \sysname: Robust and efficient topic discovery in the Ethereum ecosystem
-%   \item \sysname: Robust and efficient topic discovery in Ethereum 2.0
-%   \item \sysname: Scalable and resilient topic membership management in Ethereum 2.0
-%   \item \sysname: A robust and scalable topic discovery protocol for the next Ethereum generation
-%   \item Resilient topic discovery in Ethereum with \sysname
-%   \item Scalable and resilient topic discovery in Ethereum with \sysname
-%   \item \sysname: Efficient, decentralized topic discovery for the Ethereum P2P network
-%   \item \sysname: Robust and efficient decentralized membership management for applications of the Ethereum ecosystem
-% \end{itemize}
-% }
 \input{sections/intro}
 
 \input{sections/background}

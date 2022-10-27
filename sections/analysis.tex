@@ -1,16 +1,22 @@
 %!TEX root = ../main.tex
 
-\section{Analysis}\label{sec:analysis}
-In this section, we analyze the properties of \sysname and choose optimal values for system parameters. Due to space constraints, we include an extended version of the analysis in \Cref{sec:appendix}.
+\section{Analysis}
+\label{sec:analysis}
+
+In this section, we analyze the properties of \sysname and choose optimal values for system parameters. 
+Due to space constraints, we include an extended version of the analysis in \Cref{sec:appendix}.
+
 \subsection{Efficiency}
 
 \para{Memory usage is bounded by the capacity of the ad cache} 
-We focus uniquely on registrars, as advertisers and searchers require a fixed amount of memory for their operations. The amount of ads in the cache is given by $d = xa/(a + w(x))$, where $x$ is the number of requests constantly trying to get into the table, $a$ is ad lifetime and $w(x)$ is the average waiting time received by requests $x$.
+We focus exclusively on registrars, as advertisers and searchers require a fixed amount of memory for their operations. The amount of ads in the cache is given by $d = xa/(a + w(x))$, where $x$ is the number of requests constantly trying to get into the table, $a$ is ad lifetime and $w(x)$ is the average waiting time received by requests $x$.
 In the worst case scenario, when requests $x$ are able to achieve 0 similarity score for both the topic and the IP addresses, the waiting time formula is given by: $w(x) = ba/(1 - \frac{d}{n})^{P_\textit{occ}}$.
 
-The possibility of the cache going above the capacity is determined by the constant $b$ and the exponent $P_\textit{occ}$. $b$ should be set to a small value to limit its influence on the waiting time (where IP and topic similarity scores should play the dominant role). $P_\textit{occ}$ should be large enough to prevent overflowing of the cache and small enough to enable usage of large portions of the cache under normal traffic conditions. 
+The possibility of the cache going above the capacity is determined by the constant $b$ and the exponent $P_\textit{occ}$. $b$~should be set to a small value to limit its influence on the waiting time (where IP and topic similarity scores should play the dominant role). $P_\textit{occ}$ should be large enough to prevent overflowing of the cache and small enough to enable usage of large portions of the cache under normal traffic conditions. 
 
-In consultation with Geth developers, we assume a cache capacity of $n = 1000$ entries \er{minor/global: consider using thousands delimiters in all values above 999.} and an average size of an advertisement equal to 1KB. \Cref{fig:cache_size_limit} presents the cache usage for different rates of incoming requests. We chose $b=10^{-7}$ and $P_\textit{occ}=10$ that provide protections against cache overflowing and good usage of cache space under normal conditions. 
+In consultation with developers of Geth~\cite{geth}, we assume a cache capacity of $n = 1,000$ entries and an average size of an advertisement equal to 1KB.
+\Cref{fig:cache_size_limit} presents the cache usage for different rates of incoming requests.
+We choose $b=10^{-7}$ and $P_\textit{occ}=10$; these values provide a good protection against cache overflowing and a good usage of cache space under normal conditions. 
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/cache_size_limit}
@@ -20,20 +26,33 @@ In consultation with Geth developers, we assume a cache capacity of $n = 1000$ e
     \label{fig:cache_size_limit}
     \vspace{-0.15in}
 \end{figure}
-Pending requests (\ie not in the cache) do not create any state (apart from updating the lower bound) at the registrar (\ie the registrar uniquely calculates the waiting time and returns a signed ticket). The lower bound state created by registrars is bounded by the number of distinct IPs and topics in the cache and is thus bounded by its capacity $O(n)$.
+
+Pending requests (\ie, not in the cache) do not create any state, apart from updating the lower bound, at the registrar (\ie, the registrar uniquely calculates the waiting time and returns a signed ticket). The lower bound state created by registrars is bounded by the number of distinct IPs and topics in the cache and is thus bounded by its capacity $O(n)$. \er{why is a capacity expressed as big O? Is is not $n$ simply?}
 
 \para{Register and lookup operations finish within $O(log(N))$ steps}
-Despite some nondeterministic behavior, both operations tightly follow the number of steps of the regular DHT FIND\_NODE operations and thus finish within $O(log(N))$ steps.
+As detailed in \Cref{sec:placement}, registration of ads and service lookup operations allow learning peers from buckets associated with increasingly large prefixes to the topic ID destination, guaranteeing these operations to finish within $O(log(N))$ steps.
 
 \subsection{Fairness}
-We assume a Zipf distribution of the topics \er{Zipf is a specific case of a powerlaw distribution, with $\alpha=1$. Maybe we should use the general term?}\mk{In the introduction, we fit the current distribution into a zipf distribution, so it's used here for consistency. In the end, we're more specific by doing that.} in the system and that the topic hashes are uniformly distributed in the DHT hash space. For simplicity we uniquely compare the load of \emph{registrar A} -- located close to the most popular \emph{topic A} and the load of \emph{registrar B} -- located close to the least popular \emph{topic B}. \emph{topic A} is followed by $N_a$ nodes and \emph{topic B} is followed by $N_b$ nodes. 
+We assume a Zipf distribution of the topics popularities
+% \er{Zipf is a specific case of a powerlaw distribution, with $\alpha=1$. Maybe we should use the general term?}\mk{In the introduction, we fit the current distribution into a zipf distribution, so it's used here for consistency. In the end, we're more specific by doing that.}
+in the system and that topic IDs are uniformly distributed in the DHT key space.
+For simplicity, we uniquely compare the load of \emph{registrar A} -- located close to the most popular \emph{topic A} and the load of \emph{registrar B} -- located close to the least popular \emph{topic B}.
+The ID of \emph{topic A} is followed by $N_a$ nodes and that of \emph{topic B} is followed by $N_b$ nodes in the key space.
 
-We assume \emph{topic A} and \emph{topic B} are located on the opposite sides of the DHT hash space (the worst-case scenario for load balancing). Both \emph{registrar A} and \emph{registrar B} receive different amounts of traffic for both \emph{topics A} and {B}, and the same amount of traffic for other topics, represented by \emph{topic X}, with $\textit{topic X} \neq \textit{topic A} \wedge \textit{topic X} \neq \textit{topic B}$. 
+We assume \emph{topic A} and \emph{topic B} are located on the opposite sides of the DHT key space, the worst-case scenario for load balancing.
+Both \emph{registrar A} and \emph{registrar B} receive different amounts of traffic for both \emph{topics A} and {B}, and the same amount of traffic for other topics, represented by \emph{topic X}, with $\textit{topic X} \neq \textit{topic A} \wedge \textit{topic X} \neq \textit{topic B}$. 
 
 \para{Registration operations achieve equal load distribution}
-As the closest node to the \emph{topic A} hash, \emph{registrar A} receives registration requests from all the $N_a$ advertisers. As the furthest node from the \emph{topic B} hash, it also receives requests from $\frac{N_{b}K_\textit{register}}{N/2}$ \emph{topic B}-advertisers. Analogically, \emph{registrar B} receives requests from $N_b$ \emph{topic B}-advertisers and $\frac{N_{a}K_\textit{register}}{N/2}$ requests for \emph{topic A}.
+As the closest node to the \emph{topic A} ID, \emph{registrar A} receives registration requests from all the $N_a$ advertisers.
+As the furthest node from the \emph{topic B} ID, it also receives requests from $\frac{N_{b}K_\textit{register}}{N/2}$ \emph{topic B}-advertisers.
+Analogically, \emph{registrar B} receives requests from $N_b$ \emph{topic B}-advertisers and $\frac{N_{a}K_\textit{register}}{N/2}$ requests for \emph{topic A}.
 
-As $N_a \gg N_b$, the initial number of requests is higher for \emph{registrar A}. However, as its ad cache fills up, \emph{registrar A} will issue higher waiting times making the requests less frequent. \Cref{fig:fairness_registration} presents the registration load ratio between both registrars as a function of increasing popularity between the two topics. The load difference experiences sub-linear growth. When \emph{topic A} is 100 times more popular, \emph{registrar A} receives only 1.6 times more requests than \emph{registrar B}. We present results without the admission control (\ie all the requests receive a fixed waiting time) for reference.
+As $N_a \gg N_b$, the initial number of requests is higher for \emph{registrar A}.
+However, as its ad cache fills up, \emph{registrar A} will issue higher waiting times making the requests less frequent.
+\Cref{fig:fairness_registration} presents the registration load ratio between both registrars as a function of increasing popularity between the two topics.
+The load difference experiences sub-linear growth.
+When \emph{topic A} is 100 times more popular, \emph{registrar A} receives only 1.6 times more requests than \emph{registrar B}.
+We also present results without the admission control (\ie all the requests receive a fixed waiting time) for reference.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_registration}
@@ -45,7 +64,15 @@ As $N_a \gg N_b$, the initial number of requests is higher for \emph{registrar A
 \end{figure}
 
 \para{Lookup operations achieve equal load distribution}
-Let us assume again \emph{registrar A} is the closest node to \emph{topic A}. All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as $N_a$ grows. At the same time, the more participants in \emph{topic A} the more ads will be placed in other buckets further away from the \emph{registrar A}. Recall that searchers stop their lookup operations after collecting $N_\textit{lookup}$ peers. \er{global: incorrect use of math mode. We should use macros for these definitions, and use the text command for the word identifiers, i.e., $N_{lookup}$ should be $N_{\text{lookup}}$ and same for the others.} We set $N_\textit{lookup} = 30$, a value commonly used by applications in the Ethereum ecosystem. As the number of ads in the network grows, more searchers are likely to stop before reaching \emph{registrar A}. \Cref{fig:fairness_lookup} presents \emph{Registrar A}'s load for increasing values of $N_a$. Depending on the $K_\textit{register}$ and $K_\textit{lookup}$ parameters, the maximum load is experienced when the number of \emph{topic A}-advertisers/searchers is relatively small and goes back to $0$, when the topic becomes popular in the network. We choose $K_\textit{register}$ and $K_\textit{lookup} =5$ as a reasonable middle-ground between efficiency, load balance and security.
+Let us assume again that \emph{registrar A} is the closest node to \emph{topic A}'s ID.
+All the \emph{topic A} searchers $N_a$ will go towards this node during their lookup operations, so the number of requests is expected to grow as $N_a$ grows.
+At the same time, the more participants in \emph{topic A}, the more ads will be placed in other buckets further away from the \emph{registrar A}.
+Recall that searchers stop their lookup operations after collecting $N_\textit{lookup}$ peers. 
+We set $N_\textit{lookup} = 30$, a value commonly used by applications in the Ethereum ecosystem. As the number of ads in the network grows, more searchers are likely to stop before reaching \emph{registrar A}.
+\Cref{fig:fairness_lookup} presents \emph{Registrar A}'s load for increasing values of $N_a$. 
+Depending on the $K_\textit{register}$ and $K_\textit{lookup}$ parameters, the maximum load is experienced when the number of \emph{topic A}-advertisers/searchers is relatively small.
+It goes back to $0$ when the topic becomes popular in the network.
+We choose $K_\textit{register}$ and $K_\textit{lookup} =5$ as a reasonable tradeoff between efficiency, load balance and security.
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/fairness_lookup}
@@ -58,17 +85,29 @@ Let us assume again \emph{registrar A} is the closest node to \emph{topic A}. Al
 
 \subsection{Security}
 
-\para{\sysname achieves high resistance against eclipse attacks.}
-We assume an attacker performing all the malicious activities listed in \Cref{sec:model} using Sybil nodes. A lookup operation is considered eclipsed if all the peers received by the searcher consist of malicious nodes. A searcher can receive malicious peers from honest registrars (if malicious advertisers were able to place their ads) and malicious registrars (always returning the maximum amount of $N_\textit{return}$ malicious peers). The probability of being eclipsed by a random node in a bucket thus depends on the probability of encountering a malicious registrar (determined uniquely by the number of Sybil identities) and the probability of an honest registrar returning uniquely malicious peers (determined also by the number of IP addresses under the attacker's control). \Cref{fig:eclipse_probability} illustrates the probability of a lookup operation being eclipse as a function of the increasing ratio between malicious and honest nodes. For all the tested setups, the eclipse probability is close to $0$ when the attacker uses less than 4 times the amount of honest nodes participating in a topic\footnote{For comparison, a regular DHT lookup operation can be eclipsed by using a fixed amount of 20 Sybil nodes (\Cref{sec:eval})}. An attacker can eclipse $50\%$  of the lookups only when using 10 nodes per 1 honest node and providing a distinct IP address for all of them. However, such an attack would introduce a significant monetary cost to the attacker. \er{why monetary cost? for cloud resources? should be careful not to let reader think of on-chain operations.}\mk{yes - it's common in the attack papers to calculate the monetary cost of running the attack using the cloud. However, I see how it could be confusing here.}
+\para{\sysname achieves high resistance against eclipse attacks}
+We assume an attacker performing all the malicious activities listed in \Cref{sec:model} using Sybil nodes.
+A lookup operation is considered eclipsed if all the peers received by the searcher consist of malicious nodes.
+A searcher can receive malicious peers from honest registrars (if malicious advertisers were able to place their ads) and malicious registrars (always returning the maximum amount of $N_\textit{return}$ malicious peers).
+The probability of being eclipsed by a random node in a bucket thus depends on the probability of encountering a malicious registrar (determined uniquely by the number of Sybil identities) and the probability of an honest registrar returning uniquely malicious peers (determined also by the number of IP addresses under the attacker's control).
+\Cref{fig:eclipse_probability} illustrates the probability of a lookup operation being eclipsed as a function of the increasing ratio between malicious and honest nodes.
+For all tested setups, the eclipse probability is close to $0$ when the attacker uses less than 4 times the amount of honest nodes participating in a topic\footnote{For comparison, a regular DHT lookup operation can be eclipsed by using a fixed amount of 20 Sybil nodes (\Cref{sec:eval})}.
+An attacker can eclipse $60\%$ of the lookups only when using 10 nodes per 1 honest node and providing a distinct IP address for all of them.
+However, such an attack would introduce a significant resource/monetary cost to the attacker. 
+% \er{why monetary cost? for cloud resources? should be careful not to let reader think of on-chain operations.}\mk{yes - it's common in the attack papers to calculate the monetary cost of running the attack using the cloud. However, I see how it could be confusing here.}
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/eclipse_probability}
-    \vspace{-0.05in}
+    \vspace{-0.1in}
     \caption{\emph{Lookup eclipse probability}.
     }
     \label{fig:eclipse_probability}
-    \vspace{-0.20in}
+    \vspace{-0.1in}
 \end{figure}
 
 \para{\sysname achieves high resistance against DoS attacks.}
-\sysname implements an admission control mechanism protecting the ad cache from being overwhelmed by an attacker with a limited number of IP addresses. Including a non-deterministic component in the ad placement mechanism reduces the efficiency of DoS attacks targeting a specific topic or a part of the hash space. Preventing honest nodes from using the system requires involving resources significantly surpassing the combined resources (see above) of the honest participants and incurs a preventive monetary cost. Importantly, all the malicious ads are removed after ad lifetime $a$. An attacker thus has to constantly use their resource to perform the attack and the system quickly recovers once the attack stops.
+\sysname implements an admission control mechanism protecting the ad cache from being overwhelmed by an attacker with a limited number of IP addresses.
+Including a non-deterministic component in the ad placement mechanism reduces the efficiency of DoS attacks targeting a specific topic or a part of the key space.
+Preventing honest nodes from using the system requires involving resources significantly surpassing the combined resources (see above) of the honest participants and incurs a preventive resource/monetary cost.
+Importantly, all the malicious ads are removed after ad lifetime $a$.
+An attacker thus has to constantly use their resource to perform the attack and the system quickly recovers once the attack stops.

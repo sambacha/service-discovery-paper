@@ -1,23 +1,55 @@
 %!TEX root = ../main.tex
 %=========================================================
 
-\section{Ads placement}
+\section{Placement of advertisements}
 \label{sec:placement}
-In the following, we describe distributing advertisements in the network and discuss the process of searching for, and establishing application-specific connections. We start by discussing the challenges related to the problem and explaining the data structures used by \sysname. 
+
+In the following, we detail the distribution of advertisements in the network and discuss the process of searching for, and establishing application-specific connections.
+We start by discussing related challenges and explaining the data structures used by \sysname. 
 
 \subsection{Challenges}
-The first challenge of a robust service discovery platform is the question of where to store the advertisements. In other words, which nodes (registrars) in the network should be responsible for storing ads for each topic? It is possible to deterministically choose a group of nodes based on the topic itself using DHT put and get operations. Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to find common registrars and can reach them within a logarithmic amount of steps. Unfortunately, such an approach causes \emph{unequal} load distribution across registrars, especially when the popularity of the topics varies significantly. In particular, the registrars storing popular topics (\ie the ones closest to the hash of the popular topics) would receive a large portion of the registration requests in the network. Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities, and take control over the entire topic-specific traffic. 
 
-Alternatively, advertisers could place their ads on random registrars across the entire network. This approach is \emph{secure} and difficult to attack as an attacker would need to take control over the entire network to control a single topic. Furthermore, random placement is \emph{fair} and achieves good load balance across registrars regardless of the topic popularity distribution. However, random placement is not \emph{efficient}, as it makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+% \er{this straw man argument is a bit longish and a good candidate for fat trimming}
 
-\sysname implements an alternative method of placing ads combining both the deterministic and pseudo-random approaches. Advertisers start the registration process from nodes located far away from the topic hash and traverse the DHT towards nodes close to the topic hash. On their way, advertisers place ads on encountered registrars with an increasing density. This way, the closer to the topic hash, the higher number of ads are placed. The searchers mimic the process and ask encountered registrars for topic-specific ads. The lookup process stops when enough ads are found.
+A first challenge in designing a robust service discovery mechanisms is to decide on the placement of advertisements (ads).
+In other words, the mechanism must decide which registrars in the network should be responsible for storing ads for each topic.
 
-\subsection{Data Structures}\label{sec:struct}
-\sysname uses two data structures necessary for topic-specific registrations and lookups. 
+A first possibility would be to deterministically choose a group of nodes based on the topic itself, using DHT lookups.
+Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to reach registrars within a logarithmic amount of steps.
+Unfortunately, such an approach causes \emph{unequal} load distribution across registrars, especially when the popularity of topics varies significantly.
+Registrars storing popular topics (\ie DHT nodes that are the closest to the hash of the popular topics) would, indeed, receive a large portion of the registration requests in the network. 
+Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities, and take control over all the traffic related to a single topic. 
+
+Alternatively, advertisers could place their ads on random registrars across the entire network. 
+This approach, as \discv, is \emph{secure} and difficult to attack as an attacker would need to take control over the entire network to control a single topic.
+Furthermore, random placement is \emph{fair} and achieves good load balance across registrars regardless of the topic popularity distribution.
+However, and similarly again to \discv, random placement is not \emph{efficient}, as it makes it difficult for searchers to find placed ads, especially for unpopular topics. 
+
+\sysname implements an alternative method of placing ads, that combines both the deterministic and pseudo-random approaches.
+Advertisers start the registration process from nodes located far away from the topic hash, and traverse the DHT towards nodes close to the topic hash.
+On their way, advertisers place ads on encountered registrars.
+% This way, the closer to the topic hash, the higher number of ads placed.
+This way, as a registration process gets closer to the topic hash, the higher the density of ads gets.
+The searchers mimic the process and ask encountered registrars for topic-specific ads.
+The lookup process stops when enough ads are found.
+
+\subsection{Data structures}
+\label{sec:struct}
+
+\sysname uses two types of tables to handle topic-specific registrations and service lookups, the \emph{advertise} and \emph{search} tables.
+The structure of these tables is similar but their use and lifecycles differ.
+
+\para{Common tables structure}
+Both tables are organized as a collection of \emph{buckets} similarly to the Kademlia routing table.
+Buckets contain peers sharing a common prefix, and can be sorted by these prefixes (\eg, peers with ID starting with 0, 1, 2, and so on).
+Unlike the Kademlia routing table, however, advertise and search tables are centered on a target topic ID rather than current node's ID, and prefixes represent different distances from this topic ID.
 
 \para{Advertise Table}
-To execute the ad distribution process described below, each advertiser maintains an \emph{advertise table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars. The \emph{advertise table} is similar to the routing table used by the Kademlia protocol (as described in \Cref{sec:background}). It stores the advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. This means that the \emph{advertise table} stores $K_\textit{register}$ potential registrars for every distance (bucket) from the topic ID (\Cref{fig:advertise_table}). When created, the table is initialized with peers from the routing table. 
-\er{this paragraph is not very clear. Maybe give names to the topic we are discussing to avoid confusion?}
+An advertiser maintains an \emph{advertise table} for each of the topics it belongs to and advertises.
+These tables exist for the whole duration of the participation to the corresponding service.
+The table keeps track of ongoing registration attempts with different registrars.
+Each bucket aims to contain \emph{at least} $K_\textit{register}$ potential registrars (\Cref{fig:advertise_table}).
+Peers above the number of $K_\textit{register}$ are kept as backup peers.
 
 \begin{figure}
     \includegraphics[width=0.45\textwidth]{img/tables}
@@ -25,79 +57,225 @@ To execute the ad distribution process described below, each advertiser maintain
     \caption{Creation of an advertise table from a routing table.} %\mk{To be reworked and make it consistent with other figures. E.g., we shouldn't use a circle to represent the hash space. We can maybe also try to illustrate here the mechanism of placing a fixed amount of ads in each bucket.}}
     \label{fig:advertise_table}
     \vspace{-0.15in}
- \end{figure}
+\end{figure}
 
 \para{Search Table}
-The ad lookup process is supported by a \emph{search table}. 
-Searchers maintain a separate table per topic they are currently looking for (\ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created). 
-Similar to the \emph{advertise table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash \er{same remark as before, we can name the topic to avoid confusion with previous paragraph (topic being advertised vs. topic being searched for)} and buckets are initially filled from the local routing table organized by the distance from the topic hash.
-\emph{Search table} buckets are also filled with new nodes discovered during the registration process.
-%The \emph{k} factor of the search table should be relatively large to make the search efficient. 
+A specific search table is created for every new service discovery request.
+This table is used to discover a number of ads through a iterative and parallel exploration process, after which the table is discarded.
 
+% \para{Advertise Table}
+% In order to monitor the \emph{distribution} of ads, each advertiser maintains an \emph{advertise table} for each of the topics it belongs to and advertises.
+% The table keeps track of ongoing registration attempts with different registrars.
+% An \emph{advertise table} is similar in structure to the routing table used by the Kademlia protocol, as described in \Cref{sec:background}.
+% It maps a set of peers to a set of buckets corresponding to increasing distances (increasingly long key prefixes).
+% However, instead of placing nodes in these buckets based on the distance from the advertiser, it uses the distance from the topic ID.
+% Each bucket aims to contain \emph{at least} $K_\textit{register}$ potential registrars (\Cref{fig:advertise_table}).
+% Peers above the number of $K_\textit{register}$ are kept as backup peers.
+% % These peers are passively learnt through interactions with other nodes.
+% When created, the table is initialized with peers present in the advertiser node routing table.
 
-\subsection{Distributing ads across registrars}\label{sec:registration_multi}
-When an advertiser associates themselves with a topic, they start by creating a topic-specific \emph{advertise table} (as described above). 
-Every peer present in the \emph{advertise table} is a potential registrar. 
-The objective of the ad placement process is to continuously maintain $K_\textit{register}$ active (\ie unexpired) registrations in every bucket. 
-Buckets located close to the topic hash cover less hash space than buckets located further away and, in turn, contain fewer potential registrars. 
-Placing a fixed amount of ads per bucket, make registrars close to a topic hash more likely to receive registrations for that specific topic. 
-Increasing $K_\textit{register}$, makes the advertiser easier to find at the cost of increased communication overhead. %More formally, the probability that a registrar has a topic-specific ad, based on the number of the nodes in a bucket $N_\textit{nodes}$, and the number of advertisers $N_\textit{advertisers}$ is given by:
+% To execute the ad distribution process described below, each advertiser maintains an \emph{advertise table} for each advertised topic. The table keeps track of the ongoing registration attempts with different registrars. The \emph{advertise table} is similar to the routing table used by the Kademlia protocol (as described in \Cref{sec:background}). It stores the advertiser's peers divided into k-buckets. However, instead of placing nodes in buckets based on the distance from the advertiser, it uses the distance from the topic ID. This means that the \emph{advertise table} stores $K_\textit{register}$ potential registrars for every distance (bucket) from the topic ID (\Cref{fig:advertise_table}). When created, the table is initialized with peers from the routing table.
+% \er{this paragraph is not very clear. Maybe give names to the topic we are discussing to avoid confusion?}
+
+% \para{Search Table}
+% The discovery (\emph{lookup}) of ads for specific services is supported by a \emph{search table}.
+% Searchers maintain a separate table for each of the topics they are currently looking up (\ie, for each topic for which the client wants to start discovering nodes, a new \emph{search table} is created).
+% Similarly to the \emph{advertise table}, the \emph{search table} stores buckets of registrar nodes organized by distance to the topic hash.
+% Theses buckets are also initially filled with peers from the local routing table.
+
+% The ad lookup process is supported by a \emph{search table}.
+% Searchers maintain a separate table per topic they are currently looking for (\ie for each topic the client wants to start discovering nodes, a new \emph{search table} is created).
+% Similar to the \emph{advertise table}, the \emph{search table} also stores k-buckets of registrar nodes by distance to the topic hash \er{same remark as before, we can name the topic to avoid confusion with previous paragraph (topic being advertised vs. topic being searched for)} and buckets are initially filled from the local routing table organized by the distance from the topic hash.
+% \emph{Search table} buckets are also filled with new nodes discovered during the registration process.
+% %The \emph{k} factor of the search table should be relatively large to make the search efficient.
+
+\mypara{Construction and update of the tables}
+Both tables are bootstrapped upon their creation (\ie, joining a new application for an advertise table and initiating a new discovery process for a search table) using entries from the local node routing table, for a specific topic ID.
+As the routing table is centered on the peer ID and not on this topic ID, the density of peers around the latter might be low or even null, particularly when two IDs are distant in the key space.
+The buckets are filled opportunistically while interacting with peers during the advertisement, resp. lookup, processes.
+There is, therefore, no specific DHT lookup for filling in the entries of these tables.
+
+A local node $n$ communicating with peer $p$ in bucket $b_i$ of a table $T$ asks $p$ to return peers from $p$'s routing table that match the prefixes of all buckets $b_j \:|\: j \geq i$ in $T$.
+For instance, when communicating with peer $p$ in bucket $b_{5}$ of a search table $T$, $n$ may receive candidate peers for buckets $b_5$, $b_6$, and $b_8$.
+
+The collection of peers in the tables implements a compromise between the risk of having malicious contacted peers pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic ID.
+To limit this risk, local node $n$ asks for a \emph{single} peer for each bucket $b_j \:|\: j \geq i$ from a given contact $p$.
+Contacting nodes in buckets of increasing prefix length divides the search space by a constant factor, and allows learning new peers from more densely-populated routing tables towards the destination.
+The opportunistic table update procedure allows, when necessary, to reach the closest nodes to the topic ID within $O(\log(N))$ communication steps.
+
+% \mypara{Construction of the advertise table}
+% \er{TODO to update to cover both tables}
+% An advertise table is initialized with peers already from the advertiser's routing table, in which the density of peers around the topic hash might be low.
+% As a result, it is common that the table does not contain any (or enough) peers for buckets close to the topic hash, particularly when the advertiser's ID is distant from the topic hash.
+% The filling of buckets is performed lazily while performing registration with known peers (\ie, there is no proactive collection of peers using specific lookup operations).
+% This collection implements a compromise between the risk of having malicious registrars pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic has.
+% The advertiser thereby request from a registrar present in bucket $b_x$ (from the registrar perspective) a sample of its routing table with a \emph{single} peer fitting in $b_x$ and in any of its bucket $b_{y}|y>x$, \ie, buckets closer to the topic hash.
+% As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network.
+% Similar to the DHT routing, the registration procedure finds the closest nodes to the topic hash in the network within $O(\log(N))$ communication steps.
+
+\subsection{Distributing ads across registrars}
+\label{sec:registration_multi}
+
+An advertiser associating itself with a topic first creates a topic-specific advertise table as detailed above.
+The objective of the ad placement process is to continuously maintain up to $K_\textit{register}$ active (\ie, unexpired) registrations or ongoing registration attempts in every bucket of that table.
+%
+Buckets located close to the topic hash cover less hash space than buckets located further away and, in turn, contain fewer than $K_\textit{register}$ potential registrars; in this case an attempt of registering an ad is made with all of them.
+
+Placing a fixed amount of ads per bucket make registrars close to a topic hash more likely to receive registrations for that specific topic. 
+Increasing $K_\textit{register}$ makes the advertiser easier to find at the cost of increased communication and storage costs.
+
+% When an advertiser associates themselves with a topic, they start by creating a topic-specific \emph{advertise table} (as described above).
+% Every peer present in the \emph{advertise table} is a potential registrar.
+% The objective of the ad placement process is to continuously maintain $K_\textit{register}$ active (\ie, unexpired) registrations in every bucket.
+% Buckets located close to the topic hash cover less hash space than buckets located further away and, in turn, contain fewer potential registrars.
+% Placing a fixed amount of ads per bucket, make registrars close to a topic hash more likely to receive registrations for that specific topic.
+% Increasing $K_\textit{register}$, makes the advertiser easier to find at the cost of increased communication overhead. %More formally, the probability that a registrar has a topic-specific ad, based on the number of the nodes in a bucket $N_\textit{nodes}$, and the number of advertisers $N_\textit{advertisers}$ is given by:
 
 %\begin{equation}
 %   P_\textit{have ad} = 1-(1 - \frac{K_\textit{register}}{N_\textit{nodes}})^{N_\textit{advertisers}}
 %\end{equation}
 %\michal{TODO: Need to decide what to do with the equation above.}
 
-For every bucket in the \emph{advertise table}, iterates over
-$K_{register}$ peers and attempts to perform registration.
-We describe details of the admission procedure in \Cref{sec:admission}. 
-A successful registration places an ad on an advertiser for a fixed amount of time $a$.
-If registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser removes the registrar from its bucket.
-The advertisers always maintain $K_\textit{register}$ attempts and/or
-successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
-The advertiser repeats the process for every bucket in the \emph{advertise table}. 
+The advertiser keeps track of pending or completed attempts to perform registrations in every bucket.
+A registration may be unsuccessful if the selected registrar is down or refuses to store the ad.
+In this case, the corresponding peer is removed from the bucket and a backup peer selected as a replacement, if one is available.
+A successful registration follows an admission procedure that we will detail in \Cref{sec:admission} and places an ad on an advertiser for a fixed amount of time $a$.
+% The advertiser seeks to always have $K_\textit{register}$ attempts and/or
+% successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in this bucket (as is commonly the case for buckets close to the topic hash). \er{this is redundant with previous text}
 
-The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser does not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}. 
-To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. 
-The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. The registrars respond with a list of peers regardless of the success of the registration operation. However, \sysname provides an additional protection against malicious registrars that try to poison the advertise table by returning malicious peers. Registrars are allowed to provide a only a single node per bucket of the advertiser's advertise table. It allows the advertiser to populate its \emph{advertise table} while limiting the likelihood of buckets filled uniquely with malicious peers.
-As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network. 
-Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps. 
+% For every bucket in the \emph{advertise table}, iterates over
+% $K_{register}$ peers and attempts to perform registration.
+% We describe details of the admission procedure in \Cref{sec:admission}.
+% A successful registration places an ad on an advertiser for a fixed amount of time $a$.
+% If registration is unsuccessful (the selected registrar is down or refuses to store the ad), the advertiser removes the registrar from its bucket.
+% The advertisers always maintain $K_\textit{register}$ attempts and/or
+% successful registrations per bucket unless there are less than $K_\textit{register}$ peers present in a specific bucket.
+% The advertiser repeats the process for every bucket in the \emph{advertise table}.
 
-\subsection{Lookup operation}\label{sec:lookup}
-To find ads, \sysname uses a process similar to the registration procedure. 
-%The goal is to find $N_\textit{lookup}$ node advertised with a specific topic. 
-%Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}. 
-Each lookup requires a topic-specific \emph{search table} described in \Cref{sec:struct}.
-The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per bucket and sends them parallel lookup requests. 
-Once it receives results from the first $K_\textit{lookup}$ selected registrars, other $K_\textit{lookup}$ registrars are selected from the following bucket with a smaller distance to the topic id.
-The queried nodes are removed from the bucket.
-Searchers stop the lookup procedure when they have discovered $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the topic hash, especially for popular topics. As a result, \sysname avoids hot spots in the network and ensures fair load distribution. 
-In case all buckets have been queried without finding enough nodes, the lookup process continues starting with the furthest distance bucket again. 
-Once the lookup process is completed, the nodes are returned to the application.
+% \mypara{Construction of the advertise table}
+% An advertise table is initialized with peers already from the advertiser's routing table, in which the density of peers around the topic hash might be low.
+% As a result, it is common that the table does not contain any (or enough) peers for buckets close to the topic hash, particularly when the advertiser's ID is distant from the topic hash.
+% The filling of buckets is performed lazily while performing registration with known peers (\ie, there is no proactive collection of peers using specific lookup operations).
+% This collection implements a compromise between the risk of having malicious registrars pollute the table or a specific bucket with a majority of malicious peers, and the need to learn ``rare'' peers in buckets close to the topic has.
+% The advertiser thereby request from a registrar present in bucket $b_x$ (from the registrar perspective) a sample of its routing table with a \emph{single} peer fitting in $b_x$ and in any of its bucket $b_{y}\:|\:y>x$, \ie, buckets closer to the topic hash.
+% As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network.
+% Similar to the DHT routing, the registration procedure finds the closest nodes to the topic hash in the network within $O(\log(N))$ communication steps.
 
-Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure. 
-Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
-Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar knows of. 
-If the total number of topic-specific registrations in the table is larger then
-$N_\textit{return}$, the registrar should return a random subset.
-While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
-the number of ads returned by a single registrar must be lower than the total
-number of ads searchers are aiming to find $N_\textit{return} <
-N_\textit{lookup}$. This is to diversify the sources of ads received by the searcher. This means that a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
-%\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
-There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$. 
-By requiring a large number of total ads to stop the search
-($N_\textit{lookup}$), compared with the ads returned by the registrar
-($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread.
-\er{maybe revise this paragraph for clarity, need to read several time to grasp details.}
-%However, for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
-%In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
-%\sr{Future work: investigate the impact of search parameters}
+% The \emph{advertise table} is initialized with the peers already present in the routing table. It is thus possible that an advertiser does not know any nodes in buckets located close to the topic hash\footnote{This usually happens when the advertiser's ID is distant from the topic hash.}.
+% To fill the empty buckets, the advertiser asks potential registrars to return $C$ closest peers to the topic hash they know of. \er{consistency: we use $k$ for the closest peers in background.}
+% The procedure is similar to the regular DHT \emph{FIND\_NODE} operation described in \Cref{sec:background}. The registrars respond with a list of peers regardless of the success of the registration operation. However, \sysname provides an additional protection against malicious registrars that try to poison the advertise table by returning malicious peers. Registrars are allowed to provide a only a single node per bucket of the advertiser's advertise table. It allows the advertiser to populate its \emph{advertise table} while limiting the likelihood of buckets filled uniquely with malicious peers.
+% As the advertiser progresses through the buckets, it queries potential registrars located closer to the topic hash and thus gets a more detailed view of this part of the network.
+% Similar to the DHT routing, the registration procedure is guaranteed to find the closest node to the topic hash in the network within $O(log(N))$ number of steps.
 
-%\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
-%\michal{Consider renaming search/advertise tables into search/registration caches}
-%\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
-%\ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
-%\michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
-%\sergi{I think $N_\textit{return}$ should not be configurable since it is limited by the maximum number of nodes returned in a message which i think is 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller than a value multiple of $N_\textit{return}$}
+\subsection{Looking up services}
+\label{sec:lookup}
 
+A service lookup in \sysname aims at identifying $N_\textit{lookup}$ advertisers for a specific topic ID and return them to the application.
+The service lookup is a process that is distinct from the underlying DHT's lookup protocol.
+A service lookup starts with the creation of an ephemeral, topic-specific \emph{search table} as described in \Cref{sec:struct}.
+
+A searcher performing a service lookup progresses through the table starting from the farthest bucket (\ie, peers whose ID has the \emph{smallest} common prefix with the topic ID).
+The search process progresses using maximum $K_\textit{lookup}$ parallel requests, and issuing requests towards up to $K_\textit{lookup}$ peers per bucket.
+For instance, the searcher may start by querying $K_\textit{lookup}$ peers from bucket $b_0$.
+When one of these query returns, the searcher queries a peer from bucket $b_1$, and so on.
+A node that has been already queried is marked as such in the table, and is not queried again.
+
+Queries return new candidates registrars for the search table, as explained in \Cref{sec:struct}, as well as $N_\textit{return}$ topic-specific advertisers with a valid registered ad.
+A successful search stops when at least $N_\textit{lookup}$ different peers have been collected.\footnote{In case more than $N_\textit{lookup}$ peers were found, a random subset of $N_\textit{lookup}$ peers is drawn.}
+The search is unsuccessful when either no unmarked nodes remain in any of the buckets, or when the two last queries did not allow discovering new, unused registrar nodes through opportunistic discovery.
+In this case, the whole process restarts.
+
+\mypara{Analysis}
+The first bucket ($b_0$) covers the largest fraction of the key space as it corresponds to peers with no common prefix to the topic ID (\ie, it matches 50\% of all the registrars).
+For an attacker, placing malicious registrars in this fraction of the key space in order to eclipse a service discovery process would require considerable resources.
+Subsequent buckets cover smaller (halved for each increased prefix length) fractions of the key space, increasing the attacker opportunities to place Sybils but also increasing the success rate of the discovery process.
+
+Parameters $N_\textit{return}$ and $N_\textit{lookup}$ play an important role in the compromise between security and efficiency.
+A small value of $N_\textit{return} << N_\textit{lookup}$ increases the \emph{diversity} of the source of ads received by the searcher but increases search time, and requires reaching buckets covering smaller key ranges where eclipse risks are higher.
+On the other hand, values of a similar order of magnitude for $N_\textit{lookup}$ and $N_\textit{return}$ reduce overheads but increase the danger of a searcher receiving ads uniquely from malicious nodes.
+Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread. 
+We discuss the selection of optimal values for all of the protocol parameters in \Cref{sec:analysis}. 
+
+
+
+
+% Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure.
+% Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
+% Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar knows of.
+% While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
+% the number of ads returned by a single registrar must be lower than the total
+% number of ads searchers are aiming to find $N_\textit{return} <
+% N_\textit{lookup}$. This is to diversify the sources of ads received by the searcher. This means that a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
+% %\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
+% There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$.
+% By requiring a large number of total ads to stop the search
+% ($N_\textit{lookup}$), compared with the ads returned by the registrar
+% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread.
+
+
+%
+%
+% The service lookup in \sysname shares similarities to the ad registration procedure.
+% Its goal is to identify $N_\textit{lookup}$ advertisers peers for a target topic.
+% Note that \emph{service lookup} is independent from, and does not rely on, the underlying DHT's lookup process.
+%
+% Each service lookup by a searcher uses its own topic-specific \emph{search table} as described in \Cref{sec:struct}.
+% This table is formed of buckets, each containing at least $K_\textit{lookup}$ \er{can be 'a number of' since parallelism is apparently not linked to the size of buckets in the search table (and it should not be)} registrars, and centered on the topic hash.
+% The buckets in the search table are sorted from the farthest to the nearest to the topic hash.
+%
+% A searcher performing a service lookup progressively progresses through the table starting from the farthest bucket (\ie, containing peers with the smallest prefix to the topic hash).
+% The search process progresses in parallel
+%
+% From this bucket, the searcher selects $K_\textit{lookup}$ registrars and sends them parallel lookup requests.
+% These registrars answer with a list of peers, one for each bucket with rank equal or higher to that of the bucket they are in the table, as previously detailed for the advertise table maintenance. \er{my speculation, is this correct? This is not detailed in the text below and I am not sure we can work with only the initial copy of the routing table for low-popularity topics so the search table certainly needs to grow.}
+% The searcher waits for responses from these first $K_\textit{lookup}$ registrars and proceeds to the next bucket. \er{is there a timeout mechanism? Do we proceed to the second bucket only when we received all three $K_\textit{lookup}$ registrars responses at level 1 to move on to level 2? Or do we proceed as soon as we receive?}
+% Note that a registrar in the table is used only once: queried nodes are marked as \emph{used} in the table.
+%
+% Queries registrars return, in addition to other registrars in buckets closer to the topic hash, a set of up to $N_\textit{return}$ topic-specific advertisers they know with a valid registered ad.
+% These advertisers are collected by the querier.
+% A successful search stops when at least $N_\textit{lookup}$ different peers have been collected.\footnote{In case more than $N_\textit{lookup}$ peers were found, a random subset of $N_\textit{lookup}$ peers is drawn.}
+% The search stops unsuccessfully when either no nodes remain in any of the buckets that are not marked as used, or when the two last queries did not returned any new, unused nodes. \er{not sure if we are talking about new registrars or new advertisers here, I suppose the former?}
+% In this case, a new search table is initialized from the searchers' routing table with all registrars unmarked, and the process starts again from the furthest-away bucket.
+%
+% \er{this is the previous, unmodified text}
+% \er{the construction of the search table is unclear. I tried to guess in the text above, but I may have misunderstood.}
+%
+% To find ads, \sysname uses a process similar to the registration procedure.
+% %The goal is to find $N_\textit{lookup}$ node advertised with a specific topic.
+% %Each lookup requires a topic-specific \emph{search table} initially populated with nodes from the \emph{routing table}.
+% Each lookup requires a topic-specific \emph{search table} described in \Cref{sec:struct}.
+% The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per bucket and sends them parallel lookup requests.
+% Once it receives results from the first $K_\textit{lookup}$ selected registrars, other $K_\textit{lookup}$ registrars are selected from the following bucket with a smaller distance to the topic id.
+% The queried nodes are removed from the bucket. \er{they are in fact marked as used}
+% Searchers stop the lookup procedure when they have discovered $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the topic hash, especially for popular topics. As a result, \sysname avoids hot spots in the network and ensures fair load distribution.
+% In case all buckets have been queried without finding enough nodes, the lookup process continues starting with the furthest distance bucket again.
+% Once the lookup process is completed, the nodes are returned to the application.
+%
+% \er{I did not revise/rewrite the following text, will do when the previous will be validated.}
+%
+% Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure.
+% Searchers progressively moving towards smaller buckets near the topic hash guarantees successful discovery even for unpopular topics.
+% Each queried registrar responds with a list of $N_\textit{return}$ topic-specific advertisers the registrar knows of.
+% If the total number of topic-specific registrations in the table is larger then
+% $N_\textit{return}$, the registrar should return a random subset.
+% While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
+% the number of ads returned by a single registrar must be lower than the total
+% number of ads searchers are aiming to find $N_\textit{return} <
+% N_\textit{lookup}$. This is to diversify the sources of ads received by the searcher. This means that a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
+% %\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
+% There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$.
+% By requiring a large number of total ads to stop the search
+% ($N_\textit{lookup}$), compared with the ads returned by the registrar
+% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the topic hash, contributing to a more equal load spread.
+%
+% %However, for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
+% %In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
+% %\sr{Future work: investigate the impact of search parameters}
+%
+% %\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
+% %\michal{Consider renaming search/advertise tables into search/registration caches}
+% %\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
+% %\ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
+% %\michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
+% %\sergi{I think $N_\textit{return}$ should not be configurable since it is limited by the maximum number of nodes returned in a message which i think is 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller than a value multiple of $N_\textit{return}$}
+%

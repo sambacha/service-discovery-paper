@@ -3,51 +3,22 @@
 
 \section{Performance Evaluation}
 \label{sec:eval}
-
-%We evaluate the performance of \sysname prototype and answer the following research questions:
-%\begin{enumerate} 
-%    \item What is the overhead introduced by \sysname's register and lookup operations? %How does it compare to the current \discv system and vanilla DHT-based solutions?
-%    What is the load distribution across network participants?
-%    \item Does \sysname provide high performance for all the topics regardless of their popularity? 
-%    \item How do malicious nodes impact \sysname's performance? How difficult is it to launch eclipse and DoS attacks against the system?
-%\end{enumerate}
-
-%We evaluate a prototype of \sysname to address the following research questions:
-%\begin{enumerate} 
-%    \item What is the overhead introduced by \sysname's register and lookup operations? How does the overhead of \sysname compare to the current \discv system and vanilla DHT-based solutions?
-%    \item Does \sysname provide high performance for all the topics regardless of their popularity? What is the load distribution across network participants?
-%    \item What is the impact of malicious nodes on \sysname’s performance? How difficult is it to launch various (\eg eclipse, DoS, \etc) attacks against the system?
-%\end{enumerate}
-
-%\subsection{Evaluation Setup}
-%\para{Setup} 
-We built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
-
-We compare \sysname against the following approaches:
-\begin{enumerate}
-\item \discv is the current discovery service~\cite{discv4} of Ethereum. In \discv, the DHT is merely used to perform \emph{random walks} in the P2P network. \er{not consistent with the presentation of \discv as a collection of protocols before, see comments in intro.}
-In \discv, a node issues three lookups to random destinations using  Kademlia lookup,  and it stores encountered nodes during the random walk in a buffer. The nodes in the buffer are consumed by the upper-layer Ethereum protocols (\eg RLPx~\cite{rlpx}) to make new connections, and when the buffer is empty new lookups are initiated to three other random nodes.
-\item \altname is a traditional key/value store implementation using vanilla Kademlia DHT. 
-In this approach, peers store their ads under desired topics at the N closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy.
-\item \altnameticket is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) to regulate the storage of incoming registrations. 
-\end{enumerate}
-
-%Both \altname and \altnameticket do not make use of a \emph{registration table} to keep track of on-going registrations and new registrations are periodically issued by nodes every advertisement period.
+We implemented \sysname in \emph{Go Ethereum} (Geth) client~\cite{geth} and made it fully compliant with the Ethereum P2P protocol suite. We perform our initial testbed on a single testbed with 1000 and 20 topics.
 
 
-Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
-As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
 
-% On the other hand, t
-The topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT as discussed in \Cref{sec:background:dht}. Once its lookup operation terminates with a stable list of closest peers to the desired topic, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
+For large scale experiments we built a prototype of \sysname in PeerSim~\cite{p2p09-peersim}---a scalable P2P network simulator. % In particular, we first implemented the Ethereum DHT by extending a vanilla Kademlia implementation~\cite{peersim_kademlia} with the required changes discussed in ~\Cref{sec:background:dht}. We then built \sysname on top of the Ethereum DHT implementation.
 
-%On the other hand, the topic lookup for \altname and \altnameticket is similar to the \discv lookup.  When a node performs a lookup selects the 20 closest nodes to the topic hash from the local routing table and it sends topic query messages to the first  $\alpha=3$.
-%In the reply, queried nodes attack the known nodes for the specific topic but also known nodes to the same distance of the topic hash. 
-%The known nodes for the specific topic are stored in the lookup buffer. 
-%The known nodes with the same distance to the topic id are added to the list of 20 closest nodes,  which is reordered and keeps only the 16 closest.
-%The lookup process is ended when all 16 closest nodes are queried or when enough nodes are discovered for the queried topic, which is defined by the system parameter $N_\textit{lookup}$ 
+We compare \sysname against the following approaches. \textbf{1) \discv} described in \Cref{sec:background:discv4}. \textbf{2) \altname} is a traditional key/value store implementation using vanilla Kademlia DHT.  In this approach, peers store their ads under desired topics at the 20 closest (by DHT distance metric) nodes to the corresponding topic hashes. In \altname, registrars accept all incoming ad registrations right away (\ie with no waiting time) and use a simple Last Recently Used (LRU) as a replacement policy. This solution is currently used in InterPlanetary File System (IPFS) - the largest storage network~\cite{libp2p_kaddht}. \textbf{3) \altnameticket} is an extension of \altname. Unlike \altname, this approach uses \sysname's admission control mechanism (\Cref{sec:waitingTime}) regulating the storage of incoming registrations. 
 
-\para{Metrics} The simulator reports the following performance metrics. 
+
+%Many existing systems including the InterPlanetary File System (IPFS)---a decentralised content storage and sharing system---perform peer discovery using the \altname approach~\cite{libp2p_kaddht}. Therefore, we use \altname as a baseline solution in our experiments. 
+%As similarly done in the IPFS system, we use N=20 peers (\ie closest to the desired topic's hash) for storage of ads in both \altname and \altnameticket approaches.
+
+%The topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT (\Cref{sec:background:dht}). Once it terminates with a stable list of closest peers, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
+
+
+\para{Metrics} We report the following performance metrics. 
  \begin{itemize}
      \item \textbf{Message Overhead} - the total number of messages received by each node. 
 %We calculate separate values for both lookup and registration operations. 
@@ -59,24 +30,24 @@ Higher values mean larger strain put on each node.
  \end{itemize}
  %We calculate per-node average for the metrics above and report their standard deviation.  Note that \emph{Discovered Peers} and \emph{Discovered By} metric will have the same average vales, but will vary in standard deviation. The same applies to \emph{Placed Registrations} and \emph{Accepted Registrations}. 
  
-In the simulations, we verify the impact of the following parameters:
+We verify the impact of the following parameters:
  \begin{itemize}
-     \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records. \er{ENS records were never defined before.} We observe an average network churn of 3\% across daily crawls equal and therefore we use this value in our simulations to simulate nodes joining and leaving. 
-     \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data, as shown in \Cref{fig:ecosystem}). 
-     \item \textbf{Malicious nodes} - the number of attackers targeting the peers in the discovery system. We experiment with values ranging from 250 and 2500 nodes,  using 500 as the default value.  Each malicious node receives a distinct ID (\ie hash of its public key) generated following either uniformly at random or non-uniformly, \ie picking identifiers that are closer to the hash of the target topic than any honest node. The latter can be achieved in practice through ``brute-force'' generation of public keys until one with a suitable hash is found.
-     \item \textbf{Malicious IPs} - the number of IP addresses available to all the attackers. We set its value between 1 and 100, using 10 for the default value. In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
+     \item \textbf{Network Size} - the total number of nodes that participate in the discovery. We set the default value to 25000, as similar number of live nodes were reported by the official Ethereum crawler~\cite{discv4-dns-lists} (\Cref{fig:ecosystem}). We assign each node an IP address and an ID from the crawled ENS records~\cite{bauer2022ethereum}.% We observe an average network churn of 3\% across daily crawls equal and we use this value in our simulations to simulate nodes joining and leaving. 
+     \item \textbf{Topics} - the number of distinct applications. We set the default number of topics to 300, which is similar to the observed value by the Ethereum crawler, and also experiment with values 100 and 600. To obtain the number of peers participating in each topic, we use a Zipf distribution with exponent $1.0$ (obtained empirically by fitting the crawler data in \Cref{fig:ecosystem}). 
+     \item \textbf{\%Malicious nodes} - the percentage of attackers targeting the peers in the discovery system related to the total number of nodes participating in the topic. We experiment with values ranging from 20\% to 50\%,  using 33.3\% as default value.% Each malicious node is a different Sybil that receives a distinct ID (\ie hash of its public key) generated following a uniformly random distribution.
+     \item \textbf{\#Attackers reusing IPs} - the number of attacker nodes reusing the same IP addresses in the attack. Lower values incur increased cost for the attacker. We set its value between 50 and 1, using 5 for the default value.  In our experiments, we use hypothetical attacker IP addresses that have minimum similarity with the set of real IP addresses used by IP addresses (obtained from the crawled ENS records) in order to obtain an upper-bound on the impact of attacks. %At the time of writing this paper, 99\% of the addresses in the Ethereum network are IPv4, and therefore we use only IPv4 addresses in the simulations.
 
 %Meaning that every 25 malicious nodes will share a single, random IP address in the best case or every malicious node will use a different IP address in the worst case.  
  \end{itemize}
 
 
-Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and nodes each perform a single lookup operation uniformly spread across the simulation time.  For the \sysname and DHT-based solutions, we set the \emph{registration table} capacity to 500 to align with the memory requirements from the official Ethereum DHT implementation, and the ad expiration time is set to 15 min. % \ie every 15 min registration expires in the registrars. 
+Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and each nodes each perform a single lookup operation uniformly spread across the simulation time.  We set the \emph{registration table} capacity to 500 to align with the requirements from the official Ethereum DHT implementation and lifetime $a$ to 15 min.% \ie every 15 min registration expires in the registrars. 
 
-We set all the DHT-related parameters to the ones currently used by Ethereum DHT, \ie there are 17 buckets and up to 16 peers stored in each bucket.
-Following Ethereum Kademlia specification,  each bucket has a replacement list of 10 nodes. 
-Every 100 seconds a random bucket is checked for unresponsive nodes. 
-If there are dead nodes, these are substituted by nodes from the replacement list.  If there are not enough nodes in the replacement list,  a new random lookup is performed to discover mode nodes.
-Based on formal analysis (see \Cref{sec:analysis}), we set other \sysname parameters such as the number of registrations placed per bucket $K_\textit{register}= 3$, the occupancy exponent $P_\textit{occ} = 10$, the number of peers to contact per bucket during a topic lookup $K_\textit{lookup}=3$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. On the other hand, the total number of ads (\ie $N_\textit{lookup}$) is an application-specific parameter, which we set to 30 based on similar requirements of existing applications such as Geth.
+We set all the DHT-related parameters to the ones currently used by Ethereum DHT.%, \ie there are 17 buckets and up to 16 peers stored in each bucket.
+%Following Ethereum Kademlia specification,  each bucket has a replacement list of 10 nodes. 
+%Every 100 seconds a random bucket is checked for unresponsive nodes. 
+%If there are dead nodes, these are substituted by nodes from the replacement list.  If there are not enough nodes in the replacement list,  a new random lookup is performed to discover mode nodes.
+Based on formal analysis (see \Cref{sec:analysis}), we set other \sysname parameters such as the number of registrations placed per bucket $K_\textit{register}= 5$, the occupancy exponent $P_\textit{occ} = 10$, the number of peers to contact per bucket during a topic lookup $K_\textit{lookup}=5$, the maximum number of ads a single registrar returns in a lookup $N_\textit{return}=10$. The total number of requested ads peer lookup (\ie $N_\textit{lookup}$) is we set to 30 based on similar requirements of existing applications using Geth.
 
 %The values of these parameters were selected based on extensive simulations that we skip due to the space limitation but included in our Github repository~\cite{our_repo}. 
 
@@ -85,107 +56,44 @@ Based on formal analysis (see \Cref{sec:analysis}), we set other \sysname parame
 \subsection{Evaluation Results}
 
 \para{Network performance}
-In the rest of this section, we use violin plots for a compact illustration of both the distribution and the density of data points for each performance metric. For each plot, we limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
-Above a violin, we display the maximum observed values (vertically), if the range of the data points exceed the range of the y axis. 
+In the rest of this section, we use violin plots~\cite{violin-plots} for a compact illustration of both the distribution and the density of data points. We limit the shape of the violins within the range of the observed data and set the widths of each data point in the violin proportional to the count of observations at that data point. 
+We display the maximum observed values (in red), if the range of the data points exceed the range of the y axis. 
 
-%In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe the distribution of the total number of messages received per node related to the registration process, \ie registrations requests and replies during simulation time,  for different network sizes and different number of topics in the network.
-%Both figures show no values for \discv protocol,  since  \discv nodes do not receive any registration message because they do not participate to any topic-based registration process.   \discv can only find nodes doing  \emph{random crawls} in the DHT  without being able to do topic specific queries. 
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=\linewidth]{results/split/topic_registrationMsgs.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_registrationMsgs.eps}
-%\caption{Y-axis: Distribution of registration related messages received by peers for varying number of topics for the simulation time.}
-%\label{fig:regMsgsPerTopic}
-%\end{figure}
-
-%In~\Cref{fig:regMsgsPerTopic}~and~\Cref{fig:regMsgsPerSize},  we can observe while most of \sysname nodes receive around 500 registration messages,  with just a few receiving up to 5k messages in the worst case,  \altname solutions are more spread between 0 and 1000 received messages, but with some peaks up to 43k messages,  an order of magnitude higher than \sysname.
-%This is caused by the fact that all nodes in \altname solutions try to put registrations starting by the closest nodes to the topic hash,  creating an uneven distribution  towards these nodes. 
-%In \sysname, the use of \emph{advertise table} for advertisement placement provides a similar effect. 
-%However this effect is diminished by the use of waiting times to regulate advertisement placement.  The increase of waiting time in the more congested nodes, causes that nodes starts more registrations in less congested nodes limiting the number of registrations placed on nodes close to topic hash.
-%This effect is not seen when using \altname combined with tickets. 
-%This is due to the fact that \altname is not using a \emph{advertise table} to keep track of ongoing registrations.  Because of this,  advertisers start new registrations towards the topic hash every advertisement period, even if they did not succeed in the previous attempts due to high waiting times.
-%Therefore using tickets in the \altnameticket, maybe useful to increase the diversity in the \emph{advertise tables} but not for load balancing between nodes.
-%
-%When increasing the number of topics in the network (\Cref{fig:regMsgsPerTopic}), it is not observed an increase of registration messages for any of the different protocols. 
-%However,  when increasing the number of nodes participating in the network (\Cref{fig:regMsgsPerSize}),  also registrations messages received per nodes are increased, as expected.
-%But this increase is very different between \sysname and \altname protocols.
-%\sr{tbc with specific values}
-
-%\begin{figure}[!h]
-%\centering
-%\includegraphics[width=\linewidth]{results/split/size_registrationMsgs.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_registrationMsgs.eps}
-%\caption{Y-axis: Distribution of registration related messages received by peers for different network size for the simulation time.}
-%\label{fig:regMsgsPerSize}
-%\end{figure}
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=\linewidth]{results/split/topic_lookupMsgs.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_lookupMsgs.eps}
-%\caption{Y-axis: Distribution of lookup messages received by peers for varying number of topics for the simulation time.}
-%\label{fig:lookupMsgPerTopic}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\centering
-%\includegraphics[width=\linewidth]{results/split/size_lookupMsgs.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_lookupMsgs.eps}
-%\caption{Y-axis: Distribution of lookup messages received by peers for different network size for the simulation time.}
-%\label{fig:lookupMsgPerSize}
-%\end{figure}
-
-%In~\Cref{fig:lookupMsgPerTopic}~and~\Cref{fig:lookupMsgPerSize}, we observe the number of messages related to the lookup process, \ie topic queries and replies for \sysname, \altname and \altnameticket, and kademlia find/response messages for \discv. We evaluated using  different network sizes and different number of topics in the network. 
-%There is a single lookup in the simulation per node, and the $N_\textit{lookup}$ parameter used is equal to 30.  Therefore nodes stop the lookup process when found 30 different nodes in the network for the intended topic.
-%In the figures we can observe there is a big different between topic-aware protocols (\sysname, \altname and \altnameticket) and \discv. 
-%
-%\sr{why there is an increase for \discv with the number of nodes in the simulation and not the number of topics??? shouldn't be the opposite? I guess is because even if there are topics with less nodes there is just a single lookup with the same nodes contacted}
-%\sr{why the peak is bigger for DHT for 600 than 300? Is it because of topic hash ids colliding?}
 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_totalMsg.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_totalMsg.eps}
-\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different network size during a single advertisement period.}
+\caption{Message overhead for different network size during a single advertisement period.}
 \label{fig:msgsPerSize}
-\vspace{-0.15in}
+\vspace{-0.05in}
 \end{figure}
 
+	
 \begin{figure}
 \centering
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_totalMsg.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_totalMsg.eps}
-\caption{Y-axis: Distribution of discovery related (including registration and lookup) messages received by peers for different number of topics during a single advertisement period.}
+\caption{Message overhead for different number of topics during a single advertisement period.}
 \label{fig:msgsPerTopic}
 \vspace{-0.15in}
 \end{figure}
 
-In~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic}, we present the total number of received messages (\ie overhead) received by the nodes as part of registration and lookup processes. For \discv, only lookups generate messages as there is no registration process in the protocol.
-We observe the total number of messages during the simulation but averaged over ad expiration periods (\ie 15 minutes long). Therefore, the message counts relate to a single lookup followed by a single registration process per node before advertisements expire and are refreshed again. \er{consider revising this paragraph for clarity}
+~\Cref{fig:msgsPerSize}~and~\Cref{fig:msgsPerTopic} present \emph{Message Overhead} for the registration and lookup processes. For \discv, only lookups generate messages as there is no registration process in the protocol.
+DHT-based protocols introduce low overhead but overload nodes close to popular topic IDs impacting fairness.
+The \discv protocol has a better load distribution between nodes since the destination of lookup messages is chosen randomly. However, its message overhead is the highest among all protocols. 
+\sysname introduces average overhead but provides more equal load distribution compared to DHT-based protocols.
 
-We observe that \altname protocols have poor fairness and scalability since the number of messages received by the nodes close to each topic hash increases linearly both 
-% with increase 
-in the number of nodes and topics. 
-The \discv protocol has a better load distribution between nodes. since the destination of lookup messages is chosen randomly. However, the average load across nodes in \discv is the highest among all protocols, because nodes have to query a large number of peers during a lookup before they can discover sufficient number of topic-specific peers.
-%, increasing the overhead during lookup.
-\sysname, in comparison, provides significantly lower overhead.
-% than the other protocols. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\subsection{Lookup performance}
 
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_topic_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_discovered.eps}
 \vspace{-0.05in}
-\caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different number of topics.}
+\caption{Discovered peers for different number of topics.}
 \label{fig:discoveredPerTopic}
-\vspace{-0.20in}
 \end{figure}
 
-\Cref{fig:discoveredPerTopic} presents the number of peers discovered during a single lookup operation with an increasing number of topics in the network. We observe that, in \discv, nodes discover a much lower number of application-specific peers per operation, while \sysname and DHT-based solutions efficiently discover the required (30) amount of peers to terminate the lookup. In rare cases, \sysname and DHT-based solutions do not discover the required amount of peers that are caused by unpopular topics with close to 30 participants. 
-DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery performance since searchers directly query the nodes, close to their target topic, where registrations from all application-specific peers are stored. Finally, we observe that \sysname achieves very close lookup performance to DHT protocols. 
+\Cref{fig:discoveredPerTopic} presents \emph{Discovered Peers} during a single lookup operation for an increasing number of topics. The random walk of \discv discovers relatively low number of results per operation ($< 5$). The performance decreases with an increasing number of topics in the network. The targeted approach of \sysname and the DHT-based solutions discovers the required number of 30 peers. In rare cases, those protocols do not discover the required amount of peers. It is caused by unpopular topics the total number of participants close to 30. 
 
 %\michal{regarding \Cref{fig:discoveredPerTopic}, it seems that for 300 and 600 topics, we discover slightly less peers on average than the DHT solutions. Why is that? Those results should be for the same topic distributions across protocols, right?}
 %\sergi{I think is normal and is caused by the fact that dht is going straight to nodes with most of the registrations so, specially with topics with very few nodes, they can find nodes faster, but with the tradeoff of being eclipsed very easy.}
@@ -193,13 +101,11 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
-\caption{Y-axis: Distribution of the number of peers discovered during lookup operation for different network size.}
+\caption{Discovered peers for different network size.}
 \label{fig:discoveredPerSize}
-\vspace{-0.20in}
 \end{figure}
 
-\Cref{fig:discoveredPerSize} presents the number of peers discovered during a single lookup operation with an increasing network size. With a fixed amount of topics, each application-specific network grows and for all the protocols, it is easier to find the required amount of nodes.
- However, \discv again suffers from poor performance for all the investigated network sizes. 
+\Cref{fig:discoveredPerSize} presents \emph{Discovered Peers} during a single lookup operation with an increasing network size. With a fixed number of topics, each application-specific network grows and it is easier to find the required amount of nodes. However, \discv again suffers from poor performance for all the investigated network sizes due to its random movement in the network. 
 
 \iffalse %Onur: removing these for now
 \begin{figure}
@@ -207,7 +113,6 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 %\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
 \caption{Y-axis: Distribution of the number of times a peer is discovered by others for number of topics in the network for the simulation time.}
 \label{fig:discoveredByPerTopic}
-\vspace{-0.20in}
 \end{figure}
 
 \begin{figure}[!h]
@@ -217,54 +122,18 @@ DHT-based solutions, \altname and \altnameticket, demonstrate the best discovery
 \label{fig:efficiency_size}
 \end{figure}
 \fi 
-%\subsection{Registrations}
-%
-%
-%\begin{figure}
-%\includegraphics[width=\linewidth]{results/split/topic_regsPlaced.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
-%\caption{Y-axis: .}
-%\label{fig:regsPlacedPerTopic}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/split/size_regsPlaced.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
-%\caption{Y-axis: .}
-%\label{fig:regsPlacedPerSize}
-%\end{figure}
-%
-%\begin{figure}
-%\includegraphics[width=\linewidth]{results/split/topic_regsAccepted.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_topic_wasDiscovered.eps}
-%\caption{Y-axis: .}
-%\label{fig:regsAcceptedTopic}
-%\end{figure}
-%
-%\begin{figure}[!h]
-%\includegraphics[width=\linewidth]{results/split/size_regsAccepted.eps}
-%%\includegraphics[width=\linewidth]{results/efficiency/violin_size_wasDiscovered.eps}
-%\caption{Y-axis: .}
-%\label{fig:regsAcceptedSize}
-%\end{figure}
 
-%	\subsection{Eclipse attack resistance}
-%We evaluate \sysname resistance to two groups of malicious attacks:
-%\begin{itemize}
-%    \item \textbf{Eclipse Attack} - the attacker tries to make a target node discover and connect to peers under the attacker's control. The attack succeeds when all the inbound and outbound connections of the target node are established with malicious peers. 
-%    \item \textbf{Denial of Service (DoS)} - the attacker tries to disturb protocol operations. The attack succeeds when service discovery is made impossible or significantly delayed for a group of benign nodes.  
-%\end{itemize}
-%The attacker may use a large but finite number of malicious nodes. Both attacks may target a single node or a group of nodes (\eg nodes participating in a specific application). 
-
-%\para{Eclipse Attack}
 
 \para{Eclipse attack resistance}
-We evaluate \sysname resistance against eclipse attacks where an attacker simultaneously behaves as a malicious DHT peer, a malicious registrar and a spamming advertiser (see \Cref{sec:threat}). 
+We evaluate \sysname resistance against eclipse attacks where an attacker simultaneously behaves as a malicious DHT peer, a malicious registrar and a spamming advertiser (see \Cref{sec:threat}). We consider a lookup eclipse when peers obtained are malicious. We assume a single entity controlling with limited pool of IP addresses coordinating all the malicious nodes. 
+Malicious nodes register ads for the targeted topic at a rate 10 times higher than that of honest nodes. Malicious nodes return other malicious peers in response to both DHT routing and topic queries. 
 
-In the attack scenarios, we assume a single entity controlling a pool of Sybils that have access to a limited pool of IP addresses. Malicious nodes register ads for the \er{a?} target topic at a rate 10 times higher than that of honest nodes. Malicious nodes return other malicious peers in response to both DHT routing and topic queries. The objective of the attackers is to eclipse as many peers as possible by taking over their (outbound) connections.
+%The objective of the attackers is to eclipse as many peers as possible by taking over their (outbound) connections.
+%\discv malicious nodes do not do any registrations and just act as a malicious DHT peer.
 
-The simulations run for one hour and we report results from a single lookup operation per node for the topic it participates to. On top of each violin plot, we specify the \emph{percentage of eclipsed (benign) nodes after a lookup operation}; that is, the percentage of lookups where all the peers obtained are malicious. We assume that the attacker identifiers are uniformly distributed in the address space. We omit the results for scenarios with non-uniform Sybil ID distributions. In that case, the \altname and \altnameticket suffer from $100\%$ eclipse rates. \er{we should probably define eclipse rate more formally before using it, it is a central metric.} With as little as $N_{malicious} = 30$ nodes, an adversary can intercept all the lookup queries for the target topic. At the same time, \sysname is shown to achieve lower eclipse rates under a non-uniform Sybil ID distribution (~\Cref{sec:analysis}). The results below represent the worst-case scenario for \sysname and the best-case scenario for protocols we compare against. 
-We evaluate the eclipse attacks targeting two specific topics: the most popular (3978 honest nodes) and the least popular (33 honest nodes) topics.
+%The simulations run for one hour and we report results from a single lookup operation per node for the topic it participates to. 
+On top of each violin plot, we specify the \emph{percentage of eclipsed (benign) nodes after a lookup operation}. We assume that the attacker identifiers are uniformly distributed in the address space. We omit the results for scenarios with non-uniform Sybil ID distributions. In that case, the \altname and \altnameticket suffer from $100\%$ eclipse rates. when the attacker places 20 malicious nodes close to a target topic. At the same time, \sysname is shown to achieve lower eclipse rates under a non-uniform Sybil ID distribution (~\Cref{sec:analysis}). The results below represent the worst-case scenario for \sysname and the best-case scenario for protocols we compare against. 
+We evaluate the eclipse attacks targeting an average popular topic (approx.  500 nodes participating in the topic). 
 %We evaluated the attacks for the most popular and least popular 
 
 
@@ -299,41 +168,59 @@ We evaluate the eclipse attacks targeting two specific topics: the most popular 
 %\label{fig:eclipse_distribution_t299}
 %\end{figure}
 
-\Cref{fig:eclipse_evil_t0} and \Cref{fig:eclipse_evil_t299} present the percentage of malicious nodes in the lookup results and the percentage of eclipsed nodes for the most and the least popular topic, respectively.
+\Cref{fig:eclipse_evil} presents the percentage of malicious nodes discovered during a single lookup.
+The number of malicious node is expressed as a percentage of the total number of system participants. 
 % In both figures, Sybil nodes use a pool of 100 IP addresses, and we observe the impact of Sybil size on the eclipse resistance of all four mechanisms. 
-In \Cref{fig:eclipse_evil_t0}, \discv and \sysname achieve close to a $0$ eclipse rate, even with a high number of malicious nodes. On the other hand, both \altname and \altnameticket have significantly worse performance with respectively 26.7\% and 25.9\% eclipses \er{eclipse rates?} when there are 1000 attackers.
-In \Cref{fig:eclipse_evil_t299}, 
-when Sybils attack the least popular topic, we observe \sysname to be the most resistant to eclipsing as can be seen in \Cref{fig:eclipse_evil_t299}. \sysname's high resistance to eclipsing even for the least popular topic with a large Sybil presence highlights the effectiveness of both the waiting time mechanism and distributing the lookup and registration operations across different buckets.
+\sysname achieves close to a $0\%$ eclipse rate, even with a high number of malicious nodes and is the most resistant protocol.
+The admission control mechanism combined with the ad placement strategy form an efficient protection even against attacker controlling $50\%$ of the nodes.
+%It highlights the effectiveness of both the waiting time mechanism and distributing the lookup and registration operations across different buckets.
+Surprisingly, the random approach of \discv performs worse than \sysname, reaching up to $17.8\%$ eclipse rate. \discv requires querying much more nodes to obtain the required number of peers, and therefore suffers from higher chance of querying malicious nodes.
+\altname has  significantly the worse performance, reaching up to 59.7\% eclipse rate.
+Thanks to our admission mechanism, \altnameticket outperforms both \discv and \altname resulting in up to $6.5\%$ eclipse rate.
  
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the most popular topic (3978 nodes).}
-\label{fig:eclipse_evil_t0}
-\end{figure}
+% \vspace{-0.20in}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t0.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the most popular topic (3978 nodes).}
+%\label{fig:eclipse_evil_t0}
+%\end{figure}
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for a different number of Sybil nodes used in the attack when attacking the least popular topic (33 nodes).}
-\label{fig:eclipse_evil_t299}
+\includegraphics[width=\linewidth]{results/security/violin_percentEvil_percentageMaliciousDiscovered_t10.eps}
+\caption{Lookup eclipse rate for a different number of Sybil nodes used in the attack.}
+\label{fig:eclipse_evil}
 \end{figure}
 
-In \Cref{fig:eclipse_sybil_t0} and \Cref{fig:eclipse_sybil_t299}, we again illustrate the percentage of malicious nodes in the lookup results and the percentage of eclipsed nodes for the most and the least popular topic, respectively. In these figures, we vary the size of the IP address pool used by the adversary. We observe that both \sysname and \discv achieve close to no eclipsing, while in \altname and \altnameticket at least 30\% of nodes are eclipsed in all cases.
-When attacking the least popular topic using 100 IPs, the percentage of eclipsed nodes is similar for all four mechanisms. However, \sysname performs significantly better for a lower number of IP addresses under the control of the adversary.
-More specifically, we observe that, when using \sysname, only 5.9\% of nodes are eclipsed when the adversary has a single IP address for its Sybils, which goes up to 41.2\% when 10 IP addresses are used, as opposed to over 70\% of nodes being eclipsed for \discv in all cases.  
+\Cref{fig:eclipse_sybil} illustrates the percentage of malicious nodes in the lookup results and the lookup eclipse rate. We vary the size of the IP address pool used by the adversary. Value $1$ means that each malicious node has a unique IP address (resulting in high monetary cost for the attacker). An increasing number of IPs used by the attacker makes \sysname more likely to get eclipsed as the the attacker IP score in the waiting function will be similar values received by honest nodes.
+Even for the worst case scenario, \sysname achieves the eclipse rate close to $0\%$ to $0.5\%$.
+%In comparison, \discv, \altname and \altnameticket are outperformed by \sysname.
+%\altname has the worst performance,  followed by \discv with no affectation by the increase of number of IPs used,  since it has no protection agains reusing IP addresses in the attack.
+\altname and \discv suffer from significantly higher but remain unaffected by the increasing number of the IP addresses used. Including the admission protocol, allows \altnameticket to outperform the other baseline protocol. However, the regular, DHT-based placement policy is more susceptible to eclipsing compared to \sysname.
+
+%\discv and \altname, with a number of eclipses from $2.8\%$ to $11.4\%$. 
+%The number of eclipses are increased for \altnameticket when increasing the number of IPs used in the attack,  since the waiting time admission mechanism limits the number of Sybils accepted in the registration when reusing IPs.
 
 \begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the most popular topic (3978 nodes).}
-\label{fig:eclipse_sybil_t0}
+\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t10.eps}
+\caption{Lookup eclipse rate for a different number of IP addresses used by Sybil nodes.}
+\label{fig:eclipse_sybil}
 \end{figure}
 
-
-
-\begin{figure}[!h]
-\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
-\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the least popular topic (33 nodes).}
-\label{fig:eclipse_sybil_t299}
-\end{figure}
+%\vspace{-0.20in}
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t0.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the most popular topic (3978 nodes).}
+%\label{fig:eclipse_sybil_t0}
+%\end{figure}
+%
+%
+%\begin{figure}[!h]
+%\includegraphics[width=\linewidth]{results/security/violin_sybilSize_percentageMaliciousDiscovered_t299.eps}
+%\caption{Y-axis: Malicious nodes discovered and percentage eclipsed nodes for different numbers of IP addresses used in the attack when attacking the least popular topic (33 nodes).}
+%\label{fig:eclipse_sybil_t299}
+%\end{figure}
 
 
 
