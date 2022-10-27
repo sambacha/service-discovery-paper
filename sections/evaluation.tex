@@ -66,6 +66,8 @@ This mechanism allows advertisements of less popular topics to get a fair share 
 \label{fig:op_time}
 \vspace{-0.15in}
 \end{figure}
+Finally, we investigate the processing time required by each type of request across 1000 runs (\Cref{fig:op_time}). We consider cases with an empty and full ad cache. Topic query performed on an empty ad cache is the fastest operation as it does not require processing the ad cache content. Topic query performed on a full ad cache requires $66\mu s$. The register topic operation requires $58\mu s$ on average and is not heavily influenced by the increasing number of the stored ads.
+For all the operations, we observe consistent processing time across multiple runs. 
 
 \subsection{Simulations}
 
