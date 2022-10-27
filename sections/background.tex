@@ -21,8 +21,8 @@ All nodes in the Ethereum ecosystem participate in a global distributed hash tab
 A DHT is a structured overlay network allowing lookup operations, \ie locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}~\cite{chord,rowstron2001pastry}. 
 Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
 Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT.
-The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} nodes to $i$ in that space, where $k$ is a system parameter.
-This distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie, the length of the differing suffix in bits).
+The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} (according to a distance metric) nodes to $i$ in that space, where $k$ is a system parameter.
+The distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie, the length of the differing suffix in bits).
 
 Each node $X$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
 The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
