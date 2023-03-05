@@ -47,7 +47,7 @@ The advertiser waits for the indicated time and attempts to register again. The 
 \end{equation}
 All registration requests outside the registration window are ignored by the advertiser. The registrar calculates the registration windows based on the content of the ticket. $\delta t_\textit{window}$ should be chosen to accommodate for the maximum delay between the advertiser and the registrar. The mechanism prevents an attacker from gathering many tickets, accumulating long waiting times (see below) and submitting the tickets all at once to overwhelm the registrar. 
 
-The advertiser calculates a new waiting time, based on the current content of
+The advertiser \er{the registrar?} calculates a new waiting time, based on the current content of
 the ad cache, every time it receives a registration request (with or without
 a ticket). The waiting time in the ticket is used only to calculate the
 registration windows and prevent advertisers from trying to register
@@ -55,9 +55,13 @@ continuously. The ticket also allows the calculation of an \emph{accumulated} wa
 \begin{equation}
     t_\textit{cumulative} = \textit{now} - t_\textit{init}
 \end{equation}
-An ad is admitted if, and only if, the accumulated waiting time is equal to or larger than the calculated waiting time $t_\textit{cumulative} \ge w$\footnote{Note that a registration request without a ticket may be admitted directly when the calculated waiting time equals $w=0$.}. For registration requests without a ticket $t_\textit{cumulative} = 0$. An advertiser that misses its registration window (as specified by the most recent ticket), loses all its cumulative waiting time and must attempt to re-register without a ticket. Once an ad is admitted, the registrar confirms the registration to the advertiser.
+An ad is admitted if, and only if, the accumulated waiting time is equal to or larger than the calculated waiting time $t_\textit{cumulative} \ge w$\footnote{Note that a registration request without a ticket may be admitted directly when the calculated waiting time equals $w=0$.}. 
+\er{I am not sure to understand anymore why we need to define $w$? Is it different than $t_\textit{waiting}$?}
+For registration requests without a ticket $t_\textit{cumulative} = 0$. An advertiser that misses its registration window (as specified by the most recent ticket), loses all its cumulative waiting time and must attempt to re-register without a ticket. Once an ad is admitted, the registrar confirms the registration to the advertiser.
 
-If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{waiting}$, the registrar issues a new ticket and the advertiser repeats the whole procedure. With consecutive registration attempts, advertisers increase their cumulative waiting time $t_\textit{cumulative}$ and eventually will be admitted. 
+If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{waiting}$, the registrar issues a new ticket and the advertiser repeats the whole procedure.
+\er{is there a rationale for being nice to }
+With consecutive registration attempts, advertisers increase their cumulative waiting time $t_\textit{cumulative}$ and eventually will be admitted. 
 
 
 \begin{figure}

@@ -61,6 +61,8 @@ This mechanism allows advertisements of less popular topics to get a fair share 
 \vspace{-0.15in}
 \end{figure}
 
+\er{Figure~\ref{fig:testbed_waiting_time} is not reference in the text}
+
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{results/testbed/op_time.pdf}
@@ -170,9 +172,11 @@ The \discv protocol has a better load distribution between nodes since the desti
 \begin{figure}[!h]
 \includegraphics[width=0.470\textwidth]{results/no_split/violin_size_discovered.eps}
 %\includegraphics[width=\linewidth]{results/efficiency/violin_size_discovered.eps}
-\caption{Discovered peers for different network size.}
+\caption{Discovered peers for different network sizes.}
 \label{fig:discoveredPerSize}
 \end{figure}
+
+\er{some of the plots still mention TOPDISC instead of discv5}
 
 \Cref{fig:discoveredPerSize} presents \emph{Discovered Peers} during a single lookup operation with an increasing network size. With a fixed number of topics, each application-specific network grows and it is easier to find the required amount of nodes. However, \discv again suffers from poor performance for all the investigated network sizes due to its random movement in the network. 
 
