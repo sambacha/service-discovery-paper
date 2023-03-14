@@ -80,3 +80,130 @@ An advertiser gives up and stops the registration process with a registrar when 
 %\michal{Is the below true? Shouldn't we try to register at the same node?}
 %\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
 Similarly, after the expiration of a previously placed ad, the registrar is removed from the advertise table and the process is restarted with a new node picked from the local route table.%\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
+
+\begin{algorithm}[]%
+    \caption{%
+        Admission algorithm run by registrars.
+    }%
+    \label{alg:registrar_register}%
+    \begin{algorithmic}[1]%
+        \footnotesize%
+        \Procedure{Register}{ad}
+            \State $\algvar{t_{wait}} \gets \Call{CalculateWaitingTime}{ad}$
+            \If{\algvar{ad.ticket.empty()}}
+                \State $\algvar{t_{remaining}} \gets \algvar{t_{wait}}$
+                \State $\algvar{response.ticket.init\_time} \gets \Call{now}$
+            \Else
+                \State $ \algvar{assert(ad.ticket.hasValidSignature ())} $
+                \State $ \algvar{assert(ad.notInAdCache ())} $
+                \State $\algvar{t_{scheduled}} \gets \algvar{ad.ticket.last\_time} + \algvar{ad.ticket.wait\_for}$
+                \State $ \algvar{assert}(\algvar{t_{scheduled}} \le \Call{now}{ } \le \algvar{t_{scheduled}} + \delta t) $
+                \State $\algvar{t_{remaining}} \gets \algvar{t_{wait}}  - (\Call{now}{ } - \algvar{ad.ticket.init})$
+            \EndIf
+
+            \If{$\algvar{t_{remaining}} \le 0$}
+                \State $\algvar{ad\_cache.add}({\algvar{ad}})$
+                \State $\algvar{response.status} \gets \algvar{Confirmed}$
+            \Else
+                \State $\algvar{response.status} \gets \algvar{Wait}$
+                \State $\algvar{response.ticket.wait\_for} \gets \algvar{t_{remaining}}$
+                \State $\algvar{response.ticket.last\_time} \gets \Call{now}{ }$
+                \State $\Call{sign}{\algvar{response.ticket}}$
+            \EndIf
+            \State $\algvar{response.neighbors} \gets \textit{closest peers to } \algvar{ad.topic}$
+            \State \Return $\algvar{response}$
+        \EndProcedure
+    \end{algorithmic}%
+\end{algorithm}%\
+
+\begin{algorithm}[]%
+    \caption{%
+        Lookup response algorithm run by registrars.
+    }%
+    \label{alg:registrar_register}%
+    \begin{algorithmic}[1]%
+        \footnotesize%
+        \Procedure{LookupResponse}{ad}
+            \State $\algvar{response.peers} \gets \algvar{ad\_cache.getPeers}(\algvar{ad.topic})$
+            \State $\algvar{response.neighbors} \gets \textit{closest peers to } \algvar{ad.topic}$
+            \State \Return $\algvar{response}$
+        \EndProcedure
+    \end{algorithmic}%
+\end{algorithm}%\
+
+
+\begin{algorithm}[]%
+    \caption{%
+        Advertisement algorithm run by advertisers.
+    }%
+    \label{alg:advertiser_register}%
+    \begin{algorithmic}[1]%
+         \footnotesize
+        \State $\algvar{regTable} \gets  \textsc{Map}\left \langle bucket;\textsc{list}\langle peers \rangle \right \rangle$
+        \item[]
+        \Procedure{Advertise}{topic}
+            \State $\algvar{regTable.initFromRoutingTables()}$
+            \For{$\algvar{bucket}$ in $\algvar{regTable}$}
+                \If{$\algvar{regTable[bucket].size} < K_{register}$}
+                    \State $\algvar{registrar} \gets \algvar{bucket.getRandomNode()}$
+                    \State $\algvar{regTable[bucket].add}(\algvar{registrar})$
+                    \EndIf
+                
+                \State $\algvar{ad.topic} \gets \algvar{topic}$
+                \State $\algvar{ad.ip} \gets \algvar{myIP}$
+
+                \State $\Call{AdvertiseSingle}{registrar, ad}$
+            \EndFor
+        \EndProcedure
+        \item[]
+        \Procedure{AdvertiseSingle}{registrar, ad}
+            \While{True}
+                \State $\algvar{response} \gets \algvar{registrar.Register(ad)}$
+                \If{$\algvar{response.status} = \algvar{Confirmed}$}
+                    \State $\Call{sleep}{a}$
+                \ElsIf{$\algvar{response.status} = \algvar{Wait}$}
+                    \State $\Call{sleep}{\algvar{response.ticket.wait\_for}}$
+                    \State $\algvar{ad.ticket} \gets \algvar{response.ticket}$
+                \EndIf
+            \EndWhile
+
+        \EndProcedure
+    \end{algorithmic}%
+\end{algorithm}%\
+
+
+\begin{algorithm}[]%
+    \caption{%
+        Lookup algorithm run by searchers.
+    }%
+    \label{alg:lookup}%
+    \begin{algorithmic}[1]%
+         \footnotesize
+        \State $\algvar{lookupTable} \gets  \textsc{Map}\left \langle bucket;\textsc{list}\langle peers \rangle \right \rangle$
+        \item[]
+        \Procedure{Lookup}{topic}
+            \State $\algvar{lookupTable.initFromRoutingTables()}$
+            \State $\algvar{foundPeers} \gets  \textsc{Set}\left \langle peers\right \rangle$
+            \For{$\algvar{bucket}$ in $\algvar{lookupTable}$}
+                \For{$\algvar{i}$ in $\algvar{range(0, K_{lookup})}$}
+                    \State $\algvar{peer} \gets \algvar{bucket.getRandomNode()}$
+                    \State $\algvar{response} \gets \algvar{peer.GetAds(topic)}$
+                    \State $\algvar{lookupTable.add}(\algvar{response.neighbors})$
+                    \State $\algvar{foundPeers.add}(\algvar{response.peers})$
+                    \If{$\algvar{foundPeers.size} \ge N_{lookup}$}
+                        \State \Return $\algvar{foundPeers}$
+                    \EndIf
+                \EndFor
+            \EndFor
+            \State \Return $\algvar{foundPeers}$
+        \EndProcedure
+    \end{algorithmic}%
+\end{algorithm}%\
+
+
+%lookup
+%while not enough peers found
+% for every bucket in the lookup table
+% for i in 1 to K_lookup
+% send a lookup request to a random node in the bucket
+% add to peers_found
