@@ -31,6 +31,8 @@ Each ticket contains:
     \item Waiting time - the waiting time calculated by the advertiser for the ad, $t_\textit{waiting}$.
     % We describe the details of the waiting time calculations in \Cref{sec:waitingTime}. \er{already said}
 \end{itemize}
+\mk{We also need $t_\textit{last}$ here IMO}
+\mk{In the algorithms ticket is a part of an ad, while it should be the other way around (The ad must be signed as well)}
 
 % The tickets are digitally signed by the issuing registrar. \er{should we give more details here? What is the purpose? Do we assume the registrar knows the public key of the advertiser, always, so it can check this signature?}\mk{It was actually a mistake (now corrected). The ticket are signed by registrars (not advertisers). The registrars issues the ticket to the advertiser and signs it so that when the advertisers comes back, the registrar can verify the integrity of the ticket. It's kind of explained later, so not sure whether we should include more info here.}
 
@@ -47,7 +49,7 @@ The advertiser waits for the indicated time and attempts to register again. The 
 \end{equation}
 All registration requests outside the registration window are ignored by the advertiser. The registrar calculates the registration windows based on the content of the ticket. $\delta t_\textit{window}$ should be chosen to accommodate for the maximum delay between the advertiser and the registrar. The mechanism prevents an attacker from gathering many tickets, accumulating long waiting times (see below) and submitting the tickets all at once to overwhelm the registrar. 
 
-The advertiser \er{the registrar?} calculates a new waiting time, based on the current content of
+The registrar calculates a new waiting time, based on the current content of
 the ad cache, every time it receives a registration request (with or without
 a ticket). The waiting time in the ticket is used only to calculate the
 registration windows and prevent advertisers from trying to register

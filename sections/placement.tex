@@ -186,6 +186,7 @@ The search is unsuccessful when either no unmarked nodes remain in any of the bu
 In this case, the whole process restarts.
 
 \mypara{Analysis}
+\mk{Probably not a good place for the analysis here - should be in the analysis section}
 The first bucket ($b_0$) covers the largest fraction of the key space as it corresponds to peers with no common prefix to the topic ID (\ie, it matches 50\% of all the registrars).
 For an attacker, placing malicious registrars in this fraction of the key space in order to eclipse a service discovery process would require considerable resources.
 Subsequent buckets cover smaller (halved for each increased prefix length) fractions of the key space, increasing the attacker opportunities to place Sybils but also increasing the success rate of the discovery process.

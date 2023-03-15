@@ -4,6 +4,40 @@
 \section{System and threat models}
 \label{sec:model}
 
+\begin{table}
+    \caption{Notation}
+    \label{tab:notation}
+\begin{center}
+    \begin{tabular}{ | l | p{8cm} |}
+      \hline
+        $N$ & network size \hl{Consider changing to all nodes so that $n \in N$} \\ \hline
+        $k$ & number of peers holding a key in the DHT (from the background section) \hl{not sure we need it - it's only in the background and we can explain everything by finding just 1 closest peer to the key} \\ \hline
+        $X$ & a node (from the background section) \\ \hline
+        $n$ & \hl{a node (from the 4.1)} \\ \hline
+        $n$ & total size of the ad cache (Sec. 5.2) \hl{a clash with node} \\ \hline
+        $p$ & peer (section 4.1) \\ \hline
+        $T$ & Table (section 4.1) \\ \hline
+        $b_i$& $i$-th bucket (section 4.1) \hl{TODO: add key} \\ \hline
+        $\alpha$ & number of concurrent routing operations \\ \hline
+        $K_{\textit{register}}$ & number of ads placed per bucket\\ \hline
+        $K_{\textit{lookup}}$ & \hl{It's weirdly defined in Sec. 4.4}: search process progresses using maximum $K_{\textit{lookup}}$  parallel requests, and issuing requests towards up to $K_{\textit{lookup}}$  peers per bucket.\\ \hline
+        $a$ & ad lifetime  (Sec. 4.3)\\ \hline
+        $N_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does} \\ \hline
+        $N_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \\ \hline
+        $t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
+        $t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
+        $\delta t_{\textit{window}}$ & registration window \hl{we probably don't need both $\delta$ and "window"} \\ \hline
+        $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+\mk{TODO: add notation for number of malicious nodes, number of malicious IPs etc.,}
+\mk{change bucket definition to add the target key (can be useful to define advertise tables etc. if we introduce them in the background \eg $b_i(key)$). We also often indicate the farthest buckets - we could simply use $b_0$}
+\mk{Put macros for the notation}
+\mk{We need a notation for an ad - at the end of Sec. 5.2 we just use "Ad".}
+
+
 In this section, we present our network and threat models as well as the target properties of \sysname. 
 
 \subsection{System model}
@@ -59,6 +93,7 @@ Maintaining nodes in the DHT requires infrastructure resources (public IP addres
 Specifically, we assume that it is easier for an attacker to generate similar IP addresses (\ie within a single subnet) than it is to control many diverse IP addresses (with different prefixes).
 We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in \Cref{sec:eval}.
 
+\mk{We can probably remove those and mention those problems when introducing our system.}
 Through a literature review~\cite{chen2020survey, henningsen2019eclipsing} we collected a list of malicious behaviors that an attacker can use to disrupt a DHT-based service discovery protocol:
 \begin{itemize}
     \item \textbf{Malicious DHT Peer}: DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to such requests, an attacker only returns other malicious nodes, in order to hijack the process of DHT traversal by honest nodes. \er{this seems contradictory with the fact that we wrote two paragraphs ago that we assumed the DHT to be secured against Sybils. Should we change DHT routing to something more generic, like an exploration process?} \er{also, this may appear contradictory to the fact we do not use the DHT routing (lookup) directly but implement our own}
