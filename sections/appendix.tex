@@ -20,7 +20,7 @@ To obtain the results shown in Figure~\ref{fig:cache_size_limit}, Equation~\ref{
 
 \subsubsection{Load distribution of registration operations}
 
-We consider two topics $A$ and $B$ that are located on the opposite sides of the DHT hashspace. The registrar closest to topic $A$ will receive ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest  and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive requests from, on average, $\frac{N_b\cdot K_\textit{register}}{N/2}$ advertisers for topic $B$.
+We consider two topics $A$ and $B$ that are located on opposite sides of the DHT hashspace. The registrar closest to topic $A$ will receive ad registration requests from all $N_a$ advertisers of topic $A$. On the other hand, from the viewpoint of the $N_b$ advertisers of topic $B$, the same registrar is located in the furthest and largest bucket, containing half of the $N$ network nodes. Therefore, the registrar will only receive requests from, on average, $\frac{N_b\cdot K_\textit{register}}{N/2}$ advertisers for topic $B$.
 
 Extending Equation~\ref{eq:efficiency_d} by the topic similarity score and still assuming the ``worst case'' of complete IP address diversity, the average number of ads $d_a$ and $d_b$ for topic $A$ and $B$, respectively, in the registrar's table will be:
 \begin{eqnarray}
