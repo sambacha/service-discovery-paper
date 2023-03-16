@@ -61,7 +61,7 @@ An ad is admitted if, and only if, the accumulated waiting time is equal to or l
 \er{I am not sure to understand anymore why we need to define $w$? Is it different than $t_\textit{waiting}$?}
 For registration requests without a ticket $t_\textit{cumulative} = 0$. An advertiser that misses its registration window (as specified by the most recent ticket), loses all its cumulative waiting time and must attempt to re-register without a ticket. Once an ad is admitted, the registrar confirms the registration to the advertiser.
 
-If the cumulative time is not sufficient, $t_\textit{accumulated} < t_\textit{waiting}$, the registrar issues a new ticket and the advertiser repeats the whole procedure.
+If the cumulative time is not sufficient, $t_\textit{cumulative} < t_\textit{waiting}$, the registrar issues a new ticket and the advertiser repeats the whole procedure.
 \er{is there a rationale for being nice to }
 With consecutive registration attempts, advertisers increase their cumulative waiting time $t_\textit{cumulative}$ and eventually will be admitted. 
 
@@ -81,7 +81,7 @@ The inclusion of issue-time allows the registrars to prioritize advertisers that
 An advertiser gives up and stops the registration process with a registrar when it has received $r$ unsuccessful registration attempts (i.e., after being issued $r$ tickets without being admitted). In this case, the advertiser removes the registrar from its advertise table and selects a new node located in the same bucket and attempts a new registration procedure. The mechanism prevents malicious registrars from stalling honest advertisers.
 %\michal{Is the below true? Shouldn't we try to register at the same node?}
 %\sergi{We dont use the same, we pick another randomly. we could use the same but i think for diversity could be better  this way}
-Similarly, after the expiration of a previously placed ad, the registrar is removed from the advertise table and the process is restarted with a new node picked from the local route table.%\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
+Similarly, after the expiration of a previously placed ad, the registrar is removed from the advertise table and the process is restarted with a new node picked from the local route table.\mk{The above is not in the code}%\footnote{We assume a common expiration time for all the registrar. However, each registrar may choose to implement its own expiration time and communicate it to advertisers in the confirmation message}.
 
 \begin{algorithm}[]%
     \caption{%
@@ -202,10 +202,4 @@ Similarly, after the expiration of a previously placed ad, the registrar is remo
     \end{algorithmic}%
 \end{algorithm}%\
 
-
-%lookup
-%while not enough peers found
-% for every bucket in the lookup table
-% for i in 1 to K_lookup
-% send a lookup request to a random node in the bucket
-% add to peers_found
+\michal{Need an alg for the IP tree}

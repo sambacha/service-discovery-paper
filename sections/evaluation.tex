@@ -87,7 +87,7 @@ We implement the following approaches as baselines. \textbf{1) \discv} described
 
 %The topic lookup process in \altname and \altnameticket involve first finding N closest peers to the topic using the key lookup process of the Ethereum DHT (\Cref{sec:background:dht}). Once it terminates with a stable list of closest peers, a searcher locally sorts those peers based on their distance (using Kademlia's XOR metric) to the topic's hash. Finally, the searcher queries $\alpha=3$ peers at a time, proceeding with the farthest to the closest of the N peers.
 
-
+\mk{We can reduce/remove some of the metrics below if we properly define them before.}
 \para{Metrics} We report the following performance metrics. 
  \begin{itemize}
      \item \textbf{Message Overhead} - the total number of messages received by each node. 
@@ -112,7 +112,7 @@ We verify the impact of the following parameters:
  \end{itemize}
 
 
-Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and each nodes each perform a single lookup operation uniformly spread across the simulation time.  We set the \emph{registration table} capacity to 500 to align with the requirements from the official Ethereum DHT implementation and lifetime $a$ to 15 min.% \ie every 15 min registration expires in the registrars. 
+Each simulation takes one hour of simulated time during which each advertiser tries to maintain active (\ie unexpired) registrations and each node performs a single lookup operation uniformly spread across the simulation time.  We set the \emph{registration table} capacity to 500\mk{We say 1000 in the analysis} to align with the requirements from the official Ethereum DHT implementation and lifetime $a$ to 15 min.% \ie every 15 min registration expires in the registrars. 
 
 We set all the DHT-related parameters to the ones currently used by Ethereum DHT.%, \ie there are 17 buckets and up to 16 peers stored in each bucket.
 %Following Ethereum Kademlia specification,  each bucket has a replacement list of 10 nodes. 
@@ -265,7 +265,7 @@ Thanks to our admission mechanism, \altnameticket outperforms both \discv and \a
 \label{fig:eclipse_evil}
 \end{figure}
 
-\Cref{fig:eclipse_sybil} illustrates the percentage of malicious nodes in the lookup results and the lookup eclipse rate. We vary the size of the IP address pool used by the adversary. Value $1$ means that each malicious node has a unique IP address (resulting in high monetary cost for the attacker). An increasing number of IPs used by the attacker makes \sysname more likely to get eclipsed as the the attacker IP score in the waiting function will be similar values received by honest nodes.
+\Cref{fig:eclipse_sybil} illustrates the percentage of malicious nodes in the lookup results and the lookup eclipse rate. We vary the size of the IP address pool used by the adversary. Value $1$ means that each malicious node has a unique IP address (resulting in high monetary cost for the attacker)\mk{We already defined it}. An increasing number of IPs used by the attacker makes \sysname more likely to get eclipsed as the the attacker IP score in the waiting function will be similar values received by honest nodes.
 Even for the worst case scenario, \sysname achieves the eclipse rate close to $0\%$ to $0.5\%$.
 %In comparison, \discv, \altname and \altnameticket are outperformed by \sysname.
 %\altname has the worst performance,  followed by \discv with no affectation by the increase of number of IPs used,  since it has no protection agains reusing IP addresses in the attack.

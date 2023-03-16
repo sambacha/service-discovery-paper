@@ -8,14 +8,16 @@
     \caption{Notation}
     \label{tab:notation}
 \begin{center}
-    \begin{tabular}{ | l | p{8cm} |}
+    \begin{tabular}{ | l | p{7cm} |}
       \hline
         $N$ & network size \hl{Consider changing to all nodes so that $n \in N$} \\ \hline
         $k$ & number of peers holding a key in the DHT (from the background section) \hl{not sure we need it - it's only in the background and we can explain everything by finding just 1 closest peer to the key} \\ \hline
-        $X$ & a node (from the background section) \\ \hline
+        $X$ & a node (from the background section) - \hl{never used again} \\ \hline
+        $x$ & registration request (Sec. 7.1) \hl{used uniquely in 7.1} \\ \hline
         $n$ & \hl{a node (from the 4.1)} \\ \hline
         $n$ & total size of the ad cache (Sec. 5.2) \hl{a clash with node} \\ \hline
         $p$ & peer (section 4.1) \\ \hline
+        $p_{\geq i}$ & (sec. 6) the number of IP addresses in the cache sharing a prefix with $IP$ with a length of at least $i$ \hl{clash with peer}. \\ \hline
         $T$ & Table (section 4.1) \\ \hline
         $b_i$& $i$-th bucket (section 4.1) \hl{TODO: add key} \\ \hline
         $\alpha$ & number of concurrent routing operations \\ \hline
@@ -28,6 +30,31 @@
         $t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
         $\delta t_{\textit{window}}$ & registration window \hl{we probably don't need both $\delta$ and "window"} \\ \hline
         $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
+        $t_1$ & a specific moment in time \\ \hline
+        $w$ & waiting time (Sec. 5.3) \\ \hline
+        $w(\textit{IP}, \textit{topic})$ & waiting time for IP and topic \\ \hline
+        $w(t_i)$ & waiting time at time $t_1$ \hl{clash with the above} \\ \hline
+        $w(x)$ & average waiting time received by request $x$ (Sec. 7.1.) \hl{clash with the above} \\ \hline
+        $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
+        $d$ & number of ads in the cache \\ \hline
+        $d(\textit{topic})$ & number of ads for topic in the cache \\ \hline
+        $\textit{similarity score}$ & similarity score \\ \hline
+        $\textit{similarity}$ & similarity score \\ \hline
+        $\textit{similarity(topic)}$ & topic similarity score \\ \hline
+        $\textit{similarity(IP)}$ & IP similarity score \\ \hline
+        $\textit{score(IP)}$ & IP score (before normalisation) \\ \hline
+        $\textit{penalty}(p_{\geq i})$ & penalty points at a specific level \\ \hline
+        $P_\textit{occ}$ & occupancy power \\ \hline
+        $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
+        $\textit{IPs}$ & all the IPs in the ad cache \\ \hline
+        $\textit{topics}$ & all the topics in the ad cache \\ \hline
+        $w_\textit{topic}$ & topic specific part of the lower bound \hl{not really defined in text}\\ \hline
+        $\textit{bound(topic)}$ & lower bound for a topic \hl{not really defined in text}\\ \hline
+        $\textit{timestamp(topic)}$ & time when the topic-specific bound was set \hl{not really defined in text}\\ \hline
+        $\textit{registrar A}$ & registrar $A$ (Sec. 7.2)\\ \hline
+        $\textit{topic A}$& topic $A$ (Sec. 7.2)\\ \hline
+        $N_a$ & number of nodes (advertisers) following topic $a$ \hl{not very consistent with the rest of the notation}\\ \hline
+
       \hline
     \end{tabular}
   \end{center}
@@ -36,6 +63,9 @@
 \mk{change bucket definition to add the target key (can be useful to define advertise tables etc. if we introduce them in the background \eg $b_i(key)$). We also often indicate the farthest buckets - we could simply use $b_0$}
 \mk{Put macros for the notation}
 \mk{We need a notation for an ad - at the end of Sec. 5.2 we just use "Ad".}
+\mk{We should probably define notations for registrars, advertisers, searchers etc. We can then easily explain that everyone is a registrar etc.}
+\mk{Maybe define an eclipse ratio for a specific topic?}
+\mk{If we define malicious nodes and their IPs early, we don't have to re-do it in the evaluation}
 
 
 In this section, we present our network and threat models as well as the target properties of \sysname. 

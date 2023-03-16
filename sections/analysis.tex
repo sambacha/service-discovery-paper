@@ -16,7 +16,7 @@ The possibility of the cache going above the capacity is determined by the const
 
 In consultation with developers of Geth~\cite{geth}, we assume a cache capacity of $n = 1,000$ entries and an average size of an advertisement equal to 1KB.
 \Cref{fig:cache_size_limit} presents the cache usage for different rates of incoming requests.
-We choose $b=10^{-7}$ and $P_\textit{occ}=10$; these values provide a good protection against cache overflowing and a good usage of cache space under normal conditions. 
+We choose $b=10^{-7}$ and $P_\textit{occ}=10$; these values provide good protection against cache overflowing and a good usage of cache space under normal conditions. 
 
 \begin{figure}[t]
     \includegraphics[width=1\linewidth]{img/cache_size_limit}
@@ -27,7 +27,7 @@ We choose $b=10^{-7}$ and $P_\textit{occ}=10$; these values provide a good prote
     \vspace{-0.15in}
 \end{figure}
 
-Pending requests (\ie, not in the cache) do not create any state, apart from updating the lower bound, at the registrar (\ie, the registrar uniquely calculates the waiting time and returns a signed ticket). The lower bound state created by registrars is bounded by the number of distinct IPs and topics in the cache and is thus bounded by its capacity $O(n)$. \er{why is a capacity expressed as big O? Is is not $n$ simply?}
+Pending requests (\ie, not in the cache) do not create any state, apart from updating the lower bound, at the registrar (\ie, the registrar uniquely calculates the waiting time and returns a signed ticket). The lower bound state created by registrars is bounded by the number of distinct IPs and topics in the cache and is thus bounded by its capacity $n$.
 
 \para{Register and lookup operations finish within $O(log(N))$ steps}
 As detailed in \Cref{sec:placement}, registration of ads and service lookup operations allow learning peers from buckets associated with increasingly large prefixes to the topic ID destination, guaranteeing these operations to finish within $O(log(N))$ steps.

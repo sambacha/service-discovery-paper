@@ -7,7 +7,7 @@ The waiting time function is used to calculate the total time advertisers have t
 The function directly shapes the structure of the ad cache, determines its diversity and performs flow control. 
 It also protects against attacks, where a malicious actor tries to dominate the ad cache and exhaust the resources of a registrar. 
 
-Each request is given a waiting time based on the IP address of the registrar, \er{we mean of the advertiser?} the topic of the request, and the current state of the ad cache.
+Each request is given a waiting time based on the IP address of the advertiser, the topic of the request, and the current state of the ad cache.
 The waiting time function is divided into two parts: an \emph{occupancy score} (ranging from $0$ to $\infty$) and a \emph{similarity score} (ranging from $0$ to $2$) and is normalized by the amount of time each ad spent in the cache $a$ (\ie \emph{ad lifetime}). $a$ determines the absolute values of the returned waiting time. \er{I am not sure to understand the previous sentence (before reading the rest of the section)} The final result is a product of all three: $w = a \times \textit{occupancy score} \times \textit{similarity score}.$
 
 The \emph{occupancy score} is based uniquely on the number of ads already in the cache.
