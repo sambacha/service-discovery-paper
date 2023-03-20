@@ -99,6 +99,31 @@
 \mk{If we define malicious nodes and their IPs early, we don't have to re-do it in the evaluation}
 
 
+
+\begin{table*}
+  \caption{New Notation}
+  \label{tab:new_notation}
+\begin{center}
+  \begin{tabular}{ | l | p{16cm} |}
+    \hline
+      $n \in N$ & nodes in the network \\ \hline
+      $|N|$ & number of nodes in the network \\ \hline
+      $n^h \in N^h$ & honest nodes in the network \\ \hline
+      $n^m \in N^m$ & malicious nodes in the network \\ \hline
+      $a^h(x) \in A^h(x)$ & honest advertisers for topic $x$ \\ \hline
+      $r^h(x) \in R^h(x)$ & honest registrars for topic $x$ \\ \hline
+      $g_i \in G$  & group, topic, key, app, pack\\ \hline
+      $d_{t1}^h(x)$& number of honest ads for topic $x$ in the ad cache at time $t_1$ \\ \hline
+      $e$ & expiry time (ad lifetime) \\ \hline
+      $b_i(x) \in B(x)$& $i$ bucket centred around key $x$, in routing table centred around $x$ \\ \hline
+      $\algvar{topic}_i$\\ \hline
+      $w_{t1}(x) $ & waiting time of for request $x$ at time $t1$ \\ \hline
+
+    \hline
+  \end{tabular}
+\end{center}
+\end{table*}
+
 In this section, we present our network and threat models as well as the target properties of \sysname. 
 
 \subsection{System model}
