@@ -32,8 +32,7 @@
         $K'_{\textit{register}}$ & $K_{\textit{register}}$ for malicious nodes (Appendix) \hl {not very clear}\\ \hline
         $K_{\textit{lookup}}$ & \hl{It's weirdly defined in Sec. 4.4}: search process progresses using maximum $K_{\textit{lookup}}$  parallel requests, and issuing requests towards up to $K_{\textit{lookup}}$  peers per bucket.\\ \hline
         $a$ & ad lifetime  (Sec. 4.3)\\ \hline
-        $N_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does}  \hl{Clash with number of nodes} \\ \hline
-        $N_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \hl{Clash with number of nodes} \\ \hline
+        
         $t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
         $t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
         $\delta t_{\textit{window}}$ & registration window \hl{we probably don't need both $\delta$ and "window"} \\ \hline
@@ -112,17 +111,42 @@
       $n^m \in N^m$ & malicious nodes in the network \\ \hline
       $a^h(x) \in A^h(x)$ & honest advertisers for topic $x$ \\ \hline
       $r^h(x) \in R^h(x)$ & honest registrars for topic $x$ \\ \hline
-      $\algvar{IP}(N^h)$ & IPs used by honest nodes \\ \hline
+      $D(s) = \{d_0(s), d_1(s),...\}$ &  discoverers \\ \hline
+      $\algvar{ip} \in \algvar{IP}(N^h)$ & IPs used by honest nodes \\ \hline
       $g_i \in G$  & group, topic, key, app, pack\\ \hline
-      $d_{t1}^h(x)$& number of honest ads for topic $x$ in the ad cache at time $t_1$ \\ \hline
-      $e$ & expiry time (ad lifetime) \\ \hline
-      $b_i(x) \in B(x)$& $i$ bucket centred around key $x$, in routing table centred around $x$ \\ \hline
       $\algvar{topic}_i$\\ \hline
+      $|D_{t1}^h(x)|$& number of honest ads for topic $x$ in the ad cache at time $t_1$ \\ \hline
+      $b_i(x) \in B(x)$& $i$ bucket centred around key $x$, in routing table centred around $x$ \\ \hline
       $w_{t1}(x) $ & waiting time of for request $x$ at time $t1$ \\ \hline
+      $\bar{w}(x) $ & average waiting time of for request $x$\\ \hline
+      $\algvar{req}$& request \\ \hline
+
       $K_{\textit{register}}$ & number of ads placed per bucket\\ \hline
       $K^m_{\textit{register}}$ & $K_{\textit{register}}$ for malicious nodes \\ \hline
       $K_{\textit{lookup}}$ & parallel requests during lookup\\ \hline
+      $E$ & expiry time (ad lifetime) \\ \hline
+      $\alpha$ & expiry time (ad lifetime) \\ \hline
+      $L_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does}  \hl{Clash with number of nodes} \\ \hline
+      $L_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \hl{Clash with number of nodes} \\ \hline
+      $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
+      $P_\textit{occ}$ & occupancy power \\ \hline
+      $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
+      $C$ & capacity of the ad cache \\ \hline
+      $m$ & number of buckets in the routing table \\ \hline
 
+      $\algvar{ticket}.t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
+        $\algvar{ticket}.t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
+        $\Delta$ & registration window\\ \hline
+        $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
+
+      $\textit{sim score}$ & similarity score \\ \hline
+      $\textit{sim}$ & similarity score \\ \hline
+      $\textit{sim}_\textit{topic}$ & topic similarity score \\ \hline
+      $\textit{sim}_{ip}$ & IP similarity score \\ \hline
+      $\textit{score(IP)}$ & IP score (before normalisation) \\ \hline
+
+
+      $\algvar{key}$ & key in the DHT \\ \hline
     \hline
   \end{tabular}
 \end{center}
@@ -132,68 +156,69 @@ In this section, we present our network and threat models as well as the target 
 
 \subsection{System model}
 
-We assume a network of $N$ nodes.\footnote{$N$ is unknown to the participants but is used in our analysis.}
+We assume a network of nodes $N = \{n_0, n_1, ...\}$.\footnote{$|N|$ is unknown to the participants but is used in our analysis.}
 At startup time, each node generates a public/secret key pair, which it uses to secure point-to-point communication with its peers.
-Nodes are identified by their \emph{node ID}, which is simply the hash of their public key.
+Node $n_i$ is identified by its \emph{node ID} $n.\algvar{id}$ (the hash of its public key) and its IP address $n.\algvar{ip}$. 
+We define a set of IPs $\algvar{IP}(N) = \{\algvar{ip}_0, \algvar{ip}_1, ...\}$ so that $\algvar{ip}_i = n_i.\algvar{ip}$.
 Multiple nodes may share the same IP address (due to NAT or being hosted by the same physical machine)~\cite{marcus2018low}.
 However, two nodes cannot share the same ID.
 
 % \er{revise: It is not clear \sysname is an extension of discv5 from the online documentation, but rather its central mechanism. What are the other protocols as part of discv5  is also unclear.}
 % \sysname is built on the existing Ethereum DHT. Specifically, we designed and implemented our system as an extension of Ethereum's \emph{Node Discovery Protocol v5 (discv5)}. However, the operation of service discovery is not Ethereum-specific and could also be implemented using a different DHT. \er{I would not necessarily make this claim here, since several operations are. Kademlia-specific in reality. Maybe save for the conclusion?}
 
-As for \discv, \sysname leverages the existing Ethereum DHT, but does not rely on its key lookup operations.
-\sysname indexes different applications in the Ethereum eco-system as \emph{topics}.
-A topic is an identifier for an application, or \emph{service}, provided by a node.
-Topics are arbitrary strings that hash to a specific key. % in the DHT key space.
+\sysname leverages the existing Ethereum DHT, but does not rely on its key lookup operations.
+\sysname indexes different sub-networks in the Ethereum eco-system as \emph{services} $S = \{s_0, s_1, ...\}$.
+A service is an identifier for an application run by a node and is represented by an arbitrary string that hashes to a specific key. % in the DHT key space.
 
-All DHT nodes fulfill the following roles:
+We define the following roles in the system:
 \begin{itemize}
-    \item A \textbf{registrar} accepts advertisements (\emph{ads}) and responds to topic queries. 
-    When asked for a specific topic, a registrar responds with nodes that registered ads for this topic.
-    % All DHT nodes act as registrars. 
-    A registrar may accept and store ads for any topic.
-    \item An \textbf{advertiser} registers for a specific service topic and wants to be discovered by its peers.
-    Advertisers make themselves discoverable by placing ads for that topic.
-    Nodes are advertisers for every service they participate in.
-    \item A \textbf{searcher} attempts to discover nodes registered under a specific topic, using service lookup operations.
+    \item \textbf{Advertisers} $A(s) = \{a_0(s), a_1(s),...\}$ participate in service $s$ and want to be discovered by their peers.
+    Advertisers $A(s)$ make themselves discoverable by placing advertisements (\emph{ads}) for service $s$. We define a set of advertisers for all the services by $A = \bigcup_{s \in S} A(s)$.
+    A single node can be an advertiser for multiple services.
+    \item \textbf{Discoverer} $D(s) = \{d_0(s), d_1(s),...\}$ attempts to discover $L_\algvar{lookup}$ advertisers registered under $s$, using service lookup operations. We define a set of searchers for all the services by $D = \bigcup_{s \in S} D(s)$.
+    \item \textbf{Registras} $R = \{r_0, r_1,...\}$ accept ads from advertisers and responds to service queries by searchers. 
+    When asked for a specific service $s$, a registrar responds with advertisers that registered ads for this topic.
+    A registrar does not have a specific, assigned service and may store ads for any service.
 \end{itemize}
 
-A node providing a certain service topic is said to \emph{register} itself when it submits an ad to a registrar. % to make itself discoverable under that topic.
-Depending on the needs of the application, a node can advertise multiple topics or no topics at all. 
-We assume that the popularity of topics in the system is highly heterogeneous, i.e., it can follow a power law distribution~\cite{kim2018measuring}.
-Anyone can participate in registering and searching for (one or more) topics and use the same ID and IP for all its topics. 
+A node providing a certain service is said to \emph{register} itself when it submits an ad to a registrar.\mk{This suggests it's done on a single node} % to make itself discoverable under that topic.
+Depending on the needs of the application, a node can advertise multiple services or no services at all. 
+We assume that the popularity of services in the system is highly heterogeneous, i.e., it can follow a power law distribution~\cite{kim2018measuring}.
+Anyone can participate in registering and searching for (one or more) services and use the same ID and IP for all its services. 
 
 \subsection{Threat Model}
 \label{sec:threat}
-
 \sysname is designed to operate in an open, adversarial environment.
-We assume the presence of malicious actors in the network that may arbitrarily deviate from the protocol and coordinate their actions.
-Malicious actors can spawn multiple virtual nodes within one physical machine, and operate multiple physical machines.
-As a result, they can control a number of Sybil node IDs.
+We assume the presence of malicious nodes $N^m = \{n^m_0, n^m_1, ...\}$ in the network that may arbitrarily deviate from the protocol and coordinate their actions. As the attacker nodes can play any role in the system, we define sets of malicious $A^m, D^m, R^m$ and honest $A^h, D^h, R^h$ advertisers/discoverers/registrars. 
+Malicious actors can spawn multiple virtual Sybil nodes within one physical machine, and operate multiple physical machines.
 
-% \er{should we mention collusions here? It is mentioned only at the end of the section (although we do not seem to consider it so much in the experiments)}\mk{In the experiments we assume that all the Sybils ae controlled by a single entity. I've expanded the phrase above. I hope it's fine now.}
-% % These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
+
+
+Maintaining nodes in the DHT requires infrastructure resources (public IP addresses). We thus assume that, while an attacker can operate a significant number of nodes (\eg $N^m  \approx N^h$), they have access to a lower number of IP addresses $\algvar{IP}(N^m)  \ll \algvar{IP}(N^h)$.
+Specifically, we assume that it is easier for an attacker to generate similar IP addresses (\ie within a single subnet) than it is to control many diverse ones (with different prefixes).
+We use the number of nodes $|N^m|$ and IP addresses $|\algvar{IP}(N^m)|$ under the control of an attacker as parameters for our evaluation in \Cref{sec:eval}.
+
 
 The security of the service discovery mechanism is fundamentally dependent on the security guarantees provided by the underlying DHT implementation, and in particular on its ability to avoid eclipse attacks against a specific node.
 Indeed, even if \sysname does not rely on DHT lookup operations, information in the DHT routing table is used to initialize and maintain the data structures used by the service discovery layer.
 We assume, therefore, that no honest node is fully eclipsed by the malicious ones, \ie, each honest DHT node has \emph{at least} one honest peer.
 As previously mentioned, Ethereum already implements multiple mechanisms preventing eclipse attacks at the DHT level~\cite{marcus2018low, henningsen2019eclipsing}.  
 
-Maintaining nodes in the DHT requires infrastructure resources (public IP addresses) and we assume that the resources under the control of an attacker are limited.
-Specifically, we assume that it is easier for an attacker to generate similar IP addresses (\ie within a single subnet) than it is to control many diverse IP addresses (with different prefixes).
-We use the number of IP addresses and IDs under the control of an attacker as parameters for our evaluation in \Cref{sec:eval}.
 
-\mk{We can probably remove those and mention those problems when introducing our system.}
-Through a literature review~\cite{chen2020survey, henningsen2019eclipsing} we collected a list of malicious behaviors that an attacker can use to disrupt a DHT-based service discovery protocol:
-\begin{itemize}
-    \item \textbf{Malicious DHT Peer}: DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to such requests, an attacker only returns other malicious nodes, in order to hijack the process of DHT traversal by honest nodes. \er{this seems contradictory with the fact that we wrote two paragraphs ago that we assumed the DHT to be secured against Sybils. Should we change DHT routing to something more generic, like an exploration process?} \er{also, this may appear contradictory to the fact we do not use the DHT routing (lookup) directly but implement our own}
-    \item \textbf{Malicious Registrar}: When queried for a specific topic, an attacker returns a maximum amount of malicious nodes.\footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}
-    \item \textbf{Spamming Advertisers}: An attacker bombards honest registrars with malicious ads. The attack can target single or multiple topics. The attack may cause an honest registrar to refuse honest ads due to lack of resources (\eg, storage and CPU power). This registrar will, furthermore, later return maliciously-inserted ads of the spammer when queried by honest searchers. 
-    \item \textbf{Generic Spammers}: An attacker bombards an honest registrar with topic queries or random traffic hoping to exhaust bandwidth or CPU power.
-\end{itemize}
+%As a result, they can control a number of Sybil node IDs.
+% \er{should we mention collusions here? It is mentioned only at the end of the section (although we do not seem to consider it so much in the experiments)}\mk{In the experiments we assume that all the Sybils ae controlled by a single entity. I've expanded the phrase above. I hope it's fine now.}
+% % These actors do not strictly follow the protocol when communicating with others and attempt to influence the discovery results of honest nodes by steering them toward the attacker-controlled nodes.
+% \mk{We can probably remove those and mention those problems when introducing our system.}
+% Through a literature review~\cite{chen2020survey, henningsen2019eclipsing} we collected a list of malicious behaviors that an attacker can use to disrupt a DHT-based service discovery protocol:
+% \begin{itemize}
+%     \item \textbf{Malicious DHT Peer}: DHT routing relies on asking peers for other nodes, closer to a specific target. When responding to such requests, an attacker only returns other malicious nodes, in order to hijack the process of DHT traversal by honest nodes. \er{this seems contradictory with the fact that we wrote two paragraphs ago that we assumed the DHT to be secured against Sybils. Should we change DHT routing to something more generic, like an exploration process?} \er{also, this may appear contradictory to the fact we do not use the DHT routing (lookup) directly but implement our own}
+%     \item \textbf{Malicious Registrar}: When queried for a specific topic, an attacker returns a maximum amount of malicious nodes.\footnote{Alternatively, a malicious registrar could simply refuse to respond. However, such behavior is less effective than returning malicious peers.}
+%     \item \textbf{Spamming Advertisers}: An attacker bombards honest registrars with malicious ads. The attack can target single or multiple topics. The attack may cause an honest registrar to refuse honest ads due to lack of resources (\eg, storage and CPU power). This registrar will, furthermore, later return maliciously-inserted ads of the spammer when queried by honest searchers. 
+%     \item \textbf{Generic Spammers}: An attacker bombards an honest registrar with topic queries or random traffic hoping to exhaust bandwidth or CPU power.
+% \end{itemize}
 
-Adversaries can strategically target specific nodes or regions in the DHT key space (\ie by generating Sybil Node IDs within the desired region) when implementing these attacks.
-We assume the presence of attackers that can combine some or all of the behaviors above, and coordinate their actions to maximize their effect. 
+% Adversaries can strategically target specific nodes or regions in the DHT key space (\ie by generating Sybil Node IDs within the desired region) when implementing these attacks.
+% We assume the presence of attackers that can combine some or all of the behaviors above, and coordinate their actions to maximize their effect. 
 
 \subsection{Target Properties}
 

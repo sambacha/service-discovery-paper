@@ -17,16 +17,28 @@ Then, we present \discv, the current service discovery mechanism of Ethereum ope
 \subsection{The Ethereum global DHT}
 \label{sec:background:dht}
 
-All nodes in the Ethereum ecosystem participate in a global distributed hash table (DHT).
+All nodes in the Ethereum ecosystem participate in a global, distributed hash table (DHT).
 A DHT is a structured overlay network allowing lookup operations, \ie locating a node or group of nodes in charge of a particular \emph{key} in a target \emph{key space}~\cite{chord,rowstron2001pastry}. 
 Ethereum uses an evolution of Kademlia~\cite{maymounkov2002kademlia}, a robust and mature DHT design. % as its global DHT.
-Every node in the overlay is assigned a unique identifier (\emph{node ID}), drawn from the same key space as items, i.e., information stored in the DHT.
-The Kademlia DHT assigns a specific key $i$ to the $k$ \emph{closest} (according to a distance metric) nodes to $i$ in that space, where $k$ is a system parameter.
-The distance $d$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $d(x,y) = \textit{log}_2(x \oplus y)$ (\ie, the length of the differing suffix in bits).
+Every node $n$ in the overlay is assigned a unique identifier $n.\algvar{id}$, drawn from the same key space as items, i.e., information stored in the DHT.
+The distance $\algvar{dist}$ between two keys $x$ and $y$ is a logarithm of their bitwise exclusive or (XOR) interpreted as an integer, \ie, $\algvar{dist}(x,y) = \textit{log}_2(x \oplus y)$ (\ie, the length of the differing suffix in bits).
+The Kademlia DHT assigns key $\algvar{key}$ to node $n$ with identifier $n.\algvar{id}$ \emph{closest} to $\algvar{key}$. 
 
-Each node $X$ in the overlay maintains a \emph{routing table} storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
-The routing table is partitioned into $m$ \textit{buckets}, numbered zero through $m-1$, where $m$ is a global system parameter.
-Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix of length $i$ with $X$.
+Each node $n$ in the overlay maintains a \emph{routing table} $B(n.\algvar{id})$ centered around $n$'s ID. The routing table is partitioned into $m$ \textit{buckets} $B(n.\algvar{id}) = [b_0(n.\algvar{id}) ,b_1(n.\algvar{id})...,b_{m-1}(n.\algvar{id})]$, where $m$ is a global system parameter.
+Bucket $b_i(n.\algvar{id})$ contains a list of peers whose IDs share a common prefix of length $i$ with $n.\algvar{id}$.
+
+The bucket partitioning scheme divides the keyspace from the point of view of $n$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $n.\algvar{id}$.
+As a result, a node's routing table provides a more detailed (\ie, fine-grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
+This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
+It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of the key space.
+
+In Kademlia, $n_i$ performing a lookup toward $\algvar{key}$ selects the closest node $n_j$ in its routing table to $\algvar{key}$ and sends it a message. $n_j$ returns a set of $k$ closest nodes to $\algvar{key}$ it knows about. $n_i$ then selects the closest node from this set and repeats the process until no closer nodes are found.
+For security, Ethereum's Kademlia implementation hides the precise target key.
+$n_i$ requests an \emph{entire} bucket where $\algvar{key}$ is located from $n_j$, and filters them locally before continuing the process.
+
+
+%storing a set of peers, each with its \emph{node ID} and reachability information, \ie, IP address and port numbers.
+
 
 % \er{if space allows, a figure for the DHT and for discv4 could help. It could also highlight the case of less-popular topics.}
 
@@ -44,17 +56,12 @@ Bucket $i$ contains a list of up to $k$ peers, whose IDs share a common prefix o
 %\noindent
 %\textbf{Lookups.}
 %
-The bucket partitioning scheme divides the key space from the point of view of $X$ into disjoint intervals, halving in length every time the bucket's associated prefix includes one more common bit with $X$'s ID.
-As a result, a node's routing table provides a more detailed (\ie, fine-grained) view of the subset of the network with closer node IDs and a less detailed view of nodes with distant IDs.
-This property is essential for efficiency and enables lookup operations that take a logarithmic number of steps (\emph{hops}) in the number of nodes in the network.
-It allows, in addition, a degree of flexibility as each bucket can contain \textit{any} peer sampled from those whose IDs fall within the corresponding interval of the key space.
 
-Lookups for a key rely on $\alpha$ concurrent \emph{routing} operations, with the goal of identifying the $k$ closest nodes to that key.
-Original DHT designs~\cite{maymounkov2002kademlia,chord,rowstron2001pastry} would use a recursive routing mechanism and communicate the target key to each encountered node.
-This poses a risk, as these intermediate nodes could leverage the target information to establish Sybils in proximity of the target key and return these to the querier.
-A security measure in Ethereum's Kademlia implementation is, therefore, to use an iterative (i.e., querier-controlled) routing process and hide the precise targeted key.
-The querier retrieves \emph{entire} buckets from intermediate nodes, and filters them locally before continuing the process.
-Other counter measures integrated following researchers assessments of Kademlia's security in Ethereum~\cite{marcus2018low,henningsen2019eclipsing} include for instance limiting the number of nodes from the same /24 subnet in the same bucket or routing table, or strengthening the seeding process by which a routing table is initialized.
+%Lookups for a key rely on $\alpha$ concurrent \emph{routing} operations, with the goal of identifying the $k$ closest nodes to that key.
+%Original DHT designs~\cite{maymounkov2002kademlia,chord,rowstron2001pastry} would use a recursive routing mechanism and communicate the target key to each encountered node.
+%This poses a risk, as these intermediate nodes could leverage the target information to establish Sybils in proximity of the target key and return these to the querier.
+
+%Other counter measures integrated following researchers assessments of Kademlia's security in Ethereum~\cite{marcus2018low,henningsen2019eclipsing} include for instance limiting the number of nodes from the same /24 subnet in the same bucket or routing table, or strengthening the seeding process by which a routing table is initialized.
 
 % % \er{It seems that the Ethereum Kademlia does not support at all lookups but only random walks? We should probably clarify this to avoid confusion if we cannot present that as a non-secure baseline in the evaluation section.}\mk{Ethereum Kademlia support lookups but doesn't support put/get. The lookups are still used when joining the DHT to check whether a node with the same ID as us exists and populate the routing tables.}
 % Lookups rely on $\alpha$ concurrent routing operations
