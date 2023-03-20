@@ -189,12 +189,13 @@ Anyone can participate in registering and searching for (one or more) services a
 \subsection{Threat Model}
 \label{sec:threat}
 \sysname is designed to operate in an open, adversarial environment.
-We assume the presence of malicious nodes $N^m = \{n^m_0, n^m_1, ...\}$ in the network that may arbitrarily deviate from the protocol and coordinate their actions. As the attacker nodes can play any role in the system, we define sets of malicious $A^m, D^m, R^m$ and honest $A^h, D^h, R^h$ advertisers/discoverers/registrars. 
+We distinguish between honest $N^h$ nodes and malicious $N^m$ nodes so that $N^h + N^m = N$.
+Honest nodes follow the protocol while malicious ones may arbitrarily deviate from the protocol and coordinate their actions. We define sets of malicious $A^m, D^m, R^m$ and honest $A^h, D^h, R^h$ advertisers/discoverers/registrars. 
 Malicious actors can spawn multiple virtual Sybil nodes within one physical machine, and operate multiple physical machines.
 
 
 
-Maintaining nodes in the DHT requires infrastructure resources (public IP addresses). We thus assume that, while an attacker can operate a significant number of nodes (\eg $N^m  \approx N^h$), they have access to a lower number of IP addresses $\algvar{IP}(N^m)  \ll \algvar{IP}(N^h)$.
+Maintaining nodes in the DHT requires infrastructure resources (public IP addresses). We thus assume that, while an attacker can operate a significant number of nodes (\eg $|N^m|  \approx |N^h|$), they have access to a lower number of IP addresses $\algvar{IP}(N^m)  \ll \algvar{IP}(N^h)$.
 Specifically, we assume that it is easier for an attacker to generate similar IP addresses (\ie within a single subnet) than it is to control many diverse ones (with different prefixes).
 We use the number of nodes $|N^m|$ and IP addresses $|\algvar{IP}(N^m)|$ under the control of an attacker as parameters for our evaluation in \Cref{sec:eval}.
 
