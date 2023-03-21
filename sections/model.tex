@@ -126,8 +126,8 @@
       $K_{\textit{lookup}}$ & parallel requests during lookup\\ \hline
       $E$ & expiry time (ad lifetime) \\ \hline
       $\alpha$ & expiry time (ad lifetime) \\ \hline
-      $L_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does}  \hl{Clash with number of nodes} \\ \hline
-      $L_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \hl{Clash with number of nodes} \\ \hline
+      $F_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does}  \hl{Clash with number of nodes} \\ \hline
+      $F_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \hl{Clash with number of nodes} \\ \hline
       $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
       $P_\textit{occ}$ & occupancy power \\ \hline
       $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
@@ -226,7 +226,7 @@ As previously mentioned, Ethereum already implements multiple mechanisms prevent
 Under the considered threat model, \sysname achieves the following properties.
 
 \para{Efficiency} 
-\sysname ensures that the number of nodes contacted and the number of messages exchanged increase logarithmically with the number of system participants, for both lookup and register operations. 
+\sysname ensures that the number of nodes contacted and the number of messages exchanged increase logarithmically with the number of system participants $|N|$, for both lookup and register operations. 
 Sending and processing service discovery requests requires only simple operations involving a constant amount of resources.
 The storage usage for the registrars is limited by a configurable but fixed cap that does not depend on the amount of incoming traffic. 
 
@@ -234,10 +234,10 @@ The storage usage for the registrars is limited by a configurable but fixed cap 
 \sysname ensures a balanced load distribution across systems participants and regions of the key space (\ie, it avoids \emph{hotspots}).
 The system provides efficient lookup and registration operations for all participants regardless of the topic they look up or register for.
 Each advertiser has a similar probability of being discovered by its peers. 
-% \er{we should ideally be a bit more formal here and give bounds (in big O?) of the unbalance between these nodes.}\mk{What fairness metric would you suggest here?} \er{this would be ratio between the likelihood of being discovered for a popular and a less-popular advertiser}
+\mk{We might want to define the metrics for load and discoverability here.}
 
 \para{Security}
-\sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks.
+\sysname focuses specifically on preventing \emph{Denial of Service} (nodes are unable/slow to discover their application-specific peers) and \emph{Eclipse} (nodes discover uniquely malicious nodes) attacks. We consider an operation eclipsed when it contains uniquely malicious nodes in its result set.
 While completely eliminating such attacks in an open network is technically impossible, \sysname provides high probabilistic security 
 % \er{can we quantify this probability?}\mk{It depends on a lot of factors \#Sybil, \#malicious\_IPs etc. so not easy, but I'll think about it.} \er{commenting for now, no time}
 and increases the monetary cost of committing them. 
