@@ -4,100 +4,10 @@
 \section{System and threat models}
 \label{sec:model}
 
-\begin{table*}
-    \caption{Notation}
-    \label{tab:notation}
-\begin{center}
-    \begin{tabular}{ | l | p{16cm} |}
-      \hline
-        $N$ & network size \hl{Consider changing to all nodes so that $n \in N$} \\ \hline
-        $N_a$ & number of nodes (advertisers) following topic $a$ \hl{not very consistent with the rest of the notation}\\ \hline
-        $N_h$ & number of honest registrars (Appendix) \hl{clash}. \\ \hline
-        $N_a$ & number of malicious registrars (Appendix) \hl{clash}. \\ \hline
-        $k$ & number of peers holding a key in the DHT (from the background section) \hl{not sure we need it - it's only in the background and we can explain everything by finding just 1 closest peer to the key} \\ \hline
-        $X$ & a node (from the background section) - \hl{never used again} \\ \hline
-        $x$ & registration request (Sec. 7.1) \hl{used uniquely in 7.1} \\ \hline
-        $x$ & number of received requests (Appendix) \hl{clash} \\ \hline
-        $n$ & \hl{a node (from the 4.1)} \\ \hline
-        $n$ & total size of the ad cache (Sec. 5.2) \hl{a clash with node} \\ \hline
-        $n$ & (Appendix) number of random addresses in the cache \hl{clash }\\ \hline
-        $k$ & (Appendix) number of identical addresses in the cache \hl{clash }\\ \hline
-        $n_a$ & number of malicious nodes in the network (Appendix) \hl{clash} \\ \hline
-        $p$ & peer (section 4.1) \\ \hline
-        $p_{\geq i}$ & (sec. 6) the number of IP addresses in the cache sharing a prefix with $IP$ with a length of at least $i$ \hl{clash with peer}. \\ \hline
-        $T$ & Table (section 4.1) \\ \hline
-        $b_i$& $i$-th bucket (section 4.1) \hl{TODO: add key} \\ \hline
-        $\alpha$ & number of concurrent routing operations \\ \hline
-        $K_{\textit{register}}$ & number of ads placed per bucket\\ \hline
-        $K'_{\textit{register}}$ & $K_{\textit{register}}$ for malicious nodes (Appendix) \hl {not very clear}\\ \hline
-        $K_{\textit{lookup}}$ & \hl{It's weirdly defined in Sec. 4.4}: search process progresses using maximum $K_{\textit{lookup}}$  parallel requests, and issuing requests towards up to $K_{\textit{lookup}}$  peers per bucket.\\ \hline
-        $a$ & ad lifetime  (Sec. 4.3)\\ \hline
-        
-        $t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
-        $t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
-        $\delta t_{\textit{window}}$ & registration window \hl{we probably don't need both $\delta$ and "window"} \\ \hline
-        $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
-        $t_1$ & a specific moment in time \\ \hline
-        $w$ & waiting time (Sec. 5.3) \\ \hline
-        $w(\textit{IP}, \textit{topic})$ & waiting time for IP and topic \\ \hline
-        $w(t_i)$ & waiting time at time $t_1$ \hl{clash with the above} \\ \hline
-        $w(x)$ & average waiting time received by request $x$ (Sec. 7.1.) \hl{clash with the above} \\ \hline
-        $w$ & is the average waiting time (Appendix) \hl{clash} \\ \hline
-        $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
-        $d$ & number of ads in the cache \\ \hline
-        $d(\textit{topic})$ & number of ads for topic in the cache \\ \hline
-        $d_a$ & the average number of ads for topic $a$ (appendix) \hl{clash with the above} \\ \hline
-        $d_h$ & number of honest ads in the cache (appendix) \hl{clash with the above} \\ \hline
-        $d_a$ & number of malicious ads in the cache (appendix) \hl{clash with the above} \\ \hline
-        $\textit{similarity score}$ & similarity score \\ \hline
-        $\textit{similarity}$ & similarity score \\ \hline
-        $\textit{similarity(topic)}$ & topic similarity score \\ \hline
-        $\textit{similarity(IP)}$ & IP similarity score \\ \hline
-        $\textit{score(IP)}$ & IP score (before normalisation) \\ \hline
-        $\textit{penalty}(p_{\geq i})$ & penalty points at a specific level \\ \hline
-        $P_\textit{occ}$ & occupancy power \\ \hline
-        $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
-        $\textit{IPs}$ & all the IPs in the ad cache \\ \hline
-        $\textit{topics}$ & all the topics in the ad cache \\ \hline
-        $w_\textit{topic}$ & topic specific part of the lower bound \hl{not really defined in text}\\ \hline
-        $\textit{bound(topic)}$ & lower bound for a topic \hl{not really defined in text}\\ \hline
-        $\textit{timestamp(topic)}$ & time when the topic-specific bound was set \hl{not really defined in text}\\ \hline
-        $\textit{registrar A}$ & registrar $A$ (Sec. 7.2)\\ \hline
-        $\textit{topic A}$& topic $A$ (Sec. 7.2)\\ \hline
-        $p_{rr,i}(Resp=S)$ & (Appendix) the probability that the searcher will receive $S$ responses from a registrar $rr$ in bucket $i$. \\ \hline
-        $rr$ & registrar $rr$ (Appendix) \\ \hline
-        $Resp = S$ &  number of received responses equals $S$ (Appendix) \\ \hline
-        $R$ & (Appendix) number of received registrations \\ \hline
-        $R_h$ & (Appendix) number of received honest registrations \\ \hline
-        $R_a$ & (Appendix) number of received malicious registrations \\ \hline
-        $u$ & (Appendix) the number of buckets \\ \hline
-        $t$ & the number of buckets a searcher looks in (Appendix) \hl{clash with time}\\ \hline
-        $P_i$ & (Appendix) probability to receive only malicious ads from a random registrar in bucket $i$ \\ \hline
-        $P_{m, i}$ & (Appendix) probability that a searcher will contact a malicious registrar in bucket $i$ \\ \hline
-        $P_{h, i}$ & (Appendix) is the probability that a honest registrar in bucket $i$ only returns malicious ads. \\ \hline
-        $\textit{IPscoreH}$ & (Appendix) the IP score of an honest IP \\ \hline
-        $\textit{IPscoreA}$ & (Appendix) the IP score of a malicious IP \\ \hline
-        $\text{NatScore}_{\text{level}}(n)$ & the average score for the first level (Appendix) \\ \hline
-        $\text{Score}_{\text{random}}(n)$ & the average similarity score received for a random honest IP (Appendix) \\ \hline
-        $p(m,b) $ & (Appendix) the probability that $b$ out of $m$ fair coin tosses are head \\ \hline
-        $\text{Score}_{\text{random}}(n,k)$ & score will a new random IP address get assuming $n$ random IPs and $k$ identical ones \\ \hline
-        $\text{Score}_{\text{identical}}(n,k)$ & score will a new identical IP address get assuming $n$ random IPs and $k$ identical ones \\ \hline
-        $a$ & (Appendix) exponent for the number of identical IP groups in the tree \hl{clash}\\ \hline
-        $\text{IPScoreH}(n,k)$ & (Appendix) the score of a new honest IP address assuming $n$ random IPs and $2^a \times k$ identical ones \\ \hline
-        $\text{IPScoreA}(n,k)$ & (Appendix) the score of a new malicious IP address assuming $n$ random IPs and $2^a \times k$ identical ones \\ \hline
-      \hline
-    \end{tabular}
-  \end{center}
-\end{table*}
-\mk{TODO: add notation for number of malicious nodes, number of malicious IPs etc.,}
-\mk{change bucket definition to add the target key (can be useful to define advertise tables etc. if we introduce them in the background \eg $b_i(key)$). We also often indicate the farthest buckets - we could simply use $b_0$}
+% 
 \mk{Put macros for the notation}
 \mk{We need a notation for an ad - at the end of Sec. 5.2 we just use "Ad".}
-\mk{We should probably define notations for registrars, advertisers, searchers etc. We can then easily explain that everyone is a registrar etc.}
 \mk{Maybe define an eclipse ratio for a specific topic?}
-\mk{If we define malicious nodes and their IPs early, we don't have to re-do it in the evaluation}
-
-
 
 \begin{table*}
   \caption{New Notation}
@@ -128,16 +38,17 @@
       $\alpha$ & expiry time (ad lifetime) \\ \hline
       $F_{\textit{lookup}}$ & number of peers to find (Sec. 4.4) - \hl{could be introduced before specifying what the system does}  \hl{Clash with number of nodes} \\ \hline
       $F_{\textit{return}}$ & max number of topic-specific peers returned from a single registrar \hl{Clash with number of nodes} \\ \hline
-      $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
+      %$r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
       $P_\textit{occ}$ & occupancy power \\ \hline
       $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
       $C$ & capacity of the ad cache \\ \hline
       $m$ & number of buckets in the routing table \\ \hline
 
-      $\algvar{ticket}.t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
-        $\algvar{ticket}.t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
-        $\Delta$ & registration window\\ \hline
-        $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
+      $\algvar{ticket}.t_{\textit{init}}$ & ticket: ticket creation time \\ \hline
+      $\algvar{ticket}.t_{\textit{mod}}$ & ticket: last modification time \\ \hline
+      $\algvar{ticket}.t_{\textit{wait\_for}}$ & ticket: waiting time \\ \hline
+      $\Delta$ & registration window\\ \hline
+      $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
 
       $\textit{sim score}$ & similarity score \\ \hline
       $\textit{sim}$ & similarity score \\ \hline
@@ -242,3 +153,90 @@ While completely eliminating such attacks in an open network is technically impo
 % \er{can we quantify this probability?}\mk{It depends on a lot of factors \#Sybil, \#malicious\_IPs etc. so not easy, but I'll think about it.} \er{commenting for now, no time}
 and increases the monetary cost of committing them. 
 % under the presence of a powerful attacker.
+
+
+%\begin{table*}
+  %     \caption{Notation}
+  %     \label{tab:notation}
+  % \begin{center}
+  %     \begin{tabular}{ | l | p{16cm} |}
+  %       \hline
+  %         $N$ & network size \hl{Consider changing to all nodes so that $n \in N$} \\ \hline
+  %         $N_a$ & number of nodes (advertisers) following topic $a$ \hl{not very consistent with the rest of the notation}\\ \hline
+  %         $N_h$ & number of honest registrars (Appendix) \hl{clash}. \\ \hline
+  %         $N_a$ & number of malicious registrars (Appendix) \hl{clash}. \\ \hline
+  %         $k$ & number of peers holding a key in the DHT (from the background section) \hl{not sure we need it - it's only in the background and we can explain everything by finding just 1 closest peer to the key} \\ \hline
+  %         $X$ & a node (from the background section) - \hl{never used again} \\ \hline
+  %         $x$ & registration request (Sec. 7.1) \hl{used uniquely in 7.1} \\ \hline
+  %         $x$ & number of received requests (Appendix) \hl{clash} \\ \hline
+  %         $n$ & \hl{a node (from the 4.1)} \\ \hline
+  %         $n$ & total size of the ad cache (Sec. 5.2) \hl{a clash with node} \\ \hline
+  %         $n$ & (Appendix) number of random addresses in the cache \hl{clash }\\ \hline
+  %         $k$ & (Appendix) number of identical addresses in the cache \hl{clash }\\ \hline
+  %         $n_a$ & number of malicious nodes in the network (Appendix) \hl{clash} \\ \hline
+  %         $p$ & peer (section 4.1) \\ \hline
+  %         $p_{\geq i}$ & (sec. 6) the number of IP addresses in the cache sharing a prefix with $IP$ with a length of at least $i$ \hl{clash with peer}. \\ \hline
+  %         $T$ & Table (section 4.1) \\ \hline
+  %         $b_i$& $i$-th bucket (section 4.1) \hl{TODO: add key} \\ \hline
+  %         $\alpha$ & number of concurrent routing operations \\ \hline
+  %         $K_{\textit{register}}$ & number of ads placed per bucket\\ \hline
+  %         $K'_{\textit{register}}$ & $K_{\textit{register}}$ for malicious nodes (Appendix) \hl {not very clear}\\ \hline
+  %         $K_{\textit{lookup}}$ & \hl{It's weirdly defined in Sec. 4.4}: search process progresses using maximum $K_{\textit{lookup}}$  parallel requests, and issuing requests towards up to $K_{\textit{lookup}}$  peers per bucket.\\ \hline
+  %         $a$ & ad lifetime  (Sec. 4.3)\\ \hline
+          
+  %         $t_{\textit{init}}$ & ticket: the local time at the registrar when the ad was received for the first time \\ \hline
+  %         $t_{\textit{waiting}}$ & ticket the local time at the registrar when the ad was received for the first time \\ \hline
+  %         $\delta t_{\textit{window}}$ & registration window \hl{we probably don't need both $\delta$ and "window"} \\ \hline
+  %         $t_{\textit{cumulative}}$ & ticket:cumulative waiting time \\ \hline
+  %         $t_1$ & a specific moment in time \\ \hline
+  %         $w$ & waiting time (Sec. 5.3) \\ \hline
+  %         $w(\textit{IP}, \textit{topic})$ & waiting time for IP and topic \\ \hline
+  %         $w(t_i)$ & waiting time at time $t_1$ \hl{clash with the above} \\ \hline
+  %         $w(x)$ & average waiting time received by request $x$ (Sec. 7.1.) \hl{clash with the above} \\ \hline
+  %         $w$ & is the average waiting time (Appendix) \hl{clash} \\ \hline
+  %         $r$ & number of registration retries after which the advertiser give up \hl{it's not in the algorithm} \\ \hline
+  %         $d$ & number of ads in the cache \\ \hline
+  %         $d(\textit{topic})$ & number of ads for topic in the cache \\ \hline
+  %         $d_a$ & the average number of ads for topic $a$ (appendix) \hl{clash with the above} \\ \hline
+  %         $d_h$ & number of honest ads in the cache (appendix) \hl{clash with the above} \\ \hline
+  %         $d_a$ & number of malicious ads in the cache (appendix) \hl{clash with the above} \\ \hline
+  %         $\textit{similarity score}$ & similarity score \\ \hline
+  %         $\textit{similarity}$ & similarity score \\ \hline
+  %         $\textit{similarity(topic)}$ & topic similarity score \\ \hline
+  %         $\textit{similarity(IP)}$ & IP similarity score \\ \hline
+  %         $\textit{score(IP)}$ & IP score (before normalisation) \\ \hline
+  %         $\textit{penalty}(p_{\geq i})$ & penalty points at a specific level \\ \hline
+  %         $P_\textit{occ}$ & occupancy power \\ \hline
+  %         $b$ & system parameter from the similarity score \hl{clash with the bucket} \\ \hline
+  %         $\textit{IPs}$ & all the IPs in the ad cache \\ \hline
+  %         $\textit{topics}$ & all the topics in the ad cache \\ \hline
+  %         $w_\textit{topic}$ & topic specific part of the lower bound \hl{not really defined in text}\\ \hline
+  %         $\textit{bound(topic)}$ & lower bound for a topic \hl{not really defined in text}\\ \hline
+  %         $\textit{timestamp(topic)}$ & time when the topic-specific bound was set \hl{not really defined in text}\\ \hline
+  %         $\textit{registrar A}$ & registrar $A$ (Sec. 7.2)\\ \hline
+  %         $\textit{topic A}$& topic $A$ (Sec. 7.2)\\ \hline
+  %         $p_{rr,i}(Resp=S)$ & (Appendix) the probability that the searcher will receive $S$ responses from a registrar $rr$ in bucket $i$. \\ \hline
+  %         $rr$ & registrar $rr$ (Appendix) \\ \hline
+  %         $Resp = S$ &  number of received responses equals $S$ (Appendix) \\ \hline
+  %         $R$ & (Appendix) number of received registrations \\ \hline
+  %         $R_h$ & (Appendix) number of received honest registrations \\ \hline
+  %         $R_a$ & (Appendix) number of received malicious registrations \\ \hline
+  %         $u$ & (Appendix) the number of buckets \\ \hline
+  %         $t$ & the number of buckets a searcher looks in (Appendix) \hl{clash with time}\\ \hline
+  %         $P_i$ & (Appendix) probability to receive only malicious ads from a random registrar in bucket $i$ \\ \hline
+  %         $P_{m, i}$ & (Appendix) probability that a searcher will contact a malicious registrar in bucket $i$ \\ \hline
+  %         $P_{h, i}$ & (Appendix) is the probability that a honest registrar in bucket $i$ only returns malicious ads. \\ \hline
+  %         $\textit{IPscoreH}$ & (Appendix) the IP score of an honest IP \\ \hline
+  %         $\textit{IPscoreA}$ & (Appendix) the IP score of a malicious IP \\ \hline
+  %         $\text{NatScore}_{\text{level}}(n)$ & the average score for the first level (Appendix) \\ \hline
+  %         $\text{Score}_{\text{random}}(n)$ & the average similarity score received for a random honest IP (Appendix) \\ \hline
+  %         $p(m,b) $ & (Appendix) the probability that $b$ out of $m$ fair coin tosses are head \\ \hline
+  %         $\text{Score}_{\text{random}}(n,k)$ & score will a new random IP address get assuming $n$ random IPs and $k$ identical ones \\ \hline
+  %         $\text{Score}_{\text{identical}}(n,k)$ & score will a new identical IP address get assuming $n$ random IPs and $k$ identical ones \\ \hline
+  %         $a$ & (Appendix) exponent for the number of identical IP groups in the tree \hl{clash}\\ \hline
+  %         $\text{IPScoreH}(n,k)$ & (Appendix) the score of a new honest IP address assuming $n$ random IPs and $2^a \times k$ identical ones \\ \hline
+  %         $\text{IPScoreA}(n,k)$ & (Appendix) the score of a new malicious IP address assuming $n$ random IPs and $2^a \times k$ identical ones \\ \hline
+  %       \hline
+  %     \end{tabular}
+  %   \end{center}
+  % \end{table*}

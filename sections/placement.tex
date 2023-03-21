@@ -15,7 +15,7 @@ A first challenge in designing a robust service discovery mechanisms is to decid
 In other words, the mechanism must decide which registrars in the network should be responsible for storing ads for each service.
 
 A first possibility would be to deterministically choose a group of nodes based on the service itself, using DHT lookups.
-Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and searchers know how to reach registrars within a logarithmic amount of steps.
+Such a solution makes it \emph{efficient} to place and retrieve ads, as both advertisers and discoverers know how to reach registrars within a logarithmic amount of steps.
 Unfortunately, such an approach causes \emph{unequal} load distribution across registrars, especially when the popularity of services varies significantly.
 Registrars storing popular services (\ie DHT nodes that are the closest to the hash of the popular services) would, indeed, receive a large portion of the registration requests in the network. 
 Finally, this solution is \emph{not secure}, as an attacker could generate and strategically place its Sybil identities, and take control over all the traffic related to a single service. 
@@ -23,14 +23,14 @@ Finally, this solution is \emph{not secure}, as an attacker could generate and s
 Alternatively, advertisers could place their ads on random registrars across the entire network. 
 This approach, as \discv, is \emph{secure} and difficult to attack as an attacker would need to take control over the entire network to control a single service.
 Furthermore, random placement is \emph{fair} and achieves good load balance across registrars regardless of the service popularity distribution.
-However, and similarly again to \discv, random placement is not \emph{efficient}, as it makes it difficult for searchers to find placed ads, especially for unpopular services. 
+However, and similarly again to \discv, random placement is not \emph{efficient}, as it makes it difficult for discoverers to find placed ads, especially for unpopular services. 
 
 \sysname implements an alternative method of placing ads, that combines both the deterministic and pseudo-random approaches.
 Advertisers start the registration process from nodes located far away from the service hash, and traverse the DHT towards nodes close to the service hash.
 On their way, advertisers place ads on encountered registrars.
 % This way, the closer to the service hash, the higher number of ads placed.
 This way, as a registration process gets closer to the service hash, the higher the density of ads gets.
-The searchers mimic the process and ask encountered registrars for service-specific ads.
+The discoverers mimic the process and ask encountered registrars for service-specific ads.
 The lookup process stops when enough ads are found.
 
 \subsection{Data structures}
@@ -142,10 +142,10 @@ A service lookup in \sysname aims at identifying $F_\textit{lookup}$ advertisers
 The service lookup is a process that is distinct from the underlying DHT's lookup protocol.
 A service lookup starts with the creation of an ephemeral, service-specific \emph{search table} as described in \Cref{sec:struct}.\mk{I"m not sure we need to explicitly define search/advertise tables. We can simplify it with the new notation $B(s)$.}
 
-A searcher performing a service lookup progresses through the table starting from the farthest bucket (\ie, peers whose ID has the \emph{smallest} common prefix with the service ID).
+A discoverer performing a service lookup progresses through the table starting from the farthest bucket (\ie, peers whose ID has the \emph{smallest} common prefix with the service ID).
 The search process progresses using maximum $K_\textit{lookup}$ parallel requests, and issuing requests towards up to $K_\textit{lookup}$ peers per bucket.
-For instance, the searcher may start by querying $K_\textit{lookup}$ peers from bucket $b_0(s)$.\michal{This is not consistent with the algorithm. I'd keep the algorithm version as it's simpler.}
-When one of these queries returns, the searcher queries a peer from bucket $b_1(s)$, and so on.
+For instance, the discoverer may start by querying $K_\textit{lookup}$ peers from bucket $b_0(s)$.\michal{This is not consistent with the algorithm. I'd keep the algorithm version as it's simpler.}
+When one of these queries returns, the discoverer queries a peer from bucket $b_1(s)$, and so on.
 A node that has been already queried is marked as such in the table and is not queried again.
 
 Queries return new candidates registrars for the search table, as explained in \Cref{sec:struct}, as well as $F_\textit{return}$ service-specific advertisers with a valid registered ad.
@@ -155,7 +155,7 @@ In this case, the whole process restarts.
 
 \begin{algorithm}[]%
     \caption{%
-        Lookup algorithm run by searchers.
+        Lookup algorithm run by discoverers.
     }%
     \label{alg:lookup}%
     \begin{algorithmic}[1]%
@@ -169,7 +169,7 @@ In this case, the whole process restarts.
             \For{$i$ in $0, 1,..., m$}
                 \For{$\algvar{j}$ in $0,..., K_\textit{lookup}$}
                     \State $\algvar{peer} \gets b_i(s)\algvar{.getRandomNode()}$
-                    \State $\algvar{response} \gets \algvar{peer.GetAds(topic)}$
+                    \State $\algvar{response} \gets \algvar{peer.GetAds}(s)$
                     \State $B(s)\algvar{.add}(\algvar{response.neighbors})$
                     \State $\algvar{foundPeers.add}(\algvar{response.peers})$
                     \If{$\algvar{foundPeers.size} \ge F_{lookup}$}
@@ -189,8 +189,8 @@ For an attacker, placing malicious registrars in this fraction of the key space 
 Subsequent buckets cover smaller (halved for each increased prefix length) fractions of the key space, increasing the attacker opportunities to place Sybils but also increasing the success rate of the discovery process.
 
 Parameters $F_\textit{return}$ and $F_\textit{lookup}$ play an important role in the compromise between security and efficiency.
-A small value of $F_\textit{return} << F_\textit{lookup}$ increases the \emph{diversity} of the source of ads received by the searcher but increases search time, and requires reaching buckets covering smaller key ranges where eclipse risks are higher.
-On the other hand, values of a similar order of magnitude for $F_\textit{lookup}$ and $F_\textit{return}$ reduce overheads but increase the danger of a searcher receiving ads uniquely from malicious nodes.
+A small value of $F_\textit{return} << F_\textit{lookup}$ increases the \emph{diversity} of the source of ads received by the discoverer but increases search time, and requires reaching buckets covering smaller key ranges where eclipse risks are higher.
+On the other hand, values of a similar order of magnitude for $F_\textit{lookup}$ and $F_\textit{return}$ reduce overheads but increase the danger of a discoverer receiving ads uniquely from malicious nodes.
 Finally, low values of $F_\textit{lookup}$ stop the search operation early, before reaching registrars close to the service hash, contributing to a more equal load spread. 
 We discuss the selection of optimal values for all of the protocol parameters in \Cref{sec:analysis}. 
 
@@ -198,17 +198,17 @@ We discuss the selection of optimal values for all of the protocol parameters in
 
 
 % Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure.
-% Searchers progressively moving towards smaller buckets near the service hash guarantees successful discovery even for unpopular services.
+% discoverers progressively moving towards smaller buckets near the service hash guarantees successful discovery even for unpopular services.
 % Each queried registrar responds with a list of $N_\textit{return}$ service-specific advertisers the registrar knows of.
 % While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
 % the number of ads returned by a single registrar must be lower than the total
-% number of ads searchers are aiming to find $N_\textit{return} <
-% N_\textit{lookup}$. This is to diversify the sources of ads received by the searcher. This means that a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
+% number of ads discoverers are aiming to find $N_\textit{return} <
+% N_\textit{lookup}$. This is to diversify the sources of ads received by the discoverer. This means that a single malicious registrar is not able to stop an honest discoverer from contacting other nodes.
 % %\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
 % There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$.
 % By requiring a large number of total ads to stop the search
 % ($N_\textit{lookup}$), compared with the ads returned by the registrar
-% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the service hash, contributing to a more equal load spread.
+% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a discoverer receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the service hash, contributing to a more equal load spread.
 
 
 %
@@ -217,23 +217,23 @@ We discuss the selection of optimal values for all of the protocol parameters in
 % Its goal is to identify $N_\textit{lookup}$ advertisers peers for a target service.
 % Note that \emph{service lookup} is independent from, and does not rely on, the underlying DHT's lookup process.
 %
-% Each service lookup by a searcher uses its own service-specific \emph{search table} as described in \Cref{sec:struct}.
+% Each service lookup by a discoverer uses its own service-specific \emph{search table} as described in \Cref{sec:struct}.
 % This table is formed of buckets, each containing at least $K_\textit{lookup}$ \er{can be 'a number of' since parallelism is apparently not linked to the size of buckets in the search table (and it should not be)} registrars, and centered on the service hash.
 % The buckets in the search table are sorted from the farthest to the nearest to the service hash.
 %
-% A searcher performing a service lookup progressively progresses through the table starting from the farthest bucket (\ie, containing peers with the smallest prefix to the service hash).
+% A discoverer performing a service lookup progressively progresses through the table starting from the farthest bucket (\ie, containing peers with the smallest prefix to the service hash).
 % The search process progresses in parallel
 %
-% From this bucket, the searcher selects $K_\textit{lookup}$ registrars and sends them parallel lookup requests.
+% From this bucket, the discoverer selects $K_\textit{lookup}$ registrars and sends them parallel lookup requests.
 % These registrars answer with a list of peers, one for each bucket with rank equal or higher to that of the bucket they are in the table, as previously detailed for the advertise table maintenance. \er{my speculation, is this correct? This is not detailed in the text below and I am not sure we can work with only the initial copy of the routing table for low-popularity services so the search table certainly needs to grow.}
-% The searcher waits for responses from these first $K_\textit{lookup}$ registrars and proceeds to the next bucket. \er{is there a timeout mechanism? Do we proceed to the second bucket only when we received all three $K_\textit{lookup}$ registrars responses at level 1 to move on to level 2? Or do we proceed as soon as we receive?}
+% The discoverer waits for responses from these first $K_\textit{lookup}$ registrars and proceeds to the next bucket. \er{is there a timeout mechanism? Do we proceed to the second bucket only when we received all three $K_\textit{lookup}$ registrars responses at level 1 to move on to level 2? Or do we proceed as soon as we receive?}
 % Note that a registrar in the table is used only once: queried nodes are marked as \emph{used} in the table.
 %
 % Queries registrars return, in addition to other registrars in buckets closer to the service hash, a set of up to $N_\textit{return}$ service-specific advertisers they know with a valid registered ad.
 % These advertisers are collected by the querier.
 % A successful search stops when at least $N_\textit{lookup}$ different peers have been collected.\footnote{In case more than $N_\textit{lookup}$ peers were found, a random subset of $N_\textit{lookup}$ peers is drawn.}
 % The search stops unsuccessfully when either no nodes remain in any of the buckets that are not marked as used, or when the two last queries did not returned any new, unused nodes. \er{not sure if we are talking about new registrars or new advertisers here, I suppose the former?}
-% In this case, a new search table is initialized from the searchers' routing table with all registrars unmarked, and the process starts again from the furthest-away bucket.
+% In this case, a new search table is initialized from the discoverers' routing table with all registrars unmarked, and the process starts again from the furthest-away bucket.
 %
 % \er{this is the previous, unmodified text}
 % \er{the construction of the search table is unclear. I tried to guess in the text above, but I may have misunderstood.}
@@ -242,29 +242,29 @@ We discuss the selection of optimal values for all of the protocol parameters in
 % %The goal is to find $N_\textit{lookup}$ node advertised with a specific service.
 % %Each lookup requires a service-specific \emph{search table} initially populated with nodes from the \emph{routing table}.
 % Each lookup requires a service-specific \emph{search table} described in \Cref{sec:struct}.
-% The searcher progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per bucket and sends them parallel lookup requests.
+% The discoverer progressively moves through buckets (starting from the furthest away), randomly chooses $K_\textit{lookup}$ registrars per bucket and sends them parallel lookup requests.
 % Once it receives results from the first $K_\textit{lookup}$ selected registrars, other $K_\textit{lookup}$ registrars are selected from the following bucket with a smaller distance to the service id.
 % The queried nodes are removed from the bucket. \er{they are in fact marked as used}
-% Searchers stop the lookup procedure when they have discovered $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the service hash, especially for popular services. As a result, \sysname avoids hot spots in the network and ensures fair load distribution.
+% discoverers stop the lookup procedure when they have discovered $N_\textit{lookup}$ peers. This is likely to happen far before reaching registrars located near the service hash, especially for popular services. As a result, \sysname avoids hot spots in the network and ensures fair load distribution.
 % In case all buckets have been queried without finding enough nodes, the lookup process continues starting with the furthest distance bucket again.
 % Once the lookup process is completed, the nodes are returned to the application.
 %
 % \er{I did not revise/rewrite the following text, will do when the previous will be validated.}
 %
 % Since the furthest bucket is also the largest (\ie it contains 50\% of all the honest registrars), an attacker placing malicious registrars in those buckets would require significant resources to eclipse the procedure.
-% Searchers progressively moving towards smaller buckets near the service hash guarantees successful discovery even for unpopular services.
+% discoverers progressively moving towards smaller buckets near the service hash guarantees successful discovery even for unpopular services.
 % Each queried registrar responds with a list of $N_\textit{return}$ service-specific advertisers the registrar knows of.
 % If the total number of service-specific registrations in the table is larger then
 % $N_\textit{return}$, the registrar should return a random subset.
 % While both $N_\textit{return}$ and $N_\textit{lookup}$ are protocol parameters,
 % the number of ads returned by a single registrar must be lower than the total
-% number of ads searchers are aiming to find $N_\textit{return} <
-% N_\textit{lookup}$. This is to diversify the sources of ads received by the searcher. This means that a single malicious registrar is not able to stop an honest searcher from contacting other nodes.
+% number of ads discoverers are aiming to find $N_\textit{return} <
+% N_\textit{lookup}$. This is to diversify the sources of ads received by the discoverer. This means that a single malicious registrar is not able to stop an honest discoverer from contacting other nodes.
 % %\sergi{And is possible also a good idea to use a $N_\textit{lookup}$ parameter that forces that results from multiple buckets are used}
 % There is a trade-off between overhead and security when choosing $N_\textit{return}$ and $N_\textit{lookup}$.
 % By requiring a large number of total ads to stop the search
 % ($N_\textit{lookup}$), compared with the ads returned by the registrar
-% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a searcher receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the service hash, contributing to a more equal load spread.
+% ($N_\textit{return}$), a higher diversity of data sources is achieved at the cost of contacting a large number of registrars. On the other hand, similar values of both $N_\textit{lookup}$ and $N_\textit{return}$ reduce the overhead but increase the danger of a discoverer receiving ads uniquely from malicious nodes. Finally, low values of $N_\textit{lookup}$ stop the search operation early, before reaching registrars close to the service hash, contributing to a more equal load spread.
 %
 % %However, for security reasons it is always recommendable to use $L_\textit{lookup}$, $N_\textit{return}$ and $N_\textit{lookup}$ parameters to ensure that at least 3 different registrars are queried from 2 different distance buckets.
 % %In the evaluation in \cref{sec:eval},  we set $L_\textit{lookup}=1$, $N_\textit{return}=10$ and $N_\textit{lookup}=30$, to be able to get results from 3 different registrars from 3 different buckets.
@@ -273,7 +273,7 @@ We discuss the selection of optimal values for all of the protocol parameters in
 % %\michal{For security, highlight that we want to mix results from different buckets and from different registrars - this is very important for security}
 % %\michal{Consider renaming search/advertise tables into search/registration caches}
 % %\michal{From Felix: 1) how exactly we choose the registrars to ask 2) filling the search table as you go 3) how many queries per node, how do you combine the results 4) when do you stop}
-% %\ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a searcher to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
+% %\ramin{In practice, is $N_\textit{lookup}$ a parameter that can be controlled? It sounds like something application-specific, e.g. for some applications, it might be enough for a discoverer to just find one node to be able to use the application as intended. Search for 10 and choose one randomly from them?}
 % %\michal{That's a good point. Not sure if we should allow the application to control both $N_\textit{lookup}$ and $N_\textit{return}$. Or maybe fix a ration between both and automatically set $N_\textit{return}$ once $N_\textit{lookup}$ is chosen by the application.}
 % %\sergi{I think $N_\textit{return}$ should not be configurable since it is limited by the maximum number of nodes returned in a message which i think is 16.  I think $N_\textit{lookup}$ can be configurable, but never smaller than a value multiple of $N_\textit{return}$}
 %
